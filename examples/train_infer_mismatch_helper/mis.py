@@ -213,9 +213,9 @@ def compute_mis_weights(
     for train_log_prob, rollout_log_prob, loss_mask in zip(
         train_log_probs, rollout_log_probs, loss_masks, strict=False
     ):
-        loss_mask = loss_mask.float()
+        loss_mask = loss_mask.to(train_log_prob.dtype)
         raw_log_ratio_diff = train_log_prob - rollout_log_prob
-        modified_mask = loss_mask.clone().float()
+        modified_mask = loss_mask.clone()
 
         # IS (Importance Sampling): Modify IS weights
         if args.use_tis:
