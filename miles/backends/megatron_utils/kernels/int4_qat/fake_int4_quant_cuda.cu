@@ -1,7 +1,11 @@
 #include <torch/extension.h>
 #include <ATen/cuda/CUDAContext.h>
 
+#ifdef __HIP_PLATFORM_AMD__
+#define FINAL_MASK 0xFFFFFFFFFFFFFFFFULL
+#else
 #define FINAL_MASK 0xFFFFFFFF
+#endif
 
 __device__ __host__ __forceinline__
 int ceil_div(int a, int b) {
@@ -345,7 +349,7 @@ fake_int4_quant_cuda(
         at::ScalarType::BFloat16,
         x.scalar_type(), "int4_quant_cuda", [&] {
         launch_int4_quant_kernel<scalar_t>(
-            x.const_data_ptr<scalar_t>(),
+            x.data_ptr<scalar_t>(),
             out.data_ptr<scalar_t>(),
             out_scale.data_ptr<scalar_t>(),
             out_zero.data_ptr<scalar_t>(),
