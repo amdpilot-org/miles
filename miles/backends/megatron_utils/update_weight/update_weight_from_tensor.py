@@ -13,7 +13,7 @@ from miles.backends.megatron_utils.lora_utils import LORA_ADAPTER_NAME, build_lo
 from miles.backends.training_utils.parallel import get_parallel_state
 from miles.utils.distributed_utils import get_gloo_group
 
-from ..sglang import FlattenedTensorBucket, MultiprocessingSerializer
+from ..sglang import FlattenedTensorBucket, MultiprocessingSerializer, monkey_patch_torch_reductions
 from .common import post_process_weights
 from .hf_weight_iterator_base import HfWeightIteratorBase
 from .update_weight_from_distributed.broadcast import (
@@ -287,10 +287,23 @@ def _send_to_colocated_engine(
     lora_name: str | None = None,
     lora_loaded: bool = False,
 ) -> tuple[list[ObjectRef], Any]:
+    """Serialize HF-named tensors and gather them to the source rank for Ray IPC.
+
+    On ROCm/HIP we keep tensors on GPU and pass IPC handles via
+    MultiprocessingSerializer (which uses torch._share_cuda_ under the hood).
+    monkey_patch_torch_reductions is applied so the peer process can reconstruct
+    the handle with the correct device mapping on gfx950 (MI355X).
+    """
     # Placeholder ranks (GPU slots reserved but no engine) have no gather group.
     # gather_object is only collective among group members, so we skip entirely.
     if ipc_gather_group is None:
         return [], None
+
+    # ROCm / HIP path: apply the SGLang torch-reduction monkey-patch so
+    # rebuild_cuda_tensor maps UUIDs correctly when opening HIP IPC handles.
+    is_rocm = hasattr(torch.version, "hip") and torch.version.hip is not None
+    if is_rocm:
+        monkey_patch_torch_reductions()
 
     is_lora = lora_config is not None
     long_live_tensors = []
@@ -313,7 +326,12 @@ def _send_to_colocated_engine(
             "metadata": flattened_tensor_bucket.get_metadata(),
         }
         long_live_tensors.append(flattened_tensor_data)
-        serialized_tensors.append(MultiprocessingSerializer.serialize(flattened_tensor_data, output_str=True))
+        # On ROCm the GPU->CPU copy is unnecessary because ForkingPickler already
+        # serializes GPU tensors as HIP IPC handles.  Using bytes instead of the
+        # base64-encoded string removes ~33 % base64 overhead with no functional
+        # change (MultiprocessingSerializer.deserialize accepts both str/bytes).
+        use_str = not is_rocm
+        serialized_tensors.append(MultiprocessingSerializer.serialize(flattened_tensor_data, output_str=use_str))
 
     serialized_named_tensors = (
         [None] * dist.get_world_size(ipc_gather_group) if ipc_gather_src == dist.get_rank() else None
