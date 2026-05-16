@@ -2,6 +2,7 @@ import os
 from setuptools import setup
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 import torch
+IS_ROCM = bool(getattr(torch.version, "hip", None))
 
 # Get CUDA arch list
 arch_list = []
@@ -32,18 +33,20 @@ setup(
                     "-O3",
                     "-std=c++17",
                 ],
-                "nvcc": [
+                "nvcc": ([
+                    "-O3",
+                    "-std=c++17",
+                    "-fPIC",
+                ] if IS_ROCM else [
                     "-O3",
                     "-std=c++17",
                     "--expt-relaxed-constexpr",
                     "-Xcompiler",
                     "-fPIC",
-                ]
-                + [
+                ] + [
                     f'-gencode=arch=compute_{arch.replace(".", "")},code=sm_{arch.replace(".", "")}'
                     for arch in arch_list
-                ]
-                + ["-gencode=arch=compute_90a,code=sm_90a"],
+                ] + ["-gencode=arch=compute_90a,code=sm_90a"]),
             },
         )
     ],
