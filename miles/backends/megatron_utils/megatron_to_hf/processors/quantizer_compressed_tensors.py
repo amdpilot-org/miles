@@ -212,7 +212,7 @@ def quantize(
 
     if zero_point is not None:
         zero_point = zero_point.unsqueeze(-1)
-        scaled += zero_point.to(x.dtype)
+        scaled.add_(zero_point.to(x.dtype))
 
     # clamp and round
     output = round_to_quantized_type_dtype(tensor=scaled, dtype=dtype)
@@ -236,9 +236,9 @@ def pack_layer(weight, group_size, sym=True):
     scale = scale.view(weight.shape[0], 1, weight.shape[1] // group_size, 1)
     zp = zp.view(weight.shape[0], 1, weight.shape[1] // group_size, 1)
     if sym:
-        w = w * scale
+        w.mul_(scale)
     else:
-        w = (w - zp) * scale
+        w.sub_(zp).mul_(scale)
     w = w.view(weight.shape)
     scale = scale.view(weight.shape[0], -1).contiguous()
     if not sym:
