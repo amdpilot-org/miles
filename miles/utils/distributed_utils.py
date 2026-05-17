@@ -15,6 +15,7 @@ from torch.distributed.distributed_c10d import (
 
 
 GLOO_GROUP = None
+NCCL_GROUP = None
 
 
 def init_gloo_group():
@@ -31,6 +32,45 @@ def get_gloo_group():
     if GLOO_GROUP is None:
         raise RuntimeError("Gloo group has not been initialized. Call _init_gloo_group() first.")
     return GLOO_GROUP
+
+
+def init_nccl_group():
+    """Initialize NCCL group for zero-copy GPU weight sync on ROCm."""
+    global NCCL_GROUP
+    if NCCL_GROUP is None:
+        NCCL_GROUP = dist.new_group(backend="nccl")
+    return NCCL_GROUP
+
+
+def get_nccl_group():
+    """Get the NCCL group for zero-copy GPU weight sync."""
+    global NCCL_GROUP
+    if NCCL_GROUP is None:
+        raise RuntimeError("NCCL group has not been initialized. Call init_nccl_group() first.")
+    return NCCL_GROUP
+
+
+def broadcast_tensor_nccl(
+    tensor: torch.Tensor,
+    src: int = 0,
+    group: dist.ProcessGroup | None = None,
+    async_op: bool = False,
+):
+    """GPU-direct NCCL/RCCL broadcast of a GPU tensor.
+
+    This is the primitive used by the zero-copy weight-sync path on
+    ROCm / MI355X to avoid CPU round-trip serialization.  When
+    ``async_op=True`` a ``dist.Work`` handle is returned; callers
+    must ``wait()`` on it themselves.
+    """
+    if group is None:
+        try:
+            group = get_nccl_group()
+        except RuntimeError:
+            # No custom NCCL group created yet; fall back to the default world group.
+            group = dist.group.WORLD
+    handle = dist.broadcast(tensor, src=src, group=group, async_op=async_op)
+    return handle if async_op else None
 
 
 # Copy from pytorch to allow creating multiple main groups.

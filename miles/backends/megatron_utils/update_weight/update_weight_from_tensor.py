@@ -1,4 +1,5 @@
 import logging
+import os
 from argparse import Namespace
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
@@ -11,7 +12,7 @@ from ray.actor import ActorHandle
 
 from miles.backends.megatron_utils.lora_utils import LORA_ADAPTER_NAME, build_lora_sync_config, is_lora_weight_name
 from miles.backends.training_utils.parallel import get_parallel_state
-from miles.utils.distributed_utils import get_gloo_group
+from miles.utils.distributed_utils import broadcast_tensor_nccl, get_gloo_group
 
 from ..sglang import FlattenedTensorBucket, MultiprocessingSerializer
 from .common import post_process_weights
@@ -66,6 +67,11 @@ class UpdateWeightFromTensor:
             self._lora_base_synced = False
 
         # Create IPC gather groups within megatron.
+        # Also create NCCL groups (infrastructure for future zero-copy path).
+        self._use_nccl_weight_sync = os.environ.get("MILES_USE_NCCL_WEIGHT_SYNC", "0") == "1"
+        self._ipc_gather_group = None
+        self._ipc_gather_group_nccl = None
+        self._ipc_gather_src = None
         for start_rank in range(0, dist.get_world_size(), self.args.rollout_num_gpus_per_engine):
             end_rank = start_rank + self.args.rollout_num_gpus_per_engine
             group_ranks = list(range(start_rank, end_rank))
@@ -73,6 +79,10 @@ class UpdateWeightFromTensor:
             if dist.get_rank() in group_ranks:
                 self._ipc_gather_group = new_group
                 self._ipc_gather_src = start_rank
+            if self._use_nccl_weight_sync:
+                nccl_group = dist.new_group(ranks=group_ranks, backend="nccl")
+                if dist.get_rank() in group_ranks:
+                    self._ipc_gather_group_nccl = nccl_group
 
         self._model_update_groups = None
 
@@ -154,6 +164,10 @@ class UpdateWeightFromTensor:
                     if dist.get_rank() in group_ranks:
                         self._ipc_gather_group = new_group
                         self._ipc_gather_src = colocate_gpu_offsets[i]
+                    if self._use_nccl_weight_sync:
+                        nccl_group = dist.new_group(ranks=group_ranks, backend="nccl")
+                        if dist.get_rank() in group_ranks:
+                            self._ipc_gather_group_nccl = nccl_group
         else:
             # Ranks not covered by any engine (e.g. placeholder GPU slots)
             self._ipc_gather_group = None
@@ -235,13 +249,22 @@ class UpdateWeightFromTensor:
         dist.barrier(group=get_gloo_group())
 
     def _send_base_params(self, hf_named_tensors) -> tuple[list[ObjectRef], Any]:
-        refs, long_lived_tensors = _send_to_colocated_engine(
-            hf_named_tensors=hf_named_tensors,
-            ipc_engine=self._ipc_engine,
-            ipc_gather_src=self._ipc_gather_src,
-            ipc_gather_group=self._ipc_gather_group,
-            weight_version=self.weight_version,
-        )
+        if self._use_nccl_weight_sync and self._ipc_gather_group_nccl is not None:
+            refs, long_lived_tensors = _send_to_colocated_engine_nccl(
+                hf_named_tensors=hf_named_tensors,
+                ipc_engine=self._ipc_engine,
+                ipc_gather_src=self._ipc_gather_src,
+                ipc_gather_group=self._ipc_gather_group_nccl,
+                weight_version=self.weight_version,
+            )
+        else:
+            refs, long_lived_tensors = _send_to_colocated_engine(
+                hf_named_tensors=hf_named_tensors,
+                ipc_engine=self._ipc_engine,
+                ipc_gather_src=self._ipc_gather_src,
+                ipc_gather_group=self._ipc_gather_group,
+                weight_version=self.weight_version,
+            )
         if self.use_distribute and self._is_distributed_src_rank:
             refs_distributed = update_weights_from_distributed(
                 self._group_name,
@@ -347,6 +370,112 @@ def _send_to_colocated_engine(
 
         else:
             num_dtypes = len(serialized_named_tensors[0])
+            for i in range(num_dtypes):
+                kwargs = {
+                    "serialized_named_tensors": [tensors[i] for tensors in serialized_named_tensors],
+                    "load_format": "flattened_bucket",
+                    "weight_version": str(weight_version),
+                }
+                refs.append(ipc_engine.update_weights_from_tensor.remote(**kwargs))
+
+    return refs, long_live_tensors
+
+
+def _send_to_colocated_engine_nccl(
+    hf_named_tensors: list[tuple[str, torch.Tensor]],
+    *,
+    ipc_engine,
+    ipc_gather_src,
+    ipc_gather_group,
+    weight_version=None,
+    lora_config: dict | None = None,
+    lora_name: str | None = None,
+    lora_loaded: bool = False,
+) -> tuple[list[ObjectRef], Any]:
+    """Zero-copy gather path: flatten on GPU, gather padded byte-buffers via NCCL.
+
+    This avoids the CPU round-trip implied by ``MultiprocessingSerializer`` +
+    Gloo ``gather_object``.  Each rank serializes its flattened bucket to a CPU
+    byte-string, copies it to a GPU uint8 tensor, and the group performs an
+    NCCL ``all_gather`` on padded buffers.  Only ``ipc_gather_src`` dispatches
+    the reconstructed serialized buffers to the Ray engine.
+    """
+    if ipc_gather_group is None:
+        return [], None
+
+    is_lora = lora_config is not None
+    long_live_tensors = []
+
+    if getattr(FlattenedTensorBucket, "supports_multi_dtypes", False):
+        converted_named_tensors_by_dtypes = {"dtype": hf_named_tensors}
+    else:
+        converted_named_tensors_by_dtypes = {}
+        for name, tensor in hf_named_tensors:
+            dtype = tensor.dtype
+            if dtype not in converted_named_tensors_by_dtypes:
+                converted_named_tensors_by_dtypes[dtype] = []
+            converted_named_tensors_by_dtypes[dtype].append((name, tensor))
+
+    # Step 1 – flatten per-dtype and serialize to CPU bytes
+    import pickle
+
+    rank_buffers: list[bytes] = []
+    for _dtype, named_tensors in converted_named_tensors_by_dtypes.items():
+        bucket = FlattenedTensorBucket(named_tensors=named_tensors)
+        flat = bucket.get_flattened_tensor()
+        meta = bucket.get_metadata()
+        long_live_tensors.append(flat)
+        serialized = MultiprocessingSerializer.serialize(
+            {"flattened_tensor": flat, "metadata": meta}, output_str=True
+        )
+        rank_buffers.append(serialized)
+
+    payload_bytes = pickle.dumps(rank_buffers)
+    local_size = len(payload_bytes)
+    device = flat.device
+    buffer_tensor = torch.tensor(list(payload_bytes), dtype=torch.uint8, device=device)
+
+    # Step 2 – exchange sizes via NCCL (small int64 GPU tensors)
+    world_size = dist.get_world_size(ipc_gather_group)
+    size_tensor = torch.tensor([local_size], dtype=torch.int64, device=device)
+    sizes = [torch.empty(1, dtype=torch.int64, device=device) for _ in range(world_size)]
+    dist.all_gather(sizes, size_tensor, group=ipc_gather_group)
+    max_size = int(max(s.item() for s in sizes).item())
+
+    # Step 3 – pad and all_gather byte buffer via NCCL
+    padded = torch.zeros(max_size, dtype=torch.uint8, device=device)
+    padded[:local_size] = buffer_tensor
+    gathered = [torch.empty(max_size, dtype=torch.uint8, device=device) for _ in range(world_size)]
+    dist.all_gather(gathered, padded, group=ipc_gather_group)
+
+    # Step 4 – on src rank, reconstruct and dispatch to engine
+    refs: list[ObjectRef] = []
+    if dist.get_rank() == ipc_gather_src:
+        all_serialized: list[list[bytes]] = []
+        for i in range(world_size):
+            actual_size = int(sizes[i].item())
+            chunk_bytes = bytes(gathered[i][:actual_size].cpu().numpy().tobytes())
+            all_serialized.append(pickle.loads(chunk_bytes))
+
+        # all_serialized[rank] is a list of per-dtype serialized buffers
+        num_dtypes = len(all_serialized[0]) if all_serialized else 0
+        serialized_named_tensors: list[list[bytes]] = []
+        for dtype_idx in range(num_dtypes):
+            per_dtype = [all_serialized[r][dtype_idx] for r in range(world_size)]
+            serialized_named_tensors.append(per_dtype)
+
+        if is_lora:
+            if lora_loaded:
+                ray.get(ipc_engine.unload_lora_adapter.remote(lora_name=lora_name))
+            refs.append(
+                ipc_engine.load_lora_adapter_from_tensors.remote(
+                    lora_name=lora_name,
+                    config_dict=lora_config,
+                    serialized_tensors=serialized_named_tensors[0][0],
+                    load_format="flattened_bucket",
+                )
+            )
+        else:
             for i in range(num_dtypes):
                 kwargs = {
                     "serialized_named_tensors": [tensors[i] for tensors in serialized_named_tensors],
