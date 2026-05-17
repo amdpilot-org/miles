@@ -16,6 +16,29 @@ logger = logging.getLogger(__name__)
 __all__ = ["quantize_params_compressed_tensors"]
 
 
+def _dequant_unpack_matmul(x, qweight, scales, group_size, in_features, out_features, bias):
+    """Dequant-unpack + matmul for W4A16 on AMD (gfx950)."""
+    # Unpack int4 weights from int32: each int32 holds 8 int4 values
+    shifts = torch.arange(0, 32, 4, device=qweight.device, dtype=torch.int32)
+    w = ((qweight.unsqueeze(-1) >> shifts) & 0xF).to(scales.dtype)
+    w = w.view(in_features, out_features)
+
+    # Handle both transposed and non-transposed scale shapes
+    g_in = in_features // group_size
+    if scales.shape == (g_in, out_features):
+        s = scales.view(g_in, 1, out_features)
+    elif scales.shape == (out_features, g_in):
+        s = scales.t().view(g_in, 1, out_features)
+    else:
+        raise RuntimeError(f"Unexpected scales shape {scales.shape} for (g_in={g_in}, out_features={out_features})")
+
+    w = w.view(g_in, group_size, out_features)
+    w = (w * s).view(in_features, out_features)
+
+    # Linear via matmul: F.linear expects weight as [out_features, in_features]
+    return torch.nn.functional.linear(x, w.t(), bias)
+
+
 class WQLinear_GEMM(nn.Module):
     def __init__(self, w_bit, group_size, in_features, out_features, bias, dev, training=False):
         super().__init__()
@@ -130,6 +153,17 @@ class WQLinear_GEMM(nn.Module):
         awq_linear.qzeros = qzeros
 
         return awq_linear
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        W4A16 forward on AMD gfx950 via torch.compile-fused unpack + dequant + matmul.
+        Int4 weights are packed as int32 (8 nibbles per int32) in qweight.
+        Scales are float16 with shape [in_features // group_size, out_features].
+        """
+        return _dequant_unpack_matmul(
+            x, self.qweight, self.scales, self.group_size,
+            self.in_features, self.out_features, self.bias,
+        )
 
 
 def pack_to_int32(

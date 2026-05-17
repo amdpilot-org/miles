@@ -35,15 +35,8 @@ setup(
                 "nvcc": [
                     "-O3",
                     "-std=c++17",
-                    "--expt-relaxed-constexpr",
-                    "-Xcompiler",
-                    "-fPIC",
                 ]
-                + [
-                    f'-gencode=arch=compute_{arch.replace(".", "")},code=sm_{arch.replace(".", "")}'
-                    for arch in arch_list
-                ]
-                + ["-gencode=arch=compute_90a,code=sm_90a"],
+                + [],
             },
         )
     ],
