@@ -32,7 +32,12 @@ setup(
                     "-O3",
                     "-std=c++17",
                 ],
-                "nvcc": [
+                "nvcc": ([
+                    "-O3",
+                    "-std=c++17",
+                    "-Xcompiler",
+                    "-fPIC",
+                ] if torch.version.hip else [
                     "-O3",
                     "-std=c++17",
                     "--expt-relaxed-constexpr",
@@ -43,7 +48,7 @@ setup(
                     f'-gencode=arch=compute_{arch.replace(".", "")},code=sm_{arch.replace(".", "")}'
                     for arch in arch_list
                 ]
-                + ["-gencode=arch=compute_90a,code=sm_90a"],
+                + ["-gencode=arch=compute_90a,code=sm_90a"]),
             },
         )
     ],
