@@ -102,6 +102,15 @@ class UpdateWeightFromTensor(UpdateWeight):
     RPC per dtype per bucket (or one per bucket if not flattened).
     """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Cache for FlattenedTensorBucket and its serialized IPC payload.
+        # Weights typically live at stable GPU addresses, so after the first
+        # serialization the IPC handle can be reused indefinitely.  On each
+        # update we copy new values into the cached bucket in-place.
+        self._bucket_cache: dict = {}
+        self._payload_cache: dict = {}
+
     def connect_rollout_engines(
         self,
         rollout_engines: Sequence[ActorHandle],
@@ -144,16 +153,33 @@ class UpdateWeightFromTensor(UpdateWeight):
                 named_tensors_by_dtypes[dtype] = []
             named_tensors_by_dtypes[dtype].append((name, tensor))
 
-        # Create flattened bucket for each dtype group
+        # Create flattened bucket for each dtype group, caching IPC payloads
+        # when the underlying weight tensors have stable addresses.
         serialized_tensors = []
         for _dtype, named_tensors in named_tensors_by_dtypes.items():
-            flattened_tensor_bucket = FlattenedTensorBucket(named_tensors=named_tensors)
-            metadata = flattened_tensor_bucket.get_metadata()
-            flattened_tensor_data = {
-                "flattened_tensor": flattened_tensor_bucket.get_flattened_tensor(),
-                "metadata": metadata,
-            }
-            serialized_tensors.append(MultiprocessingSerializer.serialize(flattened_tensor_data, output_str=True))
+            cache_key = tuple(
+                (name, tensor.data_ptr(), tuple(tensor.shape), str(tensor.dtype))
+                for name, tensor in named_tensors
+            )
+            if cache_key in self._bucket_cache:
+                bucket = self._bucket_cache[cache_key]
+                # Scatter updated values into the cached bucket in-place so the
+                # existing IPC handle remains valid, avoiding torch.cat overhead.
+                for (_, tensor), meta in zip(named_tensors, bucket.metadata):
+                    bucket.flattened_tensor[meta.start_idx : meta.end_idx].copy_(
+                        tensor.flatten().view(torch.uint8)
+                    )
+                payload = self._payload_cache[cache_key]
+            else:
+                bucket = FlattenedTensorBucket(named_tensors=named_tensors)
+                flattened_tensor_data = {
+                    "flattened_tensor": bucket.get_flattened_tensor(),
+                    "metadata": bucket.get_metadata(),
+                }
+                payload = MultiprocessingSerializer.serialize(flattened_tensor_data, output_str=True)
+                self._bucket_cache[cache_key] = bucket
+                self._payload_cache[cache_key] = payload
+            serialized_tensors.append(payload)
 
         if self._ipc_gather_src == dist.get_rank():
             # On rank 0, prepare a list to hold the gathered batches from all ranks.
@@ -175,6 +201,7 @@ class UpdateWeightFromTensor(UpdateWeight):
             # TODO: here we assume all ranks have the same number of dtypes
             num_dtypes = len(gathered_serialized_batches[0])
             assert num_dtypes > 0
+            refs = []
             for i in range(num_dtypes):
                 kwargs = {
                     "serialized_named_tensors": [tensors[i] for tensors in gathered_serialized_batches],
@@ -183,7 +210,9 @@ class UpdateWeightFromTensor(UpdateWeight):
                     "weight_version": str(weight_version),
                 }
                 ref = self._ipc_engine.update_weights_from_tensor.remote(**kwargs)
-                result = ray.get(ref)
+                refs.append(ref)
+            results = ray.get(refs)
+            for result in results:
                 if isinstance(result, dict):
                     success = result.get("success", True)
                     error_msg = result.get("error_message") or result.get("message", "unknown error")
@@ -196,8 +225,11 @@ class UpdateWeightFromTensor(UpdateWeight):
                     )
 
         if dist.get_rank() == self._ipc_gather_src:
-            ref = self._ipc_engine.flush_cache.remote()
-            ray.get(ref)
+            refs.append(self._ipc_engine.flush_cache.remote())
+            results = ray.get(refs)
+            # pop flush_cache result (last);
+            # weight update results were already validated above.
+            results.pop()
 
 
 class UpdateWeightFromDistributed(UpdateWeight):
