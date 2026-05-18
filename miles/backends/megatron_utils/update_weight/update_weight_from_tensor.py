@@ -109,6 +109,13 @@ class UpdateWeightFromTensor:
 
         self.use_distribute = len(rollout_engines) > colocate_engine_nums
 
+        # Cache for FlattenedTensorBucket and its serialized IPC payload.
+        # Weights typically live at stable GPU addresses, so after the first
+        # serialization the IPC handle can be reused indefinitely.  On each
+        # update we copy new values into the cached bucket in-place.
+        self._bucket_cache: dict = {}
+        self._payload_cache: dict = {}
+
         if self.use_distribute:
             self.rollout_engines = rollout_engines[:colocate_engine_nums]
             self.distributed_rollout_engines = rollout_engines[colocate_engine_nums:]
@@ -177,8 +184,9 @@ class UpdateWeightFromTensor:
         rank = dist.get_rank()
         if rank == 0:
             mode = self.args.pause_generation_mode
-            ray.get([engine.pause_generation.remote(mode=mode) for engine in self.rollout_engines])
-            ray.get([engine.flush_cache.remote() for engine in self.rollout_engines])
+            refs_gen = [engine.pause_generation.remote(mode=mode) for engine in self.rollout_engines]
+            refs_gen.extend([engine.flush_cache.remote() for engine in self.rollout_engines])
+            ray.get(refs_gen)
             if self.quantization_config and self.quantization_config["quant_method"] in ["compressed-tensors"]:
                 post_process_weights(
                     rollout_engines=self.rollout_engines,
@@ -241,6 +249,8 @@ class UpdateWeightFromTensor:
             ipc_gather_src=self._ipc_gather_src,
             ipc_gather_group=self._ipc_gather_group,
             weight_version=self.weight_version,
+            bucket_cache=self._bucket_cache,
+            payload_cache=self._payload_cache,
         )
         if self.use_distribute and self._is_distributed_src_rank:
             refs_distributed = update_weights_from_distributed(
@@ -271,6 +281,8 @@ class UpdateWeightFromTensor:
                 lora_config=self._lora_config,
                 lora_name=LORA_ADAPTER_NAME,
                 lora_loaded=self._lora_loaded,
+                bucket_cache=self._bucket_cache,
+                payload_cache=self._payload_cache,
             )
             self._lora_loaded = True
             return refs or [], long_lived_tensors
@@ -286,6 +298,8 @@ def _send_to_colocated_engine(
     lora_config: dict | None = None,
     lora_name: str | None = None,
     lora_loaded: bool = False,
+    bucket_cache: dict | None = None,
+    payload_cache: dict | None = None,
 ) -> tuple[list[ObjectRef], Any]:
     # Placeholder ranks (GPU slots reserved but no engine) have no gather group.
     # gather_object is only collective among group members, so we skip entirely.
@@ -307,13 +321,33 @@ def _send_to_colocated_engine(
 
     serialized_tensors = []
     for _dtype, named_tensors in converted_named_tensors_by_dtypes.items():
-        flattened_tensor_bucket = FlattenedTensorBucket(named_tensors=named_tensors)
-        flattened_tensor_data = {
-            "flattened_tensor": flattened_tensor_bucket.get_flattened_tensor(),
-            "metadata": flattened_tensor_bucket.get_metadata(),
-        }
-        long_live_tensors.append(flattened_tensor_data)
-        serialized_tensors.append(MultiprocessingSerializer.serialize(flattened_tensor_data, output_str=True))
+        cache_key = None
+        if bucket_cache is not None:
+            cache_key = tuple(
+                (name, tensor.data_ptr(), tuple(tensor.shape), str(tensor.dtype))
+                for name, tensor in named_tensors
+            )
+        if cache_key is not None and cache_key in bucket_cache:
+            bucket = bucket_cache[cache_key]
+            # Scatter updated values into the cached bucket in-place so the
+            # existing IPC handle remains valid, avoiding torch.cat overhead.
+            for (_, tensor), meta in zip(named_tensors, bucket.metadata):
+                bucket.flattened_tensor[meta.start_idx : meta.end_idx].copy_(
+                    tensor.flatten().view(torch.uint8)
+                )
+            payload = payload_cache[cache_key]
+        else:
+            bucket = FlattenedTensorBucket(named_tensors=named_tensors)
+            flattened_tensor_data = {
+                "flattened_tensor": bucket.get_flattened_tensor(),
+                "metadata": bucket.get_metadata(),
+            }
+            long_live_tensors.append(flattened_tensor_data)
+            payload = MultiprocessingSerializer.serialize(flattened_tensor_data, output_str=True)
+            if bucket_cache is not None:
+                bucket_cache[cache_key] = bucket
+                payload_cache[cache_key] = payload
+        serialized_tensors.append(payload)
 
     serialized_named_tensors = (
         [None] * dist.get_world_size(ipc_gather_group) if ipc_gather_src == dist.get_rank() else None
