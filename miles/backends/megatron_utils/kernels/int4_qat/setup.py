@@ -1,6 +1,7 @@
 import os
 from setuptools import setup
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
+import torch.utils.cpp_extension
 import torch
 
 # Get CUDA arch list
@@ -35,15 +36,8 @@ setup(
                 "nvcc": [
                     "-O3",
                     "-std=c++17",
-                    "--expt-relaxed-constexpr",
-                    "-Xcompiler",
-                    "-fPIC",
                 ]
-                + [
-                    f'-gencode=arch=compute_{arch.replace(".", "")},code=sm_{arch.replace(".", "")}'
-                    for arch in arch_list
-                ]
-                + ["-gencode=arch=compute_90a,code=sm_90a"],
+                + [],
             },
         )
     ],
