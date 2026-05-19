@@ -191,24 +191,34 @@ class UpdateWeightFromTensor:
 
         # For LoRA+distributed: base weights are frozen, skip after first round.
         if not (self.is_lora and self.use_distribute and self._lora_base_synced):
+            all_refs = []
+            all_long_lived = []
             for hf_named_tensors in self._hf_weight_iterator.get_hf_weight_chunks(
                 megatron_local_weights, weight_type="base"
             ):
                 refs, long_lived_tensors = self._send_base_params(hf_named_tensors)
-                results = ray.get(refs)
+                all_refs.extend(refs)
+                all_long_lived.append(long_lived_tensors)
+            if all_refs:
+                results = ray.get(all_refs)
                 _check_weight_sync_results(results, is_lora=False)
-                del long_lived_tensors
+            del all_long_lived
 
         if self.is_lora:
             lora_sync_chunk_count = 0
+            all_lora_refs = []
+            all_lora_long_lived = []
             for hf_named_tensors in self._hf_weight_iterator.get_hf_weight_chunks(
                 megatron_local_weights, weight_type="lora"
             ):
                 refs, long_lived_tensors = self._send_lora_params(hf_named_tensors)
-                results = ray.get(refs)
-                _check_weight_sync_results(results, is_lora=True)
-                del long_lived_tensors
+                all_lora_refs.extend(refs)
+                all_lora_long_lived.append(long_lived_tensors)
                 lora_sync_chunk_count += 1
+            if all_lora_refs:
+                results = ray.get(all_lora_refs)
+                _check_weight_sync_results(results, is_lora=True)
+            del all_lora_long_lived
 
             if lora_sync_chunk_count == 0:
                 raise RuntimeError(
