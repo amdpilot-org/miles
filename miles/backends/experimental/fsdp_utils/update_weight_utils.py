@@ -175,6 +175,7 @@ class UpdateWeightFromTensor(UpdateWeight):
             # TODO: here we assume all ranks have the same number of dtypes
             num_dtypes = len(gathered_serialized_batches[0])
             assert num_dtypes > 0
+            refs = []
             for i in range(num_dtypes):
                 kwargs = {
                     "serialized_named_tensors": [tensors[i] for tensors in gathered_serialized_batches],
@@ -182,18 +183,20 @@ class UpdateWeightFromTensor(UpdateWeight):
                     "flush_cache": False,
                     "weight_version": str(weight_version),
                 }
-                ref = self._ipc_engine.update_weights_from_tensor.remote(**kwargs)
-                result = ray.get(ref)
-                if isinstance(result, dict):
-                    success = result.get("success", True)
-                    error_msg = result.get("error_message") or result.get("message", "unknown error")
-                else:
-                    success = getattr(result, "success", True)
-                    error_msg = getattr(result, "error_message", "unknown error")
-                if not success:
-                    raise RuntimeError(
-                        f"Weight sync failed on rollout engine: {error_msg}. " f"Check SGLang version compatibility."
-                    )
+                refs.append(self._ipc_engine.update_weights_from_tensor.remote(**kwargs))
+            if refs:
+                results = ray.get(refs)
+                for result in results:
+                    if isinstance(result, dict):
+                        success = result.get("success", True)
+                        error_msg = result.get("error_message") or result.get("message", "unknown error")
+                    else:
+                        success = getattr(result, "success", True)
+                        error_msg = getattr(result, "error_message", "unknown error")
+                    if not success:
+                        raise RuntimeError(
+                            f"Weight sync failed on rollout engine: {error_msg}. " f"Check SGLang version compatibility."
+                        )
 
         if dist.get_rank() == self._ipc_gather_src:
             ref = self._ipc_engine.flush_cache.remote()
