@@ -326,23 +326,38 @@ def _send_to_colocated_engine(
                 converted_named_tensors_by_dtypes[dtype] = []
             converted_named_tensors_by_dtypes[dtype].append((name, tensor))
 
-    serialized_tensors: list = []
+    flattened_tensor_buckets = []
     for _dtype, named_tensors in converted_named_tensors_by_dtypes.items():
         flattened_tensor_bucket = FlattenedTensorBucket(named_tensors=named_tensors)
-        flattened_tensor_data = {
-            "flattened_tensor": flattened_tensor_bucket.get_flattened_tensor(),
-            "metadata": flattened_tensor_bucket.get_metadata(),
-        }
-        long_live_tensors.append(flattened_tensor_data)
-        serialized_tensors.append(MultiprocessingSerializer.serialize(flattened_tensor_data, output_str=True))
+        flattened_tensor_buckets.append(flattened_tensor_bucket)
 
-    serialized_named_tensors = [None] * dist.get_world_size(ipc_gather_group) if is_gather_src else None
-    dist.gather_object(
-        serialized_tensors,
-        object_gather_list=serialized_named_tensors,
-        dst=ipc_gather_src,
-        group=ipc_gather_group,
-    )
+    # Gather flattened tensors directly using dist.gather to avoid costly
+    # Python serialization in gather_object.  All ranks produce identically-
+    # shaped flattened tensors (verified by the all-gather in the iterator),
+    # so a single tensor gather per dtype is sufficient.
+    world_size = dist.get_world_size(ipc_gather_group)
+    gathered_per_dtype = []
+    for ftb in flattened_tensor_buckets:
+        ft = ftb.get_flattened_tensor().cpu().contiguous()
+        long_live_tensors.append({"flattened_tensor": ft, "metadata": ftb.get_metadata()})
+        gathered = [torch.empty_like(ft) for _ in range(world_size)] if is_gather_src else None
+        dist.gather(ft, gather_list=gathered, dst=ipc_gather_src, group=ipc_gather_group)
+        if is_gather_src:
+            gathered_per_dtype.append(gathered)
+
+    if is_gather_src:
+        serialized_named_tensors = []
+        for r in range(world_size):
+            rank_serialized = []
+            for dtype_idx, ftb in enumerate(flattened_tensor_buckets):
+                tensor_data = {
+                    "flattened_tensor": gathered_per_dtype[dtype_idx][r],
+                    "metadata": ftb.get_metadata(),
+                }
+                rank_serialized.append(MultiprocessingSerializer.serialize(tensor_data, output_str=True))
+            serialized_named_tensors.append(rank_serialized)
+    else:
+        serialized_named_tensors = None
 
     refs = []
     if is_gather_src:
