@@ -78,7 +78,6 @@ class FSDPTrainRayActor(TrainRayActor):
         if self.args.offload_train and self.fsdp_cpu_offload:
             self.args.offload_train = False
 
-        self._enable_true_on_policy_optimizations(args)
         if dist.get_rank() == 0:
             init_tracking(args, primary=False)
 
@@ -98,13 +97,14 @@ class FSDPTrainRayActor(TrainRayActor):
                     self.processor = load_processor(self.args.hf_checkpoint, trust_remote_code=True)
             dist.barrier(group=get_gloo_group())
 
+        self._enable_true_on_policy_optimizations(args)
+
         init_context = self._get_init_weight_context_manager()
 
-        with init_context():
-            model = self.get_model_cls().from_pretrained(
-                self.args.hf_checkpoint,
-                trust_remote_code=True,
-                attn_implementation=self.args.attn_implementation,
+        model, n = self._build_model_with_attn_bridge(self.args.hf_checkpoint, init_context)
+        if n > 0:
+            logger.info(
+                f"FSDPTrainRayActor applied triton attention patch to {n} layer(s)"
             )
 
         model.train()
@@ -178,10 +178,9 @@ class FSDPTrainRayActor(TrainRayActor):
             return AutoModelForCausalLM
 
     def _enable_true_on_policy_optimizations(self, args):
+        is_moe = getattr(self.hf_config, "num_experts", None) is not None
         if args.true_on_policy_mode:
             from sglang.srt.batch_invariant_ops import enable_batch_invariant_mode
-
-            from .models.qwen3_moe import apply_true_on_policy_patch_for_qwen3_moe
 
             logger.info("FSDPTrainRayActor call enable_batch_invariant_mode for true-on-policy")
             enable_batch_invariant_mode(
@@ -189,12 +188,36 @@ class FSDPTrainRayActor(TrainRayActor):
                 # and disabling it will make it aligned
                 enable_bmm=False,
             )
-
-            apply_true_on_policy_patch_for_qwen3_moe()
+            if is_moe:
+                from .models.qwen3_moe import apply_true_on_policy_patch_for_qwen3_moe
+                apply_true_on_policy_patch_for_qwen3_moe()
         else:
-            from .models.qwen3_moe_hf import apply_fsdp_moe_patch
+            if is_moe:
+                from .models.qwen3_moe_hf import apply_fsdp_moe_patch
+                apply_fsdp_moe_patch()
 
-            apply_fsdp_moe_patch()
+    def _build_model_with_attn_bridge(self, checkpoint_path: str, init_context):
+        """Build HF model and optionally apply Triton attention bridge patch."""
+        use_triton_bridge = getattr(self.args, "attn_implementation", None) == "triton"
+        self._use_triton_bridge = use_triton_bridge
+        effective_attn = "eager" if use_triton_bridge else self.args.attn_implementation
+
+        with init_context():
+            model = self.get_model_cls().from_pretrained(
+                checkpoint_path,
+                trust_remote_code=True,
+                attn_implementation=effective_attn,
+            )
+
+        patched_layers = 0
+        if use_triton_bridge:
+            from .sglang_attn_bridge.hf_sglang_triton_patch import (
+                apply_sglang_triton_attention_patch,
+            )
+
+            patched_layers = apply_sglang_triton_attention_patch(model)
+
+        return model, patched_layers
 
     def _get_init_weight_context_manager(self):
         """Get context manager for model initialization.
@@ -602,11 +625,10 @@ class FSDPTrainRayActor(TrainRayActor):
 
             init_context = self._get_init_weight_context_manager()
 
-            with init_context():
-                ref_model = self.get_model_cls().from_pretrained(
-                    ref_load_path,
-                    trust_remote_code=True,
-                    attn_implementation=self.args.attn_implementation,
+            ref_model, ref_patch_n = self._build_model_with_attn_bridge(ref_load_path, init_context)
+            if ref_patch_n > 0:
+                logger.info(
+                    f"[Rank {dist.get_rank()}] Applied triton attention patch to ref model ({ref_patch_n} layer(s))"
                 )
 
             full_state = ref_model.state_dict()
