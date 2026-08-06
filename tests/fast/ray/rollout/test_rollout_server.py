@@ -18,10 +18,11 @@ from miles.ray.rollout.server_cell import ServerCell, ServerCellMetadata
 from miles.utils.context_lock import ContextLock
 from miles.utils.ft_utils.health_checker import ActiveAndEpoch
 from miles.utils.workers.worker_spec import HostAndPort
+from miles.utils.workers.worker_spec import NamedHostAndPorts
 
 
 class TestRolloutServerPureFunctions:
-    def test_resolve_sglang_config_yaml_gpu_mismatch_asserts(self, tmp_path):
+    def testresolve_sglang_config_yaml_gpu_mismatch_asserts(self, tmp_path):
         cfg_path = tmp_path / "cfg.yaml"
         cfg_path.write_text(
             "sglang:\n"
@@ -264,7 +265,12 @@ class TestEngineListOrdering:
         for index in sorted(range(num_cells), key=lambda i: f"inference-engine-0-0-{i}"):
             meta = SimpleNamespace(num_gpus_per_engine=index + 1, gpu_offset=index)
             cells[f"inference-engine-0-0-{index}"] = SimpleNamespace(meta=meta, api_client=f"client-{index}")
-        return RolloutServer(server_cells=cells, args=SimpleNamespace(), context_lock=_make_lock())
+        return RolloutServer(
+            server_cells=cells,
+            args=SimpleNamespace(),
+            context_lock=_make_lock(),
+            engine_provider=_StubProvider(),
+        )
 
     @pytest.mark.asyncio
     async def test_engine_lists_are_ordered_by_gpu_offset_not_insertion(self):
@@ -302,7 +308,10 @@ class TestAddCellRollback:
             disposed.append(cell)
 
         srv = RolloutServer(
-            server_cells={}, args=SimpleNamespace(colocate=False, ft_components=[]), context_lock=_make_lock()
+            server_cells={},
+            args=SimpleNamespace(colocate=False, ft_components=[]),
+            context_lock=_make_lock(),
+            engine_provider=_StubProvider(),
         )
         monkeypatch.setattr(ServerCell, "init", _raise_async)
         monkeypatch.setattr(ServerCell, "dispose", _record_dispose)
@@ -327,6 +336,7 @@ class TestAddCellRollback:
             server_cells={},
             args=make_args(colocate=False, ft_components=["rollout"]),
             context_lock=_make_lock(),
+            engine_provider=_StubProvider(),
         )
         monkeypatch.setattr(ServerCell, "init", _record_then_raise)
 
@@ -342,7 +352,10 @@ class TestAddCellRollback:
     async def test_a_failed_add_leaves_the_cells_already_tracked_alone(self, monkeypatch):
         """Only the cell that failed may be dropped, or a single bad engine unmanages the healthy ones too."""
         srv = RolloutServer(
-            server_cells={}, args=SimpleNamespace(colocate=False, ft_components=[]), context_lock=_make_lock()
+            server_cells={},
+            args=SimpleNamespace(colocate=False, ft_components=[]),
+            context_lock=_make_lock(),
+            engine_provider=_StubProvider(),
         )
         monkeypatch.setattr(ServerCell, "init", _noop_async)
 
@@ -366,7 +379,10 @@ class TestAddCellRollback:
             raise RuntimeError("injected dispose failure")
 
         srv = RolloutServer(
-            server_cells={}, args=SimpleNamespace(colocate=False, ft_components=[]), context_lock=_make_lock()
+            server_cells={},
+            args=SimpleNamespace(colocate=False, ft_components=[]),
+            context_lock=_make_lock(),
+            engine_provider=_StubProvider(),
         )
         monkeypatch.setattr(ServerCell, "init", _raise_async)
         monkeypatch.setattr(ServerCell, "dispose", _dispose_then_fail)
@@ -381,7 +397,10 @@ class TestAddCellRollback:
     async def test_a_dropped_cell_id_can_be_added_again(self, monkeypatch):
         """Retrying is the whole point: the next observation of the same cell must be able to build it again."""
         srv = RolloutServer(
-            server_cells={}, args=SimpleNamespace(colocate=False, ft_components=[]), context_lock=_make_lock()
+            server_cells={},
+            args=SimpleNamespace(colocate=False, ft_components=[]),
+            context_lock=_make_lock(),
+            engine_provider=_StubProvider(),
         )
         monkeypatch.setattr(ServerCell, "init", _raise_async)
         monkeypatch.setattr(ServerCell, "dispose", _noop_async)
@@ -400,7 +419,10 @@ class TestAddCellRollback:
     async def test_disposing_the_server_removes_every_cell_it_tracks(self, monkeypatch):
         """Controller teardown must reach each cell so its health checker task stops with it."""
         srv = RolloutServer(
-            server_cells={}, args=SimpleNamespace(colocate=True, ft_components=[]), context_lock=_make_lock()
+            server_cells={},
+            args=SimpleNamespace(colocate=True, ft_components=[]),
+            context_lock=_make_lock(),
+            engine_provider=_StubProvider(),
         )
         monkeypatch.setattr(ServerCell, "init", _noop_async)
 
@@ -414,7 +436,10 @@ class TestAddCellRollback:
     async def test_a_successful_add_commits_the_cell(self, monkeypatch):
         """After the failure is gone the same cell id can be added normally."""
         srv = RolloutServer(
-            server_cells={}, args=SimpleNamespace(colocate=False, ft_components=[]), context_lock=_make_lock()
+            server_cells={},
+            args=SimpleNamespace(colocate=False, ft_components=[]),
+            context_lock=_make_lock(),
+            engine_provider=_StubProvider(),
         )
         monkeypatch.setattr(ServerCell, "init", _noop_async)
 
@@ -488,7 +513,10 @@ class TestAddCellInitTiming:
             initialized.append(self.meta.cell_id)
 
         srv = RolloutServer(
-            server_cells={}, args=SimpleNamespace(colocate=False, ft_components=[]), context_lock=_make_lock()
+            server_cells={},
+            args=SimpleNamespace(colocate=False, ft_components=[]),
+            context_lock=_make_lock(),
+            engine_provider=_StubProvider(),
         )
         monkeypatch.setattr(ServerCell, "init", _record)
 
@@ -507,7 +535,10 @@ class TestAddCellInitTiming:
             initialized.append(self.meta.cell_id)
 
         srv = RolloutServer(
-            server_cells={}, args=SimpleNamespace(colocate=True, ft_components=[]), context_lock=_make_lock()
+            server_cells={},
+            args=SimpleNamespace(colocate=True, ft_components=[]),
+            context_lock=_make_lock(),
+            engine_provider=_StubProvider(),
         )
         monkeypatch.setattr(ServerCell, "init", _record)
 
@@ -527,7 +558,10 @@ class TestAddCellInitTiming:
             initialized.append(self.meta.cell_id)
 
         srv = RolloutServer(
-            server_cells={}, args=SimpleNamespace(colocate=True, ft_components=[]), context_lock=_make_lock()
+            server_cells={},
+            args=SimpleNamespace(colocate=True, ft_components=[]),
+            context_lock=_make_lock(),
+            engine_provider=_StubProvider(),
         )
         monkeypatch.setattr(ServerCell, "init", _record)
         meta_builder = TestAddCellRollback()
@@ -560,7 +594,10 @@ class TestDeferredInitMatchesTheStartupBarrier:
             initialized.append(self.meta.cell_id)
 
         srv = RolloutServer(
-            server_cells={}, args=SimpleNamespace(colocate=colocate, ft_components=[]), context_lock=_make_lock()
+            server_cells={},
+            args=SimpleNamespace(colocate=colocate, ft_components=[]),
+            context_lock=_make_lock(),
+            engine_provider=_StubProvider(),
         )
         monkeypatch.setattr(ServerCell, "init", _record)
 
@@ -572,6 +609,11 @@ class TestDeferredInitMatchesTheStartupBarrier:
             await srv.dispose()
 
 
+class _StubProvider:
+    async def get_addrs(self, worker_name: str) -> NamedHostAndPorts:
+        raise AssertionError(f"cell startup is patched out in this module ({worker_name=})")
+
+
 async def _make_serving_server(monkeypatch, *, num_cells: int) -> RolloutServer:
     """A server whose cells are all registered and serving, without dialling anything."""
     router = _RecordingRouterApiClient()
@@ -581,6 +623,7 @@ async def _make_serving_server(monkeypatch, *, num_cells: int) -> RolloutServer:
         server_cells={},
         args=SimpleNamespace(colocate=True, ft_components=[], use_miles_router=False),
         context_lock=_make_lock(),
+        engine_provider=_StubProvider(),
     )
     async with srv.context_lock:
         for cell_index in range(num_cells):
