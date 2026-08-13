@@ -11,6 +11,8 @@ _ASYNC_METHOD_FREE_PORT_BLOCK = "_get_free_port_block"
 _ASYNC_METHOD_IS_PORT_AVAILABLE = "_is_port_available"
 _ASYNC_METHOD_TO_LOCAL_GPU_IDS = "_to_local_gpu_ids"
 
+READINESS_METHOD = "__ray_ready__"
+
 EVENT_CREATE = "create"
 EVENT_KILL = "kill"
 
@@ -68,6 +70,10 @@ class FakeRayActorHandle:
         if name.startswith("__") or "cluster" not in self.__dict__:
             raise AttributeError(name)
         return FakeRayActorMethod(handle=self, method=name)
+
+    @property
+    def __ray_ready__(self) -> FakeRayActorMethod:
+        return FakeRayActorMethod(handle=self, method=READINESS_METHOD)
 
 
 @dataclass(kw_only=True)
