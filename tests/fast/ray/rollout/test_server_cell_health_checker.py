@@ -19,7 +19,6 @@ from miles.utils.context_lock import ContextLock
 from miles.utils.ft_utils.api_server.models import CellCondition, TriState
 from miles.utils.ft_utils.health_checker import (
     ActiveAndEpoch,
-    ActivenessTracker,
     NoopHealthChecker,
     SimpleHealthChecker,
     SimpleHealthCheckerConfig,
@@ -62,7 +61,7 @@ def _make_cell(*, ft_components: list[str], global_activeness: bool = True, **ar
             meta=_make_meta(),
             router_api_client=MagicMock(),
             provider=_StubProvider(),
-            global_health_checker_activeness=lambda: ActiveAndEpoch(active=global_activeness, epoch=0),
+            health_checker_activeness=lambda: ActiveAndEpoch(active=global_activeness, epoch=0),
         )
     )
 
@@ -271,7 +270,7 @@ class TestRolloutCellHealthConditionDuringPause:
         assert _healthy_condition(cell) == CellCondition.healthy(TriState.FALSE, reason="HealthCheckFailed")
 
         async with controller.context_lock:
-            await controller._health_monitoring_pause()
+            await controller._health_monitoring_pause(None)
 
         assert _healthy_condition(cell) == CellCondition.healthy(TriState.UNKNOWN, reason="HealthCheckUnknown")
         checker.stop()
@@ -310,14 +309,12 @@ async def _make_controller_with_serving_cell(
     controller = InferenceController.__new__(InferenceController)
     controller.args = args
     controller.context_lock = ContextLock("InferenceController")
-    controller._health_checker_activeness = ActivenessTracker(active=True)
 
     srv = RolloutServer(
         server_cells={},
         args=args,
         context_lock=controller.context_lock,
         engine_provider=_StubProvider(),
-        global_health_checker_activeness=controller._health_checker_activeness.get,
     )
     controller.servers = {"default": srv}
 
