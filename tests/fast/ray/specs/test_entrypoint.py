@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import pytest
 from tests.fast.ray.rollout.conftest import make_args, make_args_with_sglang_config, make_sglang_config_yaml
 
 from miles.ray.specs.entrypoint import compute_specs
-from miles.utils.workers.worker_spec import BaseWorkerSpec
+from miles.utils.workers.worker_provider.kubernetes.helm.builder import compute_helm_backend_capability
+from miles.utils.workers.worker_provider.kubernetes.helm.env import NAMESPACE_ENV_VAR, RELEASE_ENV_VAR
+from miles.utils.workers.worker_spec import BaseWorkerSpec, WorkerCtorContext
 
 
 class TestComputeSpecs:
@@ -147,6 +150,23 @@ class TestDeployComponentFiltering:
 
         assert names
         assert all(name.startswith("inference-engine") for name in names)
+
+    def test_every_worker_of_a_trainer_deployment_can_build_its_constructor_arguments(
+        self, tmp_path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """A spec that asks this release for a pool it does not install aborts the pod before it ever serves."""
+        monkeypatch.setenv(RELEASE_ENV_VAR, "miles-run-260813-trainer")
+        monkeypatch.setenv(NAMESPACE_ENV_VAR, "rl")
+        specs = compute_specs(self._args(tmp_path, deploy_component="trainer"))
+        capability = compute_helm_backend_capability(specs=specs)
+        context = WorkerCtorContext(cell_index=0, worker_in_cell_index=0, gpu_ids=[], capability=capability)
+
+        kwargs_by_name = {
+            spec.name: spec.ctor_kwargs(context) for spec in specs if spec.name.startswith("trainer-controller-")
+        }
+
+        assert kwargs_by_name["trainer-controller-actor"]["inference_controller"] is None
+        assert kwargs_by_name["trainer-controller-critic"]["inference_controller"] is None
 
     def test_the_three_subsets_partition_the_whole_run(self, tmp_path):
         """A worker in no subset would never be deployed, and one in two would be deployed twice."""
