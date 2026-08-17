@@ -9,6 +9,7 @@ from tests.fast.ray.test_wiring import stub_kubernetes_capability
 
 from miles.ray import wiring
 from miles.utils.external_utils.command_utils.base_backend import (
+    _DEPLOY_COMPONENT_FLAG,
     CLUSTER_BACKEND_FLAG,
     ExecuteTrainConfig,
     ExecuteTrainRequest,
@@ -20,7 +21,7 @@ from miles.utils.external_utils.command_utils.helm_backend.launcher.command_wrap
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values.builder import build_values
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values.misc import LaunchPlan, MooncakeInfo
 from miles.utils.run_uuid import derive_run_uuid
-from miles.utils.workers.types import ClusterBackend
+from miles.utils.workers.types import ClusterBackend, DeployComponent
 from miles.utils.workers.worker_spec import CommandWorkerSpec, PortInfo, SchedulingSpec
 
 
@@ -28,12 +29,21 @@ def declared_cluster_backends(argv: list[str]) -> list[str]:
     return ArgvManipulator.values_of(argv, CLUSTER_BACKEND_FLAG)
 
 
+def declared_deploy_components(argv: list[str]) -> list[str]:
+    return ArgvManipulator.values_of(argv, _DEPLOY_COMPONENT_FLAG)
+
+
 NAMESPACE = "rl"
 RUN_ID = "260101-000000-000"
 
 
-def _config(run_id: str = RUN_ID) -> ExecuteTrainConfig:
-    return ExecuteTrainConfig(cluster_backend=ClusterBackend.KUBERNETES, namespace=NAMESPACE, run_id=run_id)
+def _config(run_id: str = RUN_ID, deploy_component: DeployComponent = DeployComponent.ALL) -> ExecuteTrainConfig:
+    return ExecuteTrainConfig(
+        cluster_backend=ClusterBackend.KUBERNETES,
+        namespace=NAMESPACE,
+        run_id=run_id,
+        deploy_component=deploy_component,
+    )
 
 
 def _request(train_args: str) -> ExecuteTrainRequest:
@@ -61,7 +71,13 @@ def _router() -> CommandWorkerSpec:
     )
 
 
-def launch_argv(monkeypatch: pytest.MonkeyPatch, *, train_args: str, run_id: str = RUN_ID) -> list[str]:
+def launch_argv(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    train_args: str,
+    run_id: str = RUN_ID,
+    deploy_component: DeployComponent = DeployComponent.ALL,
+) -> list[str]:
     recorded: list[list[str]] = []
 
     def fake_compute_specs(args: Any) -> list[CommandWorkerSpec]:
@@ -78,7 +94,7 @@ def launch_argv(monkeypatch: pytest.MonkeyPatch, *, train_args: str, run_id: str
     monkeypatch.setattr(Helm, "upgrade", lambda **kwargs: None)
     monkeypatch.setattr(entrypoint, "_follow_until_finished", lambda **kwargs: None)
 
-    KubernetesCommandBackend(_config(run_id)).execute_train(
+    KubernetesCommandBackend(_config(run_id, deploy_component)).execute_train(
         train_args=f"--train-backend fsdp {train_args}", num_gpus_per_node=8, megatron_model_type=None
     )
     assert len(recorded) == 1
@@ -182,3 +198,32 @@ class TestThePodDispatchesOnThatFlag:
         assert wiring.get_backend_capability(args) is stub.capability
         assert stub.specs_computed_from == [args]
         assert ClusterBackend(declared[0]) is ClusterBackend.KUBERNETES
+
+
+class TestExecuteTrainTellsThePodsWhichPartOfTheRunTheyAre:
+    def test_a_whole_run_is_told_so_too(self, monkeypatch: pytest.MonkeyPatch):
+        """Every launch says which part it is, so a pod never has to fall back on a default nobody wrote down."""
+        argv = launch_argv(monkeypatch, train_args="--rollout-num-gpus 8")
+
+        assert declared_deploy_components(argv) == ["all"]
+
+    def test_the_train_argv_names_the_part_the_launch_deploys(self, monkeypatch: pytest.MonkeyPatch):
+        """The pods filter the run's spec table by this flag, so it is what makes them a subset of the run."""
+        argv = launch_argv(monkeypatch, train_args="--rollout-num-gpus 8", deploy_component=DeployComponent.TRAINER)
+
+        assert declared_deploy_components(argv) == ["trainer"]
+
+    def test_a_user_supplied_agreeing_flag_is_appended_over_rather_than_detected(self, monkeypatch):
+        """A relaunch from a recorded command line repeats the flag, and the last one argparse reads still wins."""
+        argv = launch_argv(
+            monkeypatch,
+            train_args="--deploy-component trainer --rollout-num-gpus 8",
+            deploy_component=DeployComponent.TRAINER,
+        )
+
+        assert declared_deploy_components(argv) == ["trainer", "trainer"]
+
+    def test_a_user_supplied_conflicting_flag_stops_the_launch(self, monkeypatch: pytest.MonkeyPatch):
+        """Everything this launch installs is named after its own part, so pods told another part are orphans."""
+        with pytest.raises(AssertionError, match="deploy-component"):
+            launch_argv(monkeypatch, train_args="--deploy-component trainer --rollout-num-gpus 8")
