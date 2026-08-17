@@ -419,15 +419,14 @@ class TestFailLoud:
         assert specs["demo_wrapped_async"].is_async
         assert specs["demo_wrapped_async"].serializer.decode_query({"x": 1}) == {"x": 1}
 
-    def test_no_public_methods_rejected(self):
-        """A worker class with no public methods fails at collection time."""
+    def test_no_public_methods_collects_an_empty_surface(self):
+        """A worker whose whole value is a lifecycle side effect answers no call, and still has to be servable."""
 
         class Worker:
             def _demo_hidden(self, x: int) -> int:
                 return x
 
-        with pytest.raises(TypeError, match="no public rpc methods"):
-            collect_rpc_method_specs(Worker)
+        assert collect_rpc_method_specs(Worker) == {}
 
     def test_any_annotation_allowed(self):
         """Any-annotated parameters are accepted and passed through."""

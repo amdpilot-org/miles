@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import dataclasses
 from collections.abc import Callable
 
 import httpx
@@ -192,7 +191,7 @@ class MockWorkerManager:
         log.append(list(cell_ids))
         for cell_id in cell_ids:
             previous = self._summaries[cell_id]
-            self._summaries[cell_id] = dataclasses.replace(previous, alive=not suspended)
+            self._summaries[cell_id] = previous.model_copy(update=dict(alive=not suspended))
 
 
 def make_cell_summaries(
