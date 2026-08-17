@@ -6,7 +6,7 @@ from collections.abc import Callable
 from typing import Any
 
 import pytest
-from tests.e2e.ft.conftest_ft import fault_injection as fi
+from tests.e2e.ft.conftest_ft.fault_injection import state, views
 from tests.fast.ray.rollout.conftest import make_args
 
 from miles.ray.rollout import inference_controller as inference_controller_module
@@ -312,7 +312,7 @@ async def test_the_next_window_puts_the_replacement_engine_back_in_the_router(ha
 
 async def test_the_observed_sequence_satisfies_the_soak_recovery_witness(harness: _Harness) -> None:
     """The fast-layer stand-in is only worth anything if the e2e witness accepts the sequence it produces."""
-    log = fi.EventLog()
+    log = state.EventLog()
     log.observe(list((await harness.observe()).values()))
     log.note_injected(_CELL_IDS[0])
     harness.crash(_CELL_IDS[0])
@@ -322,13 +322,13 @@ async def test_the_observed_sequence_satisfies_the_soak_recovery_witness(harness
     await harness.open_weight_update_window()
     log.observe(list((await harness.observe()).values()))
 
-    assert fi.compute_num_completed_recoveries(log.events, cell_type="rollout") == 1
-    assert fi.compute_cells_with_unfinished_recovery(log.events, cell_type="rollout") == {}
+    assert views.compute_num_completed_recoveries(log.events, cell_type="rollout") == 1
+    assert views.compute_cells_with_unfinished_recovery(log.events, cell_type="rollout") == {}
 
 
 async def test_the_witness_rejects_a_replacement_that_never_reaches_the_router(harness: _Harness) -> None:
     """A weight update that silently skips the replaced cell leaves it Running forever, and must fail the soak."""
-    log = fi.EventLog()
+    log = state.EventLog()
     log.observe(list((await harness.observe()).values()))
     log.note_injected(_CELL_IDS[0])
     harness.crash(_CELL_IDS[0])
@@ -338,5 +338,5 @@ async def test_the_witness_rejects_a_replacement_that_never_reaches_the_router(h
     await harness.open_weight_update_window(mark_weights_ready=False)
     log.observe(list((await harness.observe()).values()))
 
-    assert fi.compute_num_completed_recoveries(log.events, cell_type="rollout") == 0
-    assert fi.compute_cells_with_unfinished_recovery(log.events, cell_type="rollout") == {_CELL_IDS[0]: 1}
+    assert views.compute_num_completed_recoveries(log.events, cell_type="rollout") == 0
+    assert views.compute_cells_with_unfinished_recovery(log.events, cell_type="rollout") == {_CELL_IDS[0]: 1}
