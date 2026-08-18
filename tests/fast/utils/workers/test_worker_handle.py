@@ -25,6 +25,18 @@ class TestBaseWorkerHandle:
         """The ray wrapper is a worker handle, so callers can hold the base type."""
         assert issubclass(RayWorkerHandle, BaseWorkerHandle)
 
+    def test_a_handle_that_cannot_be_waited_out_says_so_rather_than_reporting_idle(self):
+        """Callers read this answer off the base type, and a silent pass would report a busy worker idle."""
+
+        class Minimal(BaseWorkerHandle):
+            async def wait_ready(self, *, timeout: float) -> None: ...
+
+            async def probe_is_dead(self) -> bool:
+                return True
+
+        with pytest.raises(NotImplementedError, match="running a call"):
+            asyncio.run(Minimal().wait_idle(timeout=1.0))
+
     def test_incomplete_implementation_rejected(self):
         """A handle that implements neither wait_ready nor the death probe cannot be instantiated."""
 
@@ -200,6 +212,16 @@ class TestRayWorkerHandleWaitReady:
         await handle.wait_ready(timeout=1.0, allow_server_uuid_change=True)
 
         assert inner.__ray_ready__.call_count == 1
+
+
+@pytest.mark.asyncio
+class TestRayWorkerHandleWaitIdle:
+    async def test_a_ray_actor_cannot_be_waited_out(self):
+        """A ray actor tracks no calls, so this backend has to fail loudly rather than report a worker idle."""
+        handle, _inner = _make_handle()
+
+        with pytest.raises(NotImplementedError, match="rpc communication backend"):
+            await handle.wait_idle(timeout=1.0)
 
 
 @pytest.mark.asyncio
