@@ -5,6 +5,15 @@ from types import SimpleNamespace
 import pytest
 from miles.ray import train_actor
 from miles.ray.train_actor import TrainRayActor
+from miles.utils.init_once import InitOnce
+
+
+def _inited_guard() -> InitOnce:
+    guard = InitOnce("TrainRayActor")
+    with guard.guarding():
+        pass
+    return guard
+
 
 class TestConstructorSignature:
     def test_positional_constructor_arguments_are_rejected(self):
@@ -68,11 +77,24 @@ class TestConfigureMasterAddrAndPort:
         assert os.environ["MASTER_PORT"] == "20002"
 
 
+def _actor_with(guard: InitOnce) -> TrainRayActor:
+    actor = TrainRayActor.__new__(TrainRayActor)
+    actor._init_once = guard
+    return actor
+
+
 class TestInitRunsExactlyOnce:
     def test_a_second_init_is_refused(self):
         """A worker that already initialized is a stale process; reusing it must fail loudly, not train on."""
-        actor = TrainRayActor.__new__(TrainRayActor)
-        actor._init_called = True
+        actor = _actor_with(_inited_guard())
 
         with pytest.raises(AssertionError, match="stale worker"):
             actor._init_common(None, "actor")
+
+    def test_a_worker_that_never_ran_init_reports_itself_uninitialized(self):
+        """A restarted script asks a worker it found running whether to initialize it or to resume it."""
+        assert _actor_with(InitOnce("TrainRayActor")).is_initialized() is False
+
+    def test_a_worker_that_ran_init_reports_itself_initialized(self):
+        """The take-over path has to see the worker the previous script built as built."""
+        assert _actor_with(_inited_guard()).is_initialized() is True
