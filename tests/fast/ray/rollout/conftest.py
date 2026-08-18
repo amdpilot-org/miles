@@ -113,6 +113,7 @@ def make_args(**overrides: Any) -> Namespace:
         # deployment
         deploy_component="all",
         deploy_instance_id=None,
+        init_expected_num_cells=None,
         trainer_controller_addrs=None,
         inference_controller_addr=None,
         # external rollout
