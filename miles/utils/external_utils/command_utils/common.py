@@ -169,10 +169,10 @@ MOONCAKE_INIT_KWARGS_FLAG = "--mooncake-store-init-kwargs"
 MOONCAKE_MASTER_ADDRESS_KEY = "master_server_address"
 
 
-def get_mooncake_object_store_args(master_port: int = MOONCAKE_MASTER_PORT) -> str:
+def get_mooncake_object_store_args(master_port: int = MOONCAKE_MASTER_PORT, master_host: str = "127.0.0.1") -> str:
     init_kwargs = {
         "protocol": "tcp",
-        MOONCAKE_MASTER_ADDRESS_KEY: f"127.0.0.1:{master_port}",
+        MOONCAKE_MASTER_ADDRESS_KEY: f"{master_host}:{master_port}",
         "global_segment_size": "2gb",
         "local_buffer_size": "2gb",
     }
