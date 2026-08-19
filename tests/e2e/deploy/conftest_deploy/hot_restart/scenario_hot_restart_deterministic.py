@@ -17,6 +17,12 @@ from tests.e2e.deploy.conftest_deploy.common.example_args import (
     without_weight_decay,
 )
 from tests.e2e.deploy.conftest_deploy.common.utils import compare_deterministic_sides, run_on_a_cluster
+from tests.e2e.deploy.conftest_deploy.hot_restart.assert_redone_from_checkpoint import (
+    assert_only_the_steps_after_a_checkpoint_were_redone,
+)
+from tests.e2e.deploy.conftest_deploy.hot_restart.assert_workloads import (
+    assert_the_take_overs_replaced_only_the_script,
+)
 from tests.e2e.deploy.conftest_deploy.hot_restart.driver import (
     HotRestartDriver,
     ScheduledFreeze,
@@ -25,6 +31,7 @@ from tests.e2e.deploy.conftest_deploy.hot_restart.driver import (
     driving_hot_restarts,
     relaunch_with_hot_restart,
 )
+from tests.e2e.deploy.conftest_deploy.hot_restart.evidence import HotRestartEvidence
 from tests.e2e.deploy.conftest_deploy.hot_restart.freeze_plan import (
     compute_freeze_plan_path,
     with_the_freeze_plan_of,
@@ -61,11 +68,15 @@ _MODE: FTTestMode = FTTestMode(
 _TRAIN_ARGS_OF_DUMP_DIR: dict[str, str] = {}
 
 
+AssertRedoneFn = Callable[..., object]
+
+
 @dataclass(frozen=True)
 class HotRestartMode:
     name: str
     save_interval: int
     schedule: tuple[ScheduledFreeze, ...]
+    assert_redone: AssertRedoneFn
 
     @property
     def test_name(self) -> str:
@@ -87,6 +98,7 @@ CHECKPOINTED: HotRestartMode = HotRestartMode(
         ScheduledFreeze(frozen_rollout_id=2, saved_iteration=1),
         ScheduledFreeze(frozen_rollout_id=4, saved_iteration=3),
     ),
+    assert_redone=assert_only_the_steps_after_a_checkpoint_were_redone,
 )
 MODES: tuple[HotRestartMode, ...] = (CHECKPOINTED,)
 
@@ -250,9 +262,24 @@ def compute_saved_rollout_ids(*, save_interval: int) -> frozenset[int]:
 
 
 def _compare(restart_mode: HotRestartMode, dump_dir: str, mode: FTTestMode) -> None:
+    baseline_dir: str = f"{dump_dir}/{BASELINE_SIDE}"
+    target_dir: str = f"{dump_dir}/{TARGET_SIDE}"
+
+    evidence = HotRestartEvidence.load(dump_dir=target_dir)
+    assert_the_take_overs_replaced_only_the_script(
+        evidence, num_restarts=restart_mode.num_restarts, minimum_restarts=restart_mode.num_restarts
+    )
+    restart_mode.assert_redone(
+        dump_dir=target_dir,
+        checkpoint_dir=str(compute_checkpoint_dir(target_dir)),
+        records=evidence.records,
+        num_rollouts=NUM_ROLLOUTS,
+        schedule=restart_mode.schedule,
+    )
+
     compare_deterministic_sides(
-        baseline_dir=f"{dump_dir}/{BASELINE_SIDE}",
-        target_dir=f"{dump_dir}/{TARGET_SIDE}",
+        baseline_dir=baseline_dir,
+        target_dir=target_dir,
         expected_engine_count=mode.rollout_num_engines,
         min_trained_rollouts=MIN_TRAINED_ROLLOUTS,
     )
