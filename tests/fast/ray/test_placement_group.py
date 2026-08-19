@@ -319,7 +319,7 @@ class TestUpdateWeights:
 
     @staticmethod
     def _args():
-        return Namespace(debug_train_only=True, debug_rollout_only=False)
+        return Namespace(debug_train_only=True, debug_rollout_only=False, save_inference_engine_weight_checksum=False)
 
     async def test_the_executor_is_told_which_version_the_engines_now_serve(self):
         """Without this the executor stamps every sample it collects with weight_version=None."""
