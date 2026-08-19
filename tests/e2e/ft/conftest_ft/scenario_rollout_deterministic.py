@@ -12,6 +12,7 @@ from pathlib import Path
 
 from tests.e2e.ft.conftest_ft.app import create_comparison_app_and_run_ci
 from tests.e2e.ft.conftest_ft.execution import (
+    get_api_server_args,
     get_common_train_args,
     get_ft_args,
     get_train_env_vars_arg,
@@ -26,6 +27,7 @@ from tests.e2e.ft.conftest_ft.fault_injection.views import compute_injection_tim
 from tests.e2e.ft.conftest_ft.modes import FTTestMode
 from tests.e2e.ft.conftest_ft.scenario_random_crash import assert_every_rollout_injection_recovered
 
+from miles.utils.audit_utils.event_logger.logger import EVENTS_DIRNAME
 from miles.utils.external_utils import command_utils
 from miles.utils.test_utils.comparisons.dumps import (
     INPUT_TENSORS_ALLOW_FAILED_PATTERN,
@@ -71,7 +73,8 @@ def _build_args(mode: FTTestMode, dump_dir: str, enable_dumper: bool = True) -> 
 
     args = get_common_train_args(mode, dump_dir=dump_dir, num_steps=NUM_ROLLOUTS, enable_dumper=enable_dumper)
     args += get_ft_args(mode)
-    args += f"--api-server-port {API_SERVER_PORT} --mini-ft-controller-enable "
+    args += get_api_server_args()
+    args += "--mini-ft-controller-enable "
     args += "--debug-deterministic-collective "
     args += "--sglang-disable-radix-cache "
     if mode.colocate:
@@ -166,7 +169,7 @@ def _compare(dump_dir: str, mode: FTTestMode) -> None:
     target_dir: str = f"{dump_dir}/target"
 
     for side_dir in (baseline_dir, target_dir):
-        assert_reconfigure_events(Path(f"{side_dir}/events"), expected=[])
+        assert_reconfigure_events(Path(f"{side_dir}/{EVENTS_DIRNAME}"), expected=[])
 
     for side_dir in (baseline_dir, target_dir):
         assert_every_metric_is_classified(
