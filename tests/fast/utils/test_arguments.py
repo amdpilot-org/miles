@@ -619,6 +619,8 @@ _SHARED_STORE_ARGS = [
 
 _PRIMARY_ARGS = ["--deploy-component", "primary", "--trainer-controller-addrs", "actor=10.0.0.1:8000"]
 
+_SPLIT_RUN_UUID_ARGS = ["--run-uuid", "0123456789abcdef"]
+
 _RAY_RPC_ARGS = ["--cluster-backend", "ray", "--worker-comm-backend", "rpc"]
 
 _RAY_ACTOR_ARGS = ["--cluster-backend", "ray", "--worker-comm-backend", "ray"]
@@ -707,6 +709,25 @@ class TestDeployComponent:
                     ]
                 )
             )
+
+    def test_a_trainer_deployment_is_still_asked_where_the_store_master_is(self):
+        """The kubernetes default that spares a whole run from naming its own store must not answer for a
+        deployment that runs no master, or the assert above never fires again and the trainer quietly dials
+        a master that is not there."""
+        args = _parse_deploy_args(
+            ["--deploy-component", "trainer", "--object-store-backend", "mooncake", *_SPLIT_RUN_UUID_ARGS]
+        )
+
+        with pytest.raises(AssertionError, match="master_server_address"):
+            miles_validate_args(args)
+
+    def test_a_primary_deployment_is_still_given_the_store_it_starts(self):
+        """It runs the master itself, so the launcher's assert on these kwargs must still find them."""
+        args = _parse_deploy_args([*_PRIMARY_ARGS, *_SPLIT_RUN_UUID_ARGS])
+
+        miles_validate_args(args)
+
+        assert set(args.mooncake_store_init_kwargs) == set(compute_mooncake_init_kwargs())
 
     def test_a_primary_deployment_has_to_be_told_where_the_trainer_is(self):
         """Nothing derives another release's pod names, so an unnamed trainer is unreachable."""

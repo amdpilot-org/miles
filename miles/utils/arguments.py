@@ -31,6 +31,7 @@ from miles.utils.logging_utils import configure_logger_raw
 from miles.utils.lora import is_lora_enabled
 from miles.utils.megatron_args_utils import compute_megatron_world_size_except_dp
 from miles.utils.object_store import ObjectStoreBackend
+from miles.utils.object_store_config import MOONCAKE_MASTER_ADDRESS_KEY, compute_mooncake_init_kwargs
 from miles.utils.run_uuid import RUN_UUID_LENGTH, generate_run_uuid, validate_run_uuid
 from miles.utils.tracking_utils.ci_history import RECORD_DIR_ENV
 from miles.utils.workers.argv_utils import with_relax_parser_required_args
@@ -3003,8 +3004,6 @@ def _compute_custom_inference_engine_provider_path(args: argparse.Namespace) -> 
     return _BACKEND_ENGINE_PROVIDER_PATH
 
 
-_MOONCAKE_MASTER_ADDRESS_KEY = "master_server_address"
-
 _DEPLOY_INSTANCE_ID_PATTERN = re.compile(r"[a-z0-9]([-a-z0-9]*[a-z0-9])?")
 
 
@@ -3172,10 +3171,10 @@ def _validate_shared_object_store(args: argparse.Namespace, *, component: Deploy
     if component.deploys_orchestration_script():
         return
 
-    address = (args.mooncake_store_init_kwargs or {}).get(_MOONCAKE_MASTER_ADDRESS_KEY)
+    address = (args.mooncake_store_init_kwargs or {}).get(MOONCAKE_MASTER_ADDRESS_KEY)
     assert isinstance(address, str) and ":" in address, (
         f"--deploy-component {component.value} runs no object store master, so it needs "
-        f'--mooncake-store-init-kwargs \'{{"{_MOONCAKE_MASTER_ADDRESS_KEY}": "<host>:<port>"}}\' '
+        f'--mooncake-store-init-kwargs \'{{"{MOONCAKE_MASTER_ADDRESS_KEY}": "<host>:<port>"}}\' '
         f"(got {address!r})"
     )
 
@@ -3909,6 +3908,11 @@ def miles_validate_args(args):
                 f"{ObjectStoreBackend.MOONCAKE.value} under --cluster-backend {ClusterBackend.KUBERNETES.value}."
             )
             args.object_store_backend = ObjectStoreBackend.MOONCAKE.value
+        if (
+            not args.mooncake_store_init_kwargs
+            and DeployComponent(args.deploy_component).deploys_orchestration_script()
+        ):
+            args.mooncake_store_init_kwargs = compute_mooncake_init_kwargs()
 
     args.run_uuid = _resolve_run_uuid(args)
 

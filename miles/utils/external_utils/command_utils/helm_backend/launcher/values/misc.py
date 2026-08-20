@@ -12,7 +12,6 @@ from miles.ray.specs.train import POOL_CATEGORY_TRAINER_ENGINE
 from miles.utils.external_utils.command_utils.common import (
     MOONCAKE_BACKEND_NAME,
     MOONCAKE_INIT_KWARGS_FLAG,
-    MOONCAKE_MASTER_ADDRESS_KEY,
     ArgvManipulator,
 )
 from miles.utils.external_utils.command_utils.helm_backend import naming
@@ -21,6 +20,7 @@ from miles.utils.external_utils.command_utils.helm_backend.launcher.values.helm_
     MooncakeSection,
 )
 from miles.utils.external_utils.command_utils.helm_backend.naming import RunNames
+from miles.utils.object_store_config import MOONCAKE_MASTER_ADDRESS_KEY
 from miles.utils.pydantic_utils import FrozenStrictBaseModel
 
 STATIC_WORKERS_SECTION = "staticWorkers"
@@ -86,8 +86,8 @@ class MooncakeInfo:
         if plan is None:
             return train_argv
 
-        kwargs = MooncakeInfo.cluster_init_kwargs(plan, host=host)
-        return ArgvManipulator.set(train_argv, MOONCAKE_INIT_KWARGS_FLAG, json.dumps(kwargs))
+        rendered = json.dumps(MooncakeInfo.cluster_init_kwargs(plan, host=host))
+        return ArgvManipulator.set(train_argv, MOONCAKE_INIT_KWARGS_FLAG, rendered)
 
     @staticmethod
     def cluster_init_kwargs(plan: MooncakePlan, *, host: str) -> dict[str, Any]:
