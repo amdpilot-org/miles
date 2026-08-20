@@ -1,9 +1,10 @@
 import argparse
+import contextlib
 import dataclasses
 import json
 import shlex
 import sys
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from typing import Any, NamedTuple, TypeVar
 
 from miles.utils.pydantic_utils import FrozenStrictBaseModel
@@ -197,7 +198,8 @@ def _boolean_option_string(action: argparse.Action, *, value: bool) -> str:
 
 def parse_declared_args(text: str, *, parser: argparse.ArgumentParser) -> dict[str, object]:
     tokens = shlex.split(text)
-    namespace, unknown = parser.parse_known_args(tokens)
+    with with_relax_parser_required_args(parser):
+        namespace, unknown = parser.parse_known_args(tokens)
     assert not unknown, f"the argument parser does not declare {unknown} of {text!r}"
 
     action_by_option_string = parser._option_string_actions
@@ -282,6 +284,18 @@ def _compute_dest_of_option_names(parser: argparse.ArgumentParser) -> dict[str, 
 def _compute_arg_spec(action: argparse.Action) -> _ArgSpec:
     choices = None if action.choices is None else tuple(action.choices)
     return _ArgSpec(dest=action.dest, type=_compute_arg_type(action), choices=choices)
+
+
+@contextlib.contextmanager
+def with_relax_parser_required_args(parser: argparse.ArgumentParser) -> Iterator[None]:
+    required = [action for action in parser._actions if action.required]
+    for action in required:
+        action.required = False
+    try:
+        yield
+    finally:
+        for action in required:
+            action.required = True
 
 
 def _compute_arg_type(action: argparse.Action) -> type:
