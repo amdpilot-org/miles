@@ -146,7 +146,7 @@ class TestWaitRouterReady:
 
         addr = await wait_router_ready(model_idx=1, provider=_FakeProvider())
 
-        assert requested == ["inference-router-1-0-0"]
+        assert requested == ["inference-router-1-00000-00000"]
         assert waited == [("10.0.0.9", 12345)]
         assert addr == HostAndPort(host="10.0.0.9", port=12345)
 
@@ -260,7 +260,7 @@ class TestWaitSessionServerReady:
         )
         await wait_session_server_ready(args, provider=_FakeProvider())
 
-        assert requested == ["session-server-0-0", "session-server-1-0"]
+        assert requested == ["session-server-00000-00000", "session-server-00001-00000"]
         assert args.session_server_addrs == ["10.0.0.9:5005", "10.0.0.9:5006"]
         assert args.session_server_instance_ids == {
             "10.0.0.9:5005": "00112233445566aa-0",

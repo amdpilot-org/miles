@@ -244,7 +244,7 @@ class TestServeWorkerClassFailures:
             await manager.init([spec], {})
 
         assert fake_ray_cluster.handles == []
-        assert not manager.get_cell_infos(pool_ids=["trainer"])["trainer-0"].alive
+        assert not manager.get_cell_infos(pool_ids=["trainer"])["trainer-00000"].alive
 
 
 class TestServeSchedulingOptions:
@@ -419,7 +419,7 @@ class TestServeWorkersAreStopped:
         """Serve workers expose no shutdown rpc, so asking for one only logs noise."""
         manager = await _launch([_make_spec()])
 
-        await manager.stop_cells(["trainer-0"])
+        await manager.stop_cells(["trainer-00000"])
 
         assert fake_ray_cluster.calls_of("shutdown") == []
         assert fake_ray_cluster.events.count(EVENT_KILL) == 1
@@ -624,7 +624,7 @@ class TestTheHandleAWorkerIsCalledThrough:
         """Nothing about the existing mode changes while both are supported."""
         manager = await _launch([_make_spec()])
 
-        (info,) = manager.get_worker_infos("trainer-0")
+        (info,) = manager.get_worker_infos("trainer-00000")
         assert info.worker_class is None
 
     async def test_rpc_communication_answers_with_the_class_to_build_a_client_for(
@@ -633,14 +633,14 @@ class TestTheHandleAWorkerIsCalledThrough:
         """An rpc handle holds pydantic validators that no cluster can ship, so it is built by its caller."""
         manager = await _launch_rpc(_make_spec())
 
-        (info,) = manager.get_worker_infos("trainer-0")
+        (info,) = manager.get_worker_infos("trainer-00000")
         assert info.worker_class == _WORKER_CLASS_PATH
 
     async def test_the_provider_turns_that_answer_into_an_rpc_handle(self, fake_ray_cluster: FakeRayCluster):
         """The driver ends up calling the worker over http, which is the whole point of the mode."""
         manager = await _launch_rpc(_make_spec(worker_class=_RPC_WORKER_CLASS_PATH))
 
-        (info,) = manager.get_worker_infos("trainer-0")
+        (info,) = manager.get_worker_infos("trainer-00000")
         handle = build_rpc_handle_of_worker_info(info)
 
         assert isinstance(handle, RpcWorkerHandle)
@@ -649,7 +649,7 @@ class TestTheHandleAWorkerIsCalledThrough:
         """A handle aimed anywhere else silently drives another worker on the same node."""
         manager = await _launch_rpc(_make_spec(worker_class=_RPC_WORKER_CLASS_PATH))
 
-        (info,) = manager.get_worker_infos("trainer-0")
+        (info,) = manager.get_worker_infos("trainer-00000")
         handle = build_rpc_handle_of_worker_info(info)
 
         assert handle._transport._server_url == info.self_addrs["rpc"].addr
@@ -658,5 +658,5 @@ class TestTheHandleAWorkerIsCalledThrough:
         """Command workers are called as the actors they are, and an rpc client for them cannot be built."""
         manager = await _launch([_make_spec()])
 
-        (info,) = manager.get_worker_infos("trainer-0")
+        (info,) = manager.get_worker_infos("trainer-00000")
         assert info.worker_class is None

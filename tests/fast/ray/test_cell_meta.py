@@ -15,6 +15,7 @@ from miles.ray.specs import train as specs_train
 from miles.ray.specs.train import compute_trainer_pool_id, specs_trainer
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values.builder import build_values
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values.misc import LaunchPlan
+from miles.utils.workers.naming import compute_cell_id
 from miles.utils.workers.reconcile.k8s_api import PodListPage
 from miles.utils.workers.worker_provider.kubernetes.core import provider as core_provider
 from miles.utils.workers.worker_provider.kubernetes.helm import env
@@ -141,7 +142,7 @@ def observed_meta(
     async def scenario() -> dict[str, Any]:
         stop = await provider.watch_cells(_ignore_cell)
         try:
-            info = provider.cell_info(f"{pool_id}-{cell_id_suffix}")
+            info = provider.cell_info(compute_cell_id(pool_id=pool_id, cell_index=cell_id_suffix))
             assert info is not None
             return dict(info.meta)
         finally:
