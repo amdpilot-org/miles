@@ -24,6 +24,7 @@ TRAIN_ONLY_SUBCOMMAND = "train"
 ORCHESTRATION_SCRIPTS = ("train.py", "train_async.py", "train_multi_lora_async.py")
 
 BACKEND_CAPABILITY_FN = "create_backend_capability"
+ORCHESTRATION_INIT_FN = "init_orchestration_script"
 
 UPPER_LAYER_MODULES = (
     "kubernetes",
@@ -50,9 +51,9 @@ UPPER_LAYER_NAMES = (
 UPPER_LAYER_EXEMPTIONS = {
     "miles/ray/specs": "the composition root of a worker process: a spec says what its worker is built from",
     "miles/ray/wiring.py": "the glue layer holding the driver process's single fork between the backends",
-    "train.py": "orchestration script: its first lines are the driver process's composition root",
-    "train_async.py": "orchestration script: its first lines are the driver process's composition root",
-    "train_multi_lora_async.py": "orchestration script: its first lines are the driver process's composition root",
+    "miles/utils/orchestration_utils.py": (
+        "the shared driver composition root that launches the selected worker manager"
+    ),
     "miles/utils/workers/worker_provider": "the infrastructure that owns every provider implementation",
     "miles/utils/workers/serving/serve_inner.py": "the composition root of a served worker process",
     "miles/utils/workers/ray_worker_manager.py": "the composition root of a worker process an actor wraps",
@@ -137,9 +138,15 @@ class TestLayering:
         assert reaching != [], f"{exemption} no longer reaches upwards: {UPPER_LAYER_EXEMPTIONS[exemption]}"
 
     @pytest.mark.parametrize("script", ORCHESTRATION_SCRIPTS)
-    def test_an_orchestration_script_forks_the_backend_exactly_once(self, script: str):
+    def test_an_orchestration_script_initializes_the_shared_driver_exactly_once(self, script: str):
+        """Every driver enters the shared composition root once, or it starts no manager or starts two."""
+        assert len(_calls_of(REPO_ROOT / script, ORCHESTRATION_INIT_FN)) == 1
+
+    def test_the_shared_driver_forks_the_backend_exactly_once(self):
         """The whole run hangs off one factory, and a second one would observe the same workers twice."""
-        assert len(_calls_of(REPO_ROOT / script, BACKEND_CAPABILITY_FN)) == 1
+        path = FRAMEWORK_ROOT / "utils" / "orchestration_utils.py"
+
+        assert len(_calls_of(path, BACKEND_CAPABILITY_FN)) == 1
 
 
 class TestImportDirection:
