@@ -27,6 +27,9 @@ from miles.utils.external_utils import command_utils
 BASELINE_SIDE: str = "baseline"
 TARGET_SIDE: str = "target"
 
+_DUMPS_ROOT_ENV = "MILES_TEST_DUMPS_ROOT"
+_DEFAULT_DUMPS_ROOT = Path("/node_public/dumps")
+
 BuildArgsFn = Callable[[FTTestMode, str, bool], str]
 TargetSideContextFn = Callable[
     [FTTestMode, str, command_utils.ExecuteTrainConfig], contextlib.AbstractContextManager[None]
@@ -52,11 +55,10 @@ def run_one_release(request: RunSideRequest) -> None:
 
 
 def resolve_dump_dir(test_name: str) -> str:
-    # TODO make it configurable, but on local disk instead of remote disk
-    output_dir = "/node_public"
-    dump_dir = str(Path(output_dir) / "dumps" / test_name)
+    root = os.environ.get(_DUMPS_ROOT_ENV) or _DEFAULT_DUMPS_ROOT
+    dump_dir = Path(root) / command_utils.default_config().run_id / test_name
     os.makedirs(dump_dir, exist_ok=True)
-    return dump_dir
+    return str(dump_dir)
 
 
 def _dump_subdir(side: str, phase: str) -> str:
