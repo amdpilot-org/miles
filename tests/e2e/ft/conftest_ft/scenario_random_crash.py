@@ -37,10 +37,9 @@ from tests.e2e.ft.conftest_ft.fault_injection.fault_forms import (
     create_cell_fault_forms,
 )
 from tests.e2e.ft.conftest_ft.fault_injection.views import (
-    compute_cells_with_unfinished_recovery,
+    compute_cells_not_seen_serving_after_last_injection,
     compute_forms_drawn_but_never_successful,
     compute_injected_cell_names,
-    compute_num_completed_recoveries,
     compute_num_injections,
     compute_states_of_cell_name,
 )
@@ -176,7 +175,7 @@ def assert_healing(
         assert_min_soak_injections(
             compute_num_injections(events, cell_type=ROLLOUT_CELL_TYPE), context=f"{context} rollout cells"
         )
-        assert_every_rollout_injection_recovered(injector)
+        assert_every_rollout_cell_served_after_its_last_injection(injector)
 
 
 def _assert_every_drawn_fault_form_worked(injector: FaultInjectorHandle) -> None:
@@ -205,28 +204,26 @@ def assert_every_trainer_injection_healed(injector: FaultInjectorHandle, *, even
     )
 
 
-def assert_every_rollout_injection_recovered(injector: FaultInjectorHandle) -> None:
+def assert_every_rollout_cell_served_after_its_last_injection(injector: FaultInjectorHandle) -> None:
     events = injector.event_log.events
-    num_injections: int = compute_num_injections(events, cell_type="rollout")
-    num_recoveries: int = compute_num_completed_recoveries(events, cell_type="rollout")
-    unfinished: dict[str, int] = compute_cells_with_unfinished_recovery(events, cell_type="rollout")
+    num_injections: int = compute_num_injections(events, cell_type=ROLLOUT_CELL_TYPE)
+    offenders: dict[str, list[str]] = compute_cells_not_seen_serving_after_last_injection(
+        events, cell_type=ROLLOUT_CELL_TYPE
+    )
     observed: dict[str, list[str]] = {
         name: [state.value for state in states] for name, states in compute_states_of_cell_name(events).items()
     }
 
-    assert not unfinished, (
-        f"Rollout recovery witness failed: {unfinished} still had an accepted injection with no completed "
-        f"relaunch-and-serve cycle when training ended ({num_recoveries}/{num_injections} injection(s) "
-        f"recovered; observed states: {observed})"
-    )
-    assert num_recoveries >= num_injections, (
-        f"Rollout recovery witness failed: only {num_recoveries} completed recovery(ies) for "
-        f"{num_injections} accepted injection(s) (observed states: {observed})"
+    assert not offenders, (
+        f"Rollout recovery witness failed: {sorted(offenders)} were never observed Serving on a reading fresh "
+        f"enough to outlast the stale-status window after their last accepted injection, so the run may have "
+        f"ended with a permanently missing replica ({num_injections} accepted injection(s); observed states: "
+        f"{observed})"
     )
 
     print(
-        f"Rollout recovery witness assertion passed: {num_recoveries} completed relaunch-and-serve cycle(s) "
-        f"for {num_injections} accepted injection(s)"
+        f"Rollout recovery witness assertion passed: every injected cell was observed Serving on a fresh "
+        f"reading after its last of {num_injections} accepted injection(s)"
     )
 
 
