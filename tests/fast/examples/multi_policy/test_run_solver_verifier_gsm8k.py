@@ -55,6 +55,8 @@ class TestBuildTrainArgs:
             "--rollout-max-response-len": "250",
             "--rollout-temperature": "0.8",
             "--global-batch-size": "32",
+            "--reward-key": "reward_value",
+            "--log-reward-category": "outcome",
             "--pause-generation-mode": "in_place",
             "--optimizer": "adam",
             "--lr": "1e-6",

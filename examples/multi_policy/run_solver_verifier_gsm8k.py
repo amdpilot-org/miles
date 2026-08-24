@@ -111,6 +111,8 @@ def build_train_args(
         "--rollout-max-response-len 250 "
         "--rollout-temperature 0.8 "
         "--global-batch-size 32 "
+        "--reward-key reward_value "
+        "--log-reward-category outcome "
         # retract (default) can deadlock flush_cache in fully_async under load
         "--pause-generation-mode in_place "
     )
