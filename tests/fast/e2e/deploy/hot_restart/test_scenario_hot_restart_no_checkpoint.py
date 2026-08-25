@@ -84,7 +84,11 @@ class TestBuildArgs:
         first = scenario._build_args(scenario.NO_CHECKPOINT, scenario._MODE, "/dumps/no-checkpoint/target")
         second = scenario._build_args(scenario.NO_CHECKPOINT, scenario._MODE, "/dumps/no-checkpoint/target", True)
 
-        assert "--wandb-group" in first
+        argv = shlex.split(first)
+
+        assert ArgvManipulator.get(argv, scenario.WANDB_GROUP_FLAG) == ArgvManipulator.get(
+            argv, scenario.WANDB_RUN_ID_FLAG
+        )
         assert first == second
         assert read_installed_args("/dumps/no-checkpoint/target") == first
 

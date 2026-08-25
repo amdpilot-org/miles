@@ -190,7 +190,11 @@ class TestBuildArgs:
         first = scenario._build_args(scenario.CHECKPOINTED, scenario._MODE, "/dumps/target")
         second = scenario._build_args(scenario.CHECKPOINTED, scenario._MODE, "/dumps/target", True)
 
-        assert "--wandb-group" in first
+        argv = shlex.split(first)
+
+        assert ArgvManipulator.get(argv, scenario.WANDB_GROUP_FLAG) == ArgvManipulator.get(
+            argv, scenario.WANDB_RUN_ID_FLAG
+        )
         assert first == second
 
     def test_a_relaunch_repeats_the_string_the_run_was_installed_with(self):

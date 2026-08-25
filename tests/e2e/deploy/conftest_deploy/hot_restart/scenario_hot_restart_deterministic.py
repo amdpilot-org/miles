@@ -58,8 +58,7 @@ MIN_TRAINED_ROLLOUTS: int = 4
 SAVE_FLAG: str = "--save"
 LOAD_FLAG: str = "--load"
 WANDB_GROUP_FLAG: str = "--wandb-group"
-
-
+WANDB_RUN_ID_FLAG: str = "--wandb-run-id"
 GLOBAL_BATCH_SIZE_FLAG: str = "--global-batch-size"
 ROLLOUT_BATCH_SIZE_FLAG: str = "--rollout-batch-size"
 SAMPLES_PER_PROMPT_FLAG: str = "--n-samples-per-prompt"
@@ -171,11 +170,9 @@ def _build_args(restart_mode: HotRestartMode, mode: FTTestMode, dump_dir: str, e
     for flag in (SAVE_FLAG, LOAD_FLAG):
         args = with_replaced_value(args, flag=flag, value=checkpoint_dir)
     if ArgvManipulator.is_defined(shlex.split(args), WANDB_GROUP_FLAG):
-        args = with_replaced_value(
-            args,
-            flag=WANDB_GROUP_FLAG,
-            value=_compute_wandb_group(test_name=restart_mode.test_name, dump_dir=dump_dir),
-        )
+        wandb_run_id = _compute_wandb_group(test_name=restart_mode.test_name, dump_dir=dump_dir)
+        for flag in (WANDB_GROUP_FLAG, WANDB_RUN_ID_FLAG):
+            args = with_replaced_value(args, flag=flag, value=wandb_run_id)
     args += get_mooncake_object_store_args()
 
     assert_the_example_builds_the_parallelism_of(mode, train_args=args)
