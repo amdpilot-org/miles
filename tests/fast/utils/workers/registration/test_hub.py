@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from miles.utils.workers.naming import compute_cell_id, _worker_name_of_cell
+from miles.utils.workers.naming import _worker_name_of_cell, compute_cell_id
 from miles.utils.workers.registration.hub import REPORTER_TTL_SECONDS, RegistrationHub
 from miles.utils.workers.registration.models import RegisteredCellInfo, RegistrationSnapshot
 from miles.utils.workers.worker_info import WorkerInfo

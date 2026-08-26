@@ -848,7 +848,6 @@ class TestDisposal:
         assert fn._worker is None
 
 
-
 class RecordingMultiBuffer(data_buffer.DefaultMultiDataBuffer):
     get_calls: list[dict] = []
 

@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from pathlib import Path
 from typing import Annotated
 
 import typer
@@ -10,13 +9,8 @@ from tests.e2e.deploy.conftest_deploy.hot_restart.assert_workloads import (
 )
 from tests.e2e.deploy.conftest_deploy.hot_restart.cluster_observer import ClusterObserver, observing_the_cluster
 from tests.e2e.deploy.conftest_deploy.hot_restart.driver import compute_checkpoint_dir, compute_release_of_config
-from tests.e2e.deploy.conftest_deploy.hot_restart.evidence import (
-    HotRestartEvidence,
-    HotRestartRecord,
-    read_run_progress,
-)
+from tests.e2e.deploy.conftest_deploy.hot_restart.evidence import HotRestartEvidence, HotRestartRecord
 from tests.e2e.deploy.conftest_deploy.hot_restart.fault_form import HOT_RESTART_FORM_NAME, HotRestartFaultForm
-from tests.e2e.ft.conftest_ft.app import resolve_dump_dir
 from tests.e2e.ft.conftest_ft.cli_options import MetricThresholdOption, NumRolloutOption, SeedOption
 from tests.e2e.ft.conftest_ft.fault_injection.fault_forms import CellFaultForms
 from tests.e2e.ft.conftest_ft.fault_injection.state import Event, InjectionEvent
@@ -29,7 +23,6 @@ from tests.e2e.ft.conftest_ft.scenario_realistic_gsm8k import (
     run_realistic_gsm8k,
 )
 
-from miles.utils.audit_utils.event_logger.logger import EVENTS_DIRNAME
 from miles.utils.external_utils import command_utils
 from miles.utils.misc import MutableBox
 
@@ -63,11 +56,10 @@ def run_ci(
         release=compute_release_of_config(config), namespace=config.namespace, trainer_id=DEFAULT_TRAINER_ID
     )
     hot_restart_form: MutableBox[HotRestartFaultForm | None] = MutableBox(value=None)
-    dump_dir = resolve_dump_dir(TEST_NAME)
     max_allowed_rollout_id = num_rollout - TERMINAL_QUIESCENCE_ROLLOUTS - 1
 
     def create_forms(run: Gsm8kRun) -> CellFaultForms:
-        forms = create_hot_restart_forms(run)
+        forms = create_hot_restart_forms(run, max_allowed_rollout_id=max_allowed_rollout_id)
         assert hot_restart_form.value is None, (
             "the run's fault forms were built twice, so the form this soak reads at the end is not the one the "
             "second run was injected with"
@@ -85,12 +77,8 @@ def run_ci(
             fully_async=False,
             mean_interval_seconds_of_cell_type={_HOT_RESTART_CELL_TYPE: hot_restart_interval_seconds},
             create_forms=create_forms,
-            get_virtual_cells=lambda: _create_virtual_cells_before(
-                max_allowed_rollout_id=max_allowed_rollout_id,
-                checkpoint_dir=compute_checkpoint_dir(dump_dir),
-                events_dir=Path(dump_dir) / EVENTS_DIRNAME,
-            ),
-            extra_train_args=_build_train_args(dump_dir),
+            get_virtual_cells=lambda: _create_virtual_cells_before(hot_restart_form.value),
+            build_extra_train_args=_build_train_args,
             enable_fault_tolerance=False,
         )
 
@@ -151,12 +139,13 @@ def assert_no_take_over_threw_away_more_than_a_save_interval(records: Sequence[H
         )
 
 
-def create_hot_restart_forms(run: Gsm8kRun) -> CellFaultForms:
+def create_hot_restart_forms(run: Gsm8kRun, *, max_allowed_rollout_id: int) -> CellFaultForms:
     form = HotRestartFaultForm(
         launch=run.launch,
         config=run.config,
         checkpoint_dir=compute_checkpoint_dir(run.dump_dir),
         events_dir=run.events_dir,
+        max_allowed_rollout_id=max_allowed_rollout_id,
     )
     return {_HOT_RESTART_CELL_TYPE: [form]}
 
@@ -171,14 +160,8 @@ def _create_virtual_cells() -> list[dict]:
     ]
 
 
-def _create_virtual_cells_before(
-    *, max_allowed_rollout_id: int, checkpoint_dir: Path, events_dir: Path
-) -> list[dict]:
-    progress = read_run_progress(checkpoint_dir=checkpoint_dir, events_dir=events_dir)
-    if (
-        progress.last_finished_rollout_id is not None
-        and progress.last_finished_rollout_id >= max_allowed_rollout_id
-    ):
+def _create_virtual_cells_before(form: HotRestartFaultForm | None) -> list[dict]:
+    if form is None or not form.is_within_injection_window():
         return []
     return _create_virtual_cells()
 

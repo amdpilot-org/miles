@@ -2,13 +2,13 @@ import pytest
 
 from miles.utils.workers.naming import (
     NAME_INDEX_PAD_WIDTH,
+    _worker_name_of_cell,
     cell_id_of_worker,
     compute_cell_id,
     compute_worker_name,
     format_name_index,
     parse_cell_id,
     parse_worker_name,
-    _worker_name_of_cell,
 )
 
 
@@ -58,6 +58,7 @@ class TestParseCellId:
 
         assert parse_cell_id(cell_id) == ("trainer-pool-a", 12)
 
+
 class TestParseWorkerName:
     def test_preserves_a_hyphenated_pool_id(self):
         """Only the last two hyphens separate indices, so a hyphenated pool id survives intact."""
@@ -94,6 +95,7 @@ class TestCellIdOfWorker:
     def test_names_the_cell_the_worker_belongs_to(self):
         """The cell of a worker is the padded cell id, whatever the worker name's own padding."""
         assert cell_id_of_worker("engine-00003-00007") == "engine-00003"
+
 
 class TestWorkerNameOfCell:
     def test_round_trips_with_cell_id_of_worker(self):

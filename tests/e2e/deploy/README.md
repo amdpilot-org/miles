@@ -98,10 +98,11 @@ Type: single run, ft's scenario_realistic_gsm8k with hot restarts instead of kil
 Steps: as scenario_realistic_gsm8k
 Injection: HotRestartFaultForm at random intervals through the ordinary cell fault scheduler,
         seed logged
-Eligibility: two always-healthy virtual cells; the form does not harm its target, so both remain
-        eligible after a take-over without pretending a real trainer or rollout cell was targeted
-Terminal lifecycle: the virtual-cell provider returns no targets after rollout 234, leaving
-        rollouts 235-249 free of new take-overs
+Eligibility: two healthy virtual cells; the form does not harm its target, so both remain eligible
+        after a take-over without pretending a real trainer or rollout cell was targeted
+Terminal lifecycle: the form reads progress from the same dump directory as checkpoints and events;
+        the virtual-cell provider returns no targets after rollout 234, leaving rollouts 235-249
+        free of new take-overs
 Landing signal: both replaced workloads (orchestrator, rollout-executor) carry a stamp other
         than the one they carried at the draw - rewritten, not added
 Load-bearing: adds --save/--load and --save-interval 3 (bounds one take-over's cost); mean draw

@@ -108,6 +108,7 @@ def run_ci(
             rollout_crash_interval_seconds=rollout_crash_interval_seconds,
         ),
         create_forms=lambda run: create_cell_fault_forms(base_url=run.base_url, config=run.config),
+        build_extra_train_args=lambda _dump_dir: "",
     )
 
     assert_healing(FT_COMPONENTS, injector=outcome.injector, event_dir=outcome.run.events_dir, context=test_name)
@@ -125,8 +126,8 @@ def run_realistic_gsm8k(
     fully_async: bool,
     mean_interval_seconds_of_cell_type: dict[str, float],
     create_forms: CreateCellFaultFormsFn,
+    build_extra_train_args: Callable[[str], str],
     get_virtual_cells: Callable[[], list[dict]] | None = None,
-    extra_train_args: str = "",
     enable_fault_tolerance: bool = True,
 ) -> Gsm8kOutcome:
     U = create_backend_for_run(config)
@@ -154,7 +155,7 @@ def run_realistic_gsm8k(
         enable_fault_tolerance=enable_fault_tolerance,
     )
     train_args += f"--save-debug-event-data {dump_dir}/{EVENTS_DIRNAME} "
-    train_args += extra_train_args
+    train_args += build_extra_train_args(dump_dir)
 
     run = Gsm8kRun(
         base_url=f"http://{U.api_server_host(config)}:{API_SERVER_PORT}",
@@ -259,9 +260,7 @@ def get_gsm8k_train_args(
     fault_tolerance_args = get_api_server_args(config)
     if enable_fault_tolerance:
         fault_tolerance_args += (
-            "--use-fault-tolerance "
-            f"--ft-components {' '.join(FT_COMPONENTS)} "
-            "--mini-ft-controller-enable "
+            "--use-fault-tolerance " f"--ft-components {' '.join(FT_COMPONENTS)} " "--mini-ft-controller-enable "
         )
 
     ci_args = (
