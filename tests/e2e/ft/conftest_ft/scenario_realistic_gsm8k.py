@@ -125,6 +125,7 @@ def run_realistic_gsm8k(
     fully_async: bool,
     mean_interval_seconds_of_cell_type: dict[str, float],
     create_forms: CreateCellFaultFormsFn,
+    get_virtual_cells: Callable[[], list[dict]] | None = None,
     extra_train_args: str = "",
     enable_fault_tolerance: bool = True,
 ) -> Gsm8kOutcome:
@@ -167,6 +168,7 @@ def run_realistic_gsm8k(
         seed=seed,
         mean_interval_seconds_of_cell_type=mean_interval_seconds_of_cell_type,
         cell_fault_forms=create_forms(run),
+        get_virtual_cells=get_virtual_cells,
     )
 
     try:
