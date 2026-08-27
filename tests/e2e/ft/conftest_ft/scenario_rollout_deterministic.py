@@ -43,6 +43,7 @@ MIN_CRASHED_ROLLOUTS: int = 2
 
 
 COLOCATED_MEM_FRACTION_STATIC: float = 0.4
+DETERMINISTIC_INFERENCE_ENV_VARS: dict[str, str] = {"SGLANG_BATCH_INVARIANT_OPS_ENABLE_MM_FALLBACK_VARIANT": "false"}
 
 
 def _build_args(mode: FTTestMode, dump_dir: str, enable_dumper: bool = True) -> str:

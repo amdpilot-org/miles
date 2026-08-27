@@ -8,13 +8,13 @@ from tests.e2e.ft.conftest_ft.modes import MODES
 class TestGetCommonTrainArgs:
     def test_fault_tolerance_runs_request_inference_engine_weight_checksums(self, tmp_path: Path) -> None:
         """The shared FT launch arguments must request inference-engine weight checksums."""
-        args = get_common_train_args(MODES["kill_rollout__dp2_cp2__colocate"], dump_dir=str(tmp_path))
+        args = get_common_train_args(MODES["kill_rollout__dp4__colocate"], dump_dir=str(tmp_path))
 
         assert "--save-inference-engine-weight-checksum " in args
 
     def test_a_colocated_real_rollout_mode_emits_the_colocate_flag(self, tmp_path: Path) -> None:
         """A colocated mode must tell the trainer to share its gpus with the rollout engines."""
-        args = get_common_train_args(MODES["kill_rollout__dp2_cp2__colocate"], dump_dir=str(tmp_path))
+        args = get_common_train_args(MODES["kill_rollout__dp4__colocate"], dump_dir=str(tmp_path))
 
         assert "--colocate " in args
 
@@ -30,7 +30,7 @@ class TestGetCommonTrainArgs:
     ) -> None:
         """Without real rollout engines there is nothing to colocate, whatever the mode declares."""
         mode = dataclasses.replace(
-            MODES["kill_rollout__dp2_cp2__colocate"], rollout_num_engines=0, ft_components=("train",)
+            MODES["kill_rollout__dp4__colocate"], rollout_num_engines=0, ft_components=("train",)
         )
 
         args = get_common_train_args(mode, dump_dir=str(tmp_path))
@@ -43,7 +43,7 @@ class TestGetCommonTrainArgs:
 class TestGetFtArgs:
     def test_a_rollout_only_ft_mode_propagates_the_rollout_component_and_api_server_port(self) -> None:
         """Rollout-only fault tolerance must not silently enable trainer fault tolerance."""
-        args = get_ft_args(MODES["kill_rollout__dp2_cp2__colocate"])
+        args = get_ft_args(MODES["kill_rollout__dp4__colocate"])
 
         assert args == "--use-fault-tolerance --ft-components rollout --api-server-port 0 "
 

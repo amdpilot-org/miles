@@ -1,8 +1,26 @@
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
-from tests.e2e.ft.conftest_ft.scenario_rollout_deterministic import _compute_crashed_rollouts
+from tests.e2e.ft.conftest_ft.modes import MODES
+from tests.e2e.ft.conftest_ft.scenario_rollout_deterministic import _build_args, _compute_crashed_rollouts
 
 _BASE = datetime(2026, 8, 17, 12, 0, tzinfo=timezone.utc)
+
+
+def test_rollout_deterministic_uses_the_shared_deterministic_recipe_without_true_on_policy(tmp_path: Path) -> None:
+    """The rollout-FT comparison must use pure deterministic inference rather than true-on-policy."""
+    args = _build_args(MODES["kill_rollout__dp4__colocate"], dump_dir=str(tmp_path))
+
+    assert "--sglang-enable-deterministic-inference " in args
+    assert "--sglang-attention-backend flashinfer " in args
+    assert '"SGLANG_BATCH_INVARIANT_OPS_ENABLE_MM_FALLBACK_VARIANT": "false"' in args
+    assert "--deterministic-mode " in args
+    assert "--context-parallel-size " not in args
+    assert "--true-on-policy-mode" not in args
+    assert "--sglang-true-on-policy-contract" not in args
+    assert "--true-on-policy-contract" not in args
+    assert "--sglang-attention-backend fa3" not in args
+    assert "--recompute-logprobs-via-prefill" not in args
 
 
 class TestComputeCrashedRollouts:

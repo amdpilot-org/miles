@@ -14,15 +14,15 @@
 | `scenario_trainer_no_failure` | `kill_train__dp2_cp2_tp2_ep2__fake_rollout__moe_5layer`, `kill_train__dp2_cp2_pp2__fake_rollout__moe_5layer`, `kill_train__dp4_cp2__fake_rollout__moe_5layer`, `kill_train__dp2_cp2__moe_5layer` |
 | `scenario_trainer_deterministic` | `kill_train__dp2_cp2_tp2_ep2__fake_rollout__moe_5layer`, `kill_train__dp2_cp2_pp2__fake_rollout__moe_5layer`, `kill_train__dp4_cp2__fake_rollout__moe_5layer`, `kill_train__dp2_cp2__moe_5layer` |
 | `scenario_trainer_with_failure` | `kill_train__dp2_cp2_tp2_ep2__fake_rollout__moe_5layer`, `kill_train__dp2_cp2_pp2__fake_rollout__moe_5layer`, `kill_train__dp2_cp2` |
-| `scenario_rollout_deterministic` | `kill_rollout__dp2_cp2__colocate` |
-| `scenario_random_crash` | `kill_train__dp2_cp2_tp2_ep2__fake_rollout__moe_5layer`, `kill_train__dp2_cp2__moe_5layer`, `kill_train_rollout__dp2_cp2`, `kill_rollout__dp2_cp2__colocate` |
+| `scenario_rollout_deterministic` | `kill_rollout__dp4__colocate` |
+| `scenario_random_crash` | `kill_train__dp2_cp2_tp2_ep2__fake_rollout__moe_5layer`, `kill_train__dp2_cp2__moe_5layer`, `kill_train_rollout__dp2_cp2`, `kill_rollout__dp4__colocate` |
 | `scenario_realistic_gsm8k` | `test_realistic_gsm8k__kill_train_rollout.py`, no modes |
 | `scenario_random_crash_fully_async` | `kill_train_rollout__dp2_cp2` |
 | `scenario_realistic_gsm8k_fully_async` | `test_realistic_gsm8k_fully_async__kill_train_rollout.py`, no modes |
 
 - **Forced absences**, one reason each:
     - `kill_train__dp4_cp2_tp2_pp2_ep2_etp2__moe_full` is multi-node, and no multi-node CI lane exists.
-    - `kill_rollout__dp2_cp2__colocate` fits only the scenarios that crash engines.
+    - `kill_rollout__dp4__colocate` fits only the scenarios that crash engines.
     - `scenario_rollout_deterministic` needs real engines and `ft_components == ("rollout",)` exactly.
     - The fully-async soaks reject modes without real engines or with colocation.
     - `kill_train__dp2_cp2` supersedes `kill_train__dp2_cp2__moe_5layer` in `scenario_trainer_with_failure`.
@@ -61,7 +61,7 @@
 | `kill_train__dp4_cp2__fake_rollout__moe_5layer` | 1 | 8 + 0 | 4 | CP2 | debug data | 5-layer MoE | `("train",)` | multi-replica coverage (>= 4 cells) |
 | `kill_train__dp2_cp2__moe_5layer` | 1 | 4 + 4 | 2 | CP2 | 4 engines × 1 GPU | 5-layer MoE | `("train",)` | real engines + the weight-update path |
 | `kill_train__dp2_cp2` | 1 | 4 + 4 | 2 | CP2 | 4 engines × 1 GPU | dense Qwen3-0.6B | `("train",)` | `scenario_trainer_with_failure` under real generation; needs the dense model (see below) |
-| `kill_rollout__dp2_cp2__colocate` | 1 | 4 shared | 2 | CP2 | 4 engines × 1 GPU, colocated | dense Qwen3-0.6B | `("rollout",)` | the only rollout-only mode: crashes engines, not trainer cells |
+| `kill_rollout__dp4__colocate` | 1 | 4 shared | 4 | — | 4 engines × 1 GPU, colocated | dense Qwen3-0.6B | `("rollout",)` | the only rollout-only mode: crashes engines, not trainer cells |
 | `kill_train_rollout__dp2_cp2` | 1 | 4 + 4 | 2 | CP2 | 4 engines × 1 GPU | dense Qwen3-0.6B | `("train", "rollout")` | both kinds crash in the same run, sync and fully-async; disaggregated, since colocation makes the two crashes contend for the same gpus |
 | `kill_train__dp4_cp2_tp2_pp2_ep2_etp2__moe_full` | 4 train + 2 rollout | 32 + 16 | 4 | CP2 TP2 PP2 EP2 ETP2 | 2 engines × 8 GPU | full MoE | `("train",)` | full model, all parallelism; multi-node, so no CI entry |
 
@@ -305,7 +305,7 @@ Healing witness: one heal per target phase, at P+2 (healed = last cell, ckpt src
 ```
 Type: comparison; both sides run the identical command, only the target is wrapped in the
       fault injector, through the pipeline's target_side_context hook
-Entry: test_rollout_deterministic__kill_rollout__dp2_cp2__colocate.py, ft-long
+Entry: test_rollout_deterministic__kill_rollout__dp4__colocate.py, ft-long
 Steps: 8 rollouts (NUM_ROLLOUTS)
 Requires: mode.has_real_rollout, and ft_components == ("rollout",) exactly
 Compare: dumps rel <= 0 (bitwise); metrics rtol=0 / atol=0 over train/* and rollout/*,
@@ -335,6 +335,7 @@ Assertions:
 - **Why it exists**: an engine dying and being replaced mid-generation is supposed to be invisible to training, and "invisible" is a claim about bits; the rollout soak only ever asserted survival.
 - **Why the shared deterministic recipe**: the assertion is deterministic replay across fresh inference engines, not true-on-policy training. Reusing the same FlashInfer recipe as the main deterministic trainer-FT test avoids a second, incompatible attention-backend contract.
 - **Why `--sglang-disable-radix-cache`**: a replacement engine serves with a cold prefix cache where the baseline's was warm, and deterministic inference is nowhere documented as prefix-cache-length invariant.
+- **Why this recipe disables batch-variant MM fallback**: a rollout worker loss changes co-batching while the pool is healing; permitting an `einsum` fallback would make the same seeded request depend on that temporary batch shape. The scenario injects the environment override without changing the production default.
 - **Why `--rollout-health-check-interval 5`**: the generation retry loop gives up after ~60s while the default health check needs 90-120s to evict a dead worker, so a request could exhaust its retries against a corpse.
 - **Why Ray uses one quiescent poll**: colocate pauses health checks around every train/update cycle, so the generic 120-second stable-serving window can never complete. Ray's injection endpoint takes the inference controller's weight-update lock and rejects a cell after rollout health monitoring has paused, so one serving observation is enough to select a candidate while the endpoint atomically prevents a kill after the shared GPUs return to trainer ranks. Kubernetes keeps the generic 120-second gate.
 - **Why every namespace, not just `train/`**: an engine crash shows up first in `rollout/raw_reward` or `rollout/log_probs`. `perf/` is left out by name, being wall-clock and throughput that a relaunch moves by definition, and a metric in neither namespace fails the run rather than being dropped quietly.
