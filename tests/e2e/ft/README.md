@@ -316,6 +316,7 @@ Regime (both sides):
     --sglang-attention-backend flashinfer and --deterministic-mode
   - --debug-deterministic-collective and scenario_trainer_deterministic's deterministic env vars
   - --sglang-disable-radix-cache
+  - --sglang-router-policy round_robin
   - --rollout-health-check-interval 1
 
 Injection (target side only):
@@ -336,6 +337,7 @@ Assertions:
 - **Why it exists**: an engine dying and being replaced mid-generation is supposed to be invisible to training, and "invisible" is a claim about bits; the rollout soak only ever asserted survival.
 - **Why the shared deterministic recipe**: the assertion is deterministic replay across fresh inference engines, not true-on-policy training. Reusing the same FlashInfer recipe as the main deterministic trainer-FT test avoids a second, incompatible attention-backend contract.
 - **Why `--sglang-disable-radix-cache`**: a replacement engine serves with a cold prefix cache where the baseline's was warm, and deterministic inference is nowhere documented as prefix-cache-length invariant.
+- **Why `--sglang-router-policy round_robin`**: the router's default cache-aware policy reacts to timing and cache state, so fresh runs can send the same prompt group to different engines and change co-batching. Round-robin makes that routing schedule deterministic.
 - **Why this recipe disables batch-variant MM fallback**: a rollout worker loss changes co-batching while the pool is healing; permitting an `einsum` fallback would make the same seeded request depend on that temporary batch shape. The scenario injects the environment override without changing the production default.
 - **Why `--rollout-health-check-interval 1`**: healthy generation can finish between two five-second polls; the short scenario needs at least one fresh Serving observation before its lock-protected injection attempt.
 - **Why this scenario polls the fault window every 0.2 seconds**: colocated generation windows are only a few seconds long, so the generic two-second scheduler cadence can miss every Serving observation in an eight-rollout run.

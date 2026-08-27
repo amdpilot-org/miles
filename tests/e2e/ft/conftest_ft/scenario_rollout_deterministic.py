@@ -60,6 +60,7 @@ def _build_args(mode: FTTestMode, dump_dir: str, enable_dumper: bool = True) -> 
     args += "--mini-ft-controller-enable "
     args += "--debug-deterministic-collective "
     args += "--sglang-disable-radix-cache "
+    args += "--sglang-router-policy round_robin "
     if mode.colocate:
         args += f"--sglang-mem-fraction-static {COLOCATED_MEM_FRACTION_STATIC} "
     args += f"--rollout-health-check-interval {HEALTH_CHECK_INTERVAL_SECONDS} "
