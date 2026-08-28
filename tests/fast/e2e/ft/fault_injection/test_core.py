@@ -364,6 +364,7 @@ class TestFaultInjectionLoopErrorHandling:
             attempts.append(url.rsplit("/cells/", 1)[1].split("/")[0])
             if len(attempts) == 1:
                 raise RuntimeError("inject-fault refused")
+            stop_event.set()
             return mock_response({})
 
         _run_injection_loop(

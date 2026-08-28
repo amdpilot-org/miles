@@ -156,7 +156,7 @@ class TestRolloutFunctionConstruction:
 
         monkeypatch.setattr(rexec, "load_rollout_function", fail_if_loaded)
 
-        executor = _make_executor(args)
+        executor = await _make_executor(args)
 
         assert executor.generate_rollout is None
         assert executor.eval_generate_rollout is None
@@ -182,7 +182,7 @@ class TestRolloutFunctionConstruction:
 
         monkeypatch.setattr(rexec, "load_rollout_function", record_load)
 
-        executor = _make_executor(args)
+        executor = await _make_executor(args)
 
         assert loaded_paths == [args.rollout_function_path, args.eval_function_path]
         assert executor.generate_rollout is not None
@@ -797,7 +797,7 @@ class _RecordingMetricChecker:
         self.disposed = True
 
 
-class _RecordingRolloutFn:
+class _RecordingDisposableRolloutFn:
     def __init__(self) -> None:
         self.disposed = False
 
@@ -854,7 +854,7 @@ class TestLifecycle:
         executor._metric_checker = checker
         eval_fn = _RecordingCheckpointEvalFn()
         executor.eval_generate_rollout = eval_fn
-        train_fn = _RecordingRolloutFn()
+        train_fn = _RecordingDisposableRolloutFn()
         executor.generate_rollout = train_fn
         executor.use_legacy_rollout_v1 = False
 

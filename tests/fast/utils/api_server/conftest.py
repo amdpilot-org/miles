@@ -23,6 +23,7 @@ class MockCellState:
         is_suspended: bool = False,
         suspend_error: Exception | None = None,
         resume_error: Exception | None = None,
+        workers_hash: str = "pseudo-hash-1",
     ) -> None:
         self.phase = phase
         self.conditions = conditions or [
@@ -32,6 +33,7 @@ class MockCellState:
         self.is_suspended = is_suspended
         self.suspend_error = suspend_error
         self.resume_error = resume_error
+        self.workers_hash = workers_hash
         self.suspend_calls: int = 0
         self.resume_calls: int = 0
 
@@ -200,6 +202,13 @@ class MockStopCellController:
 
     async def stop_cell_between_weight_updates(self, cell_id: str) -> None:
         await self._worker_manager.stop_cells.remote([cell_id])
+
+    async def inject_fault_between_weight_updates(self, cell_id: str, *, mode: FailureMode, sub_index: int) -> None:
+        await self._worker_manager.inject_fault.remote(
+            cell_id,
+            mode=mode.value,
+            worker_in_cell_index=sub_index,
+        )
 
 
 def make_cell_summaries(

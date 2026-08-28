@@ -598,17 +598,17 @@ class TestGetWorkerAddrs:
             manager = await _launch([spec])
 
         assert observed == [None, None]
-        assert set(manager.get_worker_addrs("engine-0-0")) == {"primary", "rpc"}
+        assert set(manager.get_worker_addrs("engine-00000-00000")) == {"primary", "rpc"}
 
     async def test_a_worker_without_its_ports_yet_is_refused_rather_than_answered(
         self, fake_ray_cluster: FakeRayCluster
     ):
         """Returning nothing would be read as a worker that has no endpoints at all."""
         manager = await _launch([_make_spec("engine")])
-        manager._find_actor("engine-0-0").self_addrs = None
+        manager._find_actor("engine-00000-00000").self_addrs = None
 
         with pytest.raises(AssertionError, match="has not been given its ports yet"):
-            manager.get_worker_addrs("engine-0-0")
+            manager.get_worker_addrs("engine-00000-00000")
 
 
 class TestPinToHead:
@@ -1382,11 +1382,11 @@ class TestGetWorkerInfos:
         """A description is taken of whatever exists at the time, and a cell mid-start is part of that;
         it has to render as a worker holding no endpoints rather than fail the whole description."""
         manager = await _launch([_make_spec("engine", num_workers_per_cell=2)])
-        manager._find_actor("engine-0-1").self_addrs = None
+        manager._find_actor("engine-00000-00001").self_addrs = None
 
-        infos = manager.get_worker_infos("engine-0")
+        infos = manager.get_worker_infos("engine-00000")
 
-        assert [info.name for info in infos] == ["engine-0-0", "engine-0-1"]
+        assert [info.name for info in infos] == ["engine-00000-00000", "engine-00000-00001"]
         assert infos[1].self_addrs == {}
         assert manager.get_addrs()["engine"][1] == {}
 
@@ -1580,11 +1580,11 @@ class TestStartAndStopCells:
         manager = await _launch([_make_spec("engine", num_workers_per_cell=2)])
         actors = manager._pools["engine"].cells[0].actors
 
-        assert manager.get_cell_infos(pool_ids=["engine"])["engine-0"].alive
+        assert manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
 
         actors[1].self_addrs = None
 
-        assert not manager.get_cell_infos(pool_ids=["engine"])["engine-0"].alive
+        assert not manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
 
     async def test_a_half_started_cell_is_withheld_without_withholding_its_healthy_siblings(
         self, fake_ray_cluster: FakeRayCluster
@@ -1597,8 +1597,8 @@ class TestStartAndStopCells:
             cell_id for cell_id, info in manager.get_cell_infos(pool_ids=["engine"]).items() if info.alive
         ]
 
-        assert alive_cell_ids == ["engine-0"]
-        for info in manager.get_worker_infos("engine-0"):
+        assert alive_cell_ids == ["engine-00000"]
+        for info in manager.get_worker_infos("engine-00000"):
             assert "primary" in info.self_addrs, f"{info.name} is reported alive but describes no ports"
 
     async def test_an_unknown_cell_id_fails_loudly(self, fake_ray_cluster: FakeRayCluster):

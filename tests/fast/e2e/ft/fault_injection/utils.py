@@ -10,7 +10,11 @@ from miles.utils.workers.types import ClusterBackend
 
 
 def note_injected(log: state.EventLog, cell_name: str) -> None:
-    log.note_injection_attempt(cell_name=cell_name, form_name="sigkill", succeeded=True)
+    log.note_injection_attempt(
+        cell_name=cell_name,
+        form_name="sigkill",
+        succeeded=True,
+    )
 
 
 @contextlib.contextmanager
@@ -26,13 +30,24 @@ NAMESPACE = "miles-e2e"
 RUN_ID = "abc123"
 
 
-def cell(name: str, *, healthy: bool, cell_type: str = "actor", phase: str = "Running", serving: bool = True) -> dict:
+def cell(
+    name: str,
+    *,
+    healthy: bool,
+    cell_type: str = "actor",
+    phase: str = "Running",
+    serving: bool = True,
+    workers_hash: str = "generation-0",
+) -> dict:
     status = "True" if healthy else "False"
     conditions = [{"type": "Healthy", "status": status}]
     if cell_type == "rollout":
         conditions.append({"type": "Serving", "status": "True" if serving else "False"})
     return {
-        "metadata": {"name": name, "labels": {"miles.io/cell-type": cell_type}},
+        "metadata": {
+            "name": name,
+            "labels": {"miles.io/cell-type": cell_type, "miles.io/workers-hash": workers_hash},
+        },
         "status": {"phase": phase, "conditions": conditions},
     }
 
@@ -54,7 +69,13 @@ PENDING = state.ObservedCellState.PENDING
 SUSPENDED = state.ObservedCellState.SUSPENDED
 
 
-def staged(name: str, cell_state: state.ObservedCellState, *, cell_type: str = "rollout") -> dict:
+def staged(
+    name: str,
+    cell_state: state.ObservedCellState,
+    *,
+    cell_type: str = "rollout",
+    workers_hash: str = "generation-0",
+) -> dict:
     phase = {
         SUSPENDED: "Suspended",
         PENDING: "Pending",
@@ -70,7 +91,10 @@ def staged(name: str, cell_state: state.ObservedCellState, *, cell_type: str = "
         else []
     )
     return {
-        "metadata": {"name": name, "labels": {"miles.io/cell-type": cell_type}},
+        "metadata": {
+            "name": name,
+            "labels": {"miles.io/cell-type": cell_type, "miles.io/workers-hash": workers_hash},
+        },
         "status": {"phase": phase, "conditions": conditions},
     }
 

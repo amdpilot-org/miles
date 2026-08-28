@@ -24,6 +24,8 @@ TRAIN_ONLY_SUBCOMMAND = "train"
 ORCHESTRATION_SCRIPTS = ("train.py", "train_async.py", "train_multi_lora_async.py")
 
 BACKEND_CAPABILITY_FN = "launch_worker_manager"
+ORCHESTRATION_INIT_FN = "init_orchestration_script"
+BACKEND_NEUTRAL_WIRING_NAMES = {"shutdown_worker_manager"}
 
 UPPER_LAYER_MODULES = (
     "kubernetes",
@@ -96,9 +98,12 @@ def _upper_layer_imports(path: Path) -> list[str]:
         if isinstance(node, ast.Import):
             found.extend(alias.name for alias in node.names if _is_upper_layer_module(alias.name))
         elif isinstance(node, ast.ImportFrom):
-            if node.module is not None and node.level == 0 and _is_upper_layer_module(node.module):
-                found.append(node.module)
-            found.extend(alias.name for alias in node.names if alias.name in UPPER_LAYER_NAMES)
+            if node.module == "miles.ray.wiring":
+                found.extend(alias.name for alias in node.names if alias.name not in BACKEND_NEUTRAL_WIRING_NAMES)
+            else:
+                if node.module is not None and node.level == 0 and _is_upper_layer_module(node.module):
+                    found.append(node.module)
+                found.extend(alias.name for alias in node.names if alias.name in UPPER_LAYER_NAMES)
     return found
 
 
@@ -143,9 +148,15 @@ class TestLayering:
         assert reaching != [], f"{exemption} no longer reaches upwards: {UPPER_LAYER_EXEMPTIONS[exemption]}"
 
     @pytest.mark.parametrize("script", ORCHESTRATION_SCRIPTS)
-    def test_an_orchestration_script_forks_the_backend_exactly_once(self, script: str):
+    def test_an_orchestration_script_initializes_the_shared_driver_exactly_once(self, script: str):
+        """Every driver enters the shared composition root once, or it starts no manager or starts two."""
+        assert len(_calls_of(REPO_ROOT / script, ORCHESTRATION_INIT_FN)) == 1
+
+    def test_the_shared_driver_forks_the_backend_exactly_once(self):
         """The whole run hangs off one factory, and a second one would observe the same workers twice."""
-        assert len(_calls_of(REPO_ROOT / script, BACKEND_CAPABILITY_FN)) == 1
+        path = FRAMEWORK_ROOT / "utils" / "orchestration_utils.py"
+
+        assert len(_calls_of(path, BACKEND_CAPABILITY_FN)) == 1
 
 
 class TestImportDirection:

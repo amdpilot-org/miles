@@ -144,10 +144,10 @@ class TestPublicCellInventory:
 
         statuses = await group.get_cell_statuses()
         assert sorted(statuses) == group.cell_ids
-        assert [status.phase for status in statuses.values()] == ["Running"] * 3
-        assert _healthy_condition(statuses[_cell_id(0)]) == (TriState.TRUE, None)
+        assert [status.phase for status in statuses.values()] == ["Pending", "Pending", "Running"]
+        assert [condition.type for condition in statuses[_cell_id(0)].conditions] == ["Allocated"]
         assert _healthy_condition(statuses[_cell_id(1)]) == (TriState.FALSE, "ExecutionErrored")
-        assert _healthy_condition(statuses[_cell_id(2)]) == (TriState.TRUE, None)
+        assert [condition.type for condition in statuses[_cell_id(2)].conditions] == ["Allocated"]
 
     async def test_each_status_carries_the_generation_it_describes(self):
         """The api server joins this with a separately polled cell listing, so an unstamped status can mislead."""

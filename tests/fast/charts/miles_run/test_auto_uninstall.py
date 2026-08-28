@@ -50,7 +50,17 @@ class TestUninstallManifest:
         """The wrapper creates the job the moment the verdict is in, so the delay has to live in the job."""
         container = _rendered_job()["spec"]["template"]["spec"]["containers"][0]
 
-        assert container["command"] == ["sh", "-c", f"sleep 120 && helm uninstall {RUN_RELEASE_NAME} --namespace myns"]
+        assert container["command"] == [
+            "sh",
+            "-c",
+            f"sleep 120 && helm uninstall {RUN_RELEASE_NAME} --namespace myns --ignore-not-found",
+        ]
+
+    def test_treats_an_already_gone_release_as_a_successful_uninstall(self):
+        """Split runs uninstall their own release, so this job routinely finds nothing and must not fail."""
+        command = _rendered_job()["spec"]["template"]["spec"]["containers"][0]["command"][-1]
+
+        assert "--ignore-not-found" in command
 
     def test_runs_as_the_account_that_outlives_the_release(self):
         """helm deletes the release's own rolebinding halfway through, which would 403 the rest of the deletions."""
