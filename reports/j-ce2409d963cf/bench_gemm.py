@@ -168,6 +168,53 @@ def fmt_stats(s: Stats) -> str:
     )
 
 
+
+def time_backward_gemm(
+    M: int,
+    N: int,
+    K: int,
+    warmup: int,
+    repeats: int,
+) -> list[float]:
+    """Backward of C = A @ B (BF16): two GEMMs, 4*M*N*K FLOPs total.
+
+    A training step is forward + backward; ``flops_utils.py`` models only the
+    forward pass, so the headline is forward GEMM. This companion measurement
+    closes the "forward only" gap with the same kernel family on the same card.
+    """
+    dev = "cuda"
+    torch.manual_seed(0)
+    scale = 0.05
+    a = (torch.randn(M, K, device=dev, dtype=torch.bfloat16) * scale).contiguous()
+    b = (torch.randn(K, N, device=dev, dtype=torch.bfloat16) * scale).contiguous()
+    a.requires_grad_(True)
+    b.requires_grad_(True)
+    c = a @ b                       # graph built once
+    g = torch.randn_like(c)
+    flops = 4 * M * N * K           # grad_A = g @ B^T, grad_B = A^T @ g
+
+    def run() -> None:
+        a.grad = None
+        b.grad = None
+        torch.autograd.backward(c, g, retain_graph=True)
+
+    for _ in range(warmup):
+        run()
+    torch.cuda.synchronize()
+
+    tflops: list[float] = []
+    start = torch.cuda.Event(enable_timing=True)
+    end = torch.cuda.Event(enable_timing=True)
+    for _ in range(repeats):
+        start.record()
+        run()
+        end.record()
+        torch.cuda.synchronize()
+        ms = start.elapsed_time(end)
+        tflops.append(flops / (ms * 1e-3) / 1e12)
+    return tflops
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--sizes", type=int, nargs="+", default=[4096, 8192, 16384], help="square M=N=K dims")
@@ -202,6 +249,18 @@ def main() -> int:
                 **asdict(st),
             })
         print()
+
+    # backward GEMM (BF16 only: _scaled_mm has no autograd backward path)
+    print("-- BF16 BACKWARD (2 GEMMs/step = 4*M*N*K FLOPs) --")
+    for size in args.sizes:
+        vals = time_backward_gemm(size, size, size, args.warmup, args.repeats)
+        st = summarize(vals)
+        print(f"  bwd  {size:6d}^3  TFLOP/s  {fmt_stats(st)}")
+        results["configs"].append({
+            "dtype": "bf16_backward", "M": size, "N": size, "K": size,
+            **asdict(st),
+        })
+    print()
 
     if args.out:
         with open(args.out, "w") as fh:

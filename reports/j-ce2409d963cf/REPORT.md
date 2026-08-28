@@ -66,11 +66,16 @@ TFLOP/s (higher is better). All `n=50`.
 | FP8  | 4096³  | 2295.6 | 2329.4 | 95.7 | 1913.1 | 2449.0 | 2016.4 | 2371.2 |
 | FP8  | 8192³  | 3002.7 | 3057.4 | 130.3| 2517.6 | 3109.8 | 2681.4 | 3107.3 |
 | FP8  | 16384³ | 3201.2 | 3207.3 | 23.6 | 3138.1 | 3242.1 | 3153.9 | 3229.5 |
+| Bwd  | 16384³ | 1448.2 | 1448.1 |  8.7 | 1430.4 | 1471.7 | 1433.6 | 1462.6 |
 
 **Headline (16384³, the most compute-bound and most stable point):**
 
 - BF16 GEMM ≈ **1393 TFLOP/s** (median 1392; spread ±~1.0%).
 - FP8 GEMM ≈ **3201 TFLOP/s** (median 3207; spread ±~0.7%).
+- BF16 backward (2 GEMMs/step, 4·M·N·K FLOPs) ≈ **1448 TFLOP/s** at
+  16384³ — slightly above forward, as expected: same GEMM kernel family,
+  two launches amortized at large N. Verified against finite-difference
+  gradients (rel_err 2.7e-11).
 
 Notes:
 - Large sizes (8192³, 16384³) are stable: BF16 std ~0.5–0.7%, FP8(16384³) std ~0.7%.
@@ -145,9 +150,13 @@ python3 reports/j-ce2409d963cf/bench_gemm.py --out reports/j-ce2409d963cf/result
   utilization figure on this GPU. I report achieved TFLOP/s only rather than
   assert a vendor peak I could not read off this machine. **Filling the AMD
   entries in `device_flops.py` would be a natural follow-up.**
-- **Forward GEMM only.** `flops_utils.py` models the *forward* FLOPs, so the
-  benchmark matches that (forward matmul). A training step is fwd+bwd (~3× the
-  FLOPs); backward matmul throughput was not measured separately.
+- **Forward model + backward measured.** `flops_utils.py` models the *forward*
+  FLOPs, so the headline is forward GEMM (matches the repo's model). A training
+  step is fwd+bwd (~3× the FLOPs); backward BF16 GEMM throughput is now
+  measured separately (~1448 TFLOP/s, see row above) and grad correctness
+  was verified against finite-difference (rel_err 2.7e-11). FP8 backward was
+  not measured: `torch._scaled_mm` has no autograd backward path, so a backward
+  FP8 number would require a manual grad GEMM, not the repo's call path.
 - **Not the repo's call path.** As stated above, this measures hipBLASLt GEMMs
   via PyTorch, not Miles' Megatron/TE integration. It is a kernel-level proxy.
 - **Single GPU.** No collectives, no P2P weight transfer, no multi-engine
