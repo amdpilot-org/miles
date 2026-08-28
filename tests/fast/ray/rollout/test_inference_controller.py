@@ -382,6 +382,19 @@ def _patch_init(monkeypatch: pytest.MonkeyPatch, *, servers: dict[str, _Recordin
     monkeypatch.setattr(inference_controller_module, "resolve_router_addrs", _fake_resolve_router_addrs)
 
 
+class _RefusingWorkerProvider(_FakeWorkerProvider):
+    """A provider a run must never touch, so touching it is the failure."""
+
+    def __init__(self) -> None:
+        super().__init__([])
+
+    async def init(self) -> None:
+        raise AssertionError("debug_train_only must not init any worker provider")
+
+    async def watch_cells(self, reconcile: CellReconcileFn) -> StopWatchFn:
+        raise AssertionError("debug_train_only must not watch cells")
+
+
 async def _init_controller(args: Namespace, *, engine_provider: _FakeWorkerProvider) -> None:
     controller = InferenceController(args, engine_provider=engine_provider, router_providers=[_FakeWorkerProvider([])])
     await controller.init()
@@ -568,9 +581,12 @@ class TestInitSubscription:
         assert "session-server" not in provider.watched_pool_ids
 
     @pytest.mark.asyncio
-    async def test_init_survives_a_router_cell_offered_by_the_provider(self, monkeypatch: pytest.MonkeyPatch):
-        """A router cell carries no engine meta, so a too-wide subscription kills startup in the initial sync."""
+    async def test_init_subscribes_narrowly_enough_to_never_see_a_router_cell(self, monkeypatch: pytest.MonkeyPatch):
+        """A router cell carries no engine meta, so reading one as engine meta would kill startup; the
+        controller is safe because it subscribes to the engine pools alone."""
         args = make_args()
+        assert compute_router_pool_id(0) not in compute_engine_pool_ids(args)
+
         router_info = CellInfo(
             cell_id="inference-router-0-0",
             pool_id=compute_router_pool_id(0),
@@ -579,11 +595,8 @@ class TestInitSubscription:
             workers_hash="pseudo-hash-router",
             meta={},
         )
-        engine_info = _make_cell_info(model_id="default")
-        provider = _FakeWorkerProvider(
-            [router_info, engine_info],
-            pool_ids=[*compute_engine_pool_ids(args), compute_router_pool_id(0)],
-        )
+        engine_info = _make_cell_info(model_id="default", pool_id=compute_engine_pool_ids(args)[0])
+        provider = _FakeWorkerProvider([router_info, engine_info], pool_ids=compute_engine_pool_ids(args))
         srv = _RecordingServer()
         _patch_init(monkeypatch, servers={"default": srv})
 
@@ -934,12 +947,20 @@ class TestInitLifecycle:
         async def _no_servers(args: Namespace, **kwargs: Any) -> dict:
             raise AssertionError("debug_train_only must not create rollout servers")
 
+        async def _no_router_addrs(args: Namespace, **kwargs: Any) -> dict:
+            raise AssertionError("debug_train_only must not resolve any router")
+
         monkeypatch.setattr(inference_controller_module, "create_rollout_servers", _no_servers)
+        monkeypatch.setattr(inference_controller_module, "resolve_router_addrs", _no_router_addrs)
         monkeypatch.setattr(
             dashboard_hooks, "register_router", lambda args: pytest.fail("debug_train_only has no router")
         )
-        provider = _FakeWorkerProvider([])
-        controller = self._controller(make_args(debug_train_only=True), engine_provider=provider)
+        provider = _RefusingWorkerProvider()
+        controller = InferenceController(
+            make_args(debug_train_only=True),
+            engine_provider=provider,
+            router_providers=[_RefusingWorkerProvider()],
+        )
 
         await controller.init()
 
@@ -1468,9 +1489,21 @@ class TestCellsReadyIsScopedToTheTargetedModel:
         """Different model ids are independent, so a sick engine of B must not stall A's weight update."""
         a = _RecordingServer(model_name="a", update_weights=True)
         a.api_clients = ["a-client"]
-        a.server_cells = {"a-0": SimpleNamespace(is_pending_weights_or_serving=True, is_uninitialized=False)}
+        a.server_cells = {
+            "a-0": SimpleNamespace(
+                is_pending_weights_or_serving=True,
+                is_uninitialized=False,
+                meta=SimpleNamespace(workers_hash="hash-a"),
+            )
+        }
         b = _RecordingServer(model_name="b", update_weights=True)
-        b.server_cells = {"b-0": SimpleNamespace(is_pending_weights_or_serving=False, is_uninitialized=False)}
+        b.server_cells = {
+            "b-0": SimpleNamespace(
+                is_pending_weights_or_serving=False,
+                is_uninitialized=False,
+                meta=SimpleNamespace(workers_hash="hash-b"),
+            )
+        }
         controller = _make_controller({"a": a, "b": b})
 
         updatable = await controller.start_update_weights(model_id="a")
@@ -1483,8 +1516,9 @@ class TestCellsReadyIsScopedToTheTargetedModel:
         srv = _RecordingServer(model_name="a", update_weights=True)
         controller = _make_controller({"a": srv})
 
-        assert controller._get_servers_of_model_id(None) == [srv]
-        assert controller._get_servers_of_model_id("a") == [srv]
+        async with controller.context_lock:
+            assert controller._get_servers_of_model_id(None) == [srv]
+            assert controller._get_servers_of_model_id("a") == [srv]
 
 
 def _registration_snapshot(*, model_id: str = "model-a", run_uuid: str = _RUN_UUID) -> RegistrationSnapshot:
@@ -1557,7 +1591,7 @@ class TestRegistrationSnapshotEndpoint:
     @pytest.mark.asyncio
     async def test_a_run_serving_engines_of_its_own_refuses_a_snapshot(self):
         """It would take the cells in and never wait for them, so the reporter has to hear that it is unwanted."""
-        controller = _make_controller({})
+        controller = _make_controller({"model-a": _RecordingServer(model_name="model-a")})
 
         with pytest.raises(AssertionError, match="takes no registration"):
             await controller.registration_ingest(snapshot=_registration_snapshot())

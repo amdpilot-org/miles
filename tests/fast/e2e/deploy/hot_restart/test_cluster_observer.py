@@ -222,6 +222,12 @@ def _raise_boom(**_kwargs) -> None:
     raise RuntimeError("kubectl said no")
 
 
+def _wait_until_only_these_threads_are_left(count: int) -> None:
+    deadline = time.monotonic() + 5.0
+    while threading.active_count() > count and time.monotonic() < deadline:
+        time.sleep(0.01)
+
+
 class TestObservingTheClusterInTheBackground:
     def test_the_closing_snapshot_is_taken_after_the_body_returns(self, monkeypatch):
         """The run ends inside the body, and the frame that shows its last pods comes after."""
@@ -245,6 +251,7 @@ class TestObservingTheClusterInTheBackground:
         )
         monkeypatch.setattr(cluster_module.ClusterObserver, "observe_once", lambda _self: None)
         monkeypatch.setattr(cluster_module, "JOIN_TIMEOUT_SECONDS", 0.05)
+        before = threading.active_count()
 
         try:
             with pytest.raises(AssertionError, match="still reading the run"):
@@ -252,6 +259,7 @@ class TestObservingTheClusterInTheBackground:
                     pass
         finally:
             release.set()
+            _wait_until_only_these_threads_are_left(before)
 
     def test_a_body_that_raised_does_not_leave_the_observer_running(self, monkeypatch):
         """A leaked poller keeps reading a release the next test is about to install over."""
@@ -263,9 +271,7 @@ class TestObservingTheClusterInTheBackground:
             with cluster_module.observing_the_cluster(_observer(), poll_interval_seconds=0.0):
                 raise _BodyFailed
 
-        deadline = time.monotonic() + 5.0
-        while threading.active_count() > before and time.monotonic() < deadline:
-            time.sleep(0.01)
+        _wait_until_only_these_threads_are_left(before)
         assert threading.active_count() == before
 
 

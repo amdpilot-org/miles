@@ -4,10 +4,12 @@ import asyncio
 from types import SimpleNamespace
 
 import pytest
+from tests.fast.ray.rollout.conftest import make_args
 
 from miles.ray.rollout import rollout_server as rollout_server_module
 from miles.ray.rollout.rollout_server import RolloutServer
 from miles.utils.context_lock import ContextLock
+from miles.utils.workers.worker_spec import NamedHostAndPorts
 
 
 class _RecordingCell:
@@ -37,11 +39,17 @@ class _RecordingCell:
         self.calls.append(("abort_all", {}))
 
 
+class _StubProvider:
+    async def get_addrs(self, worker_name: str) -> NamedHostAndPorts:
+        raise AssertionError(f"fanning out to the cells must not resolve {worker_name}")
+
+
 def _make_server(cells: list[_RecordingCell], **overrides) -> RolloutServer:
     return RolloutServer(
         server_cells={cell.meta.cell_id: cell for cell in cells},
-        args=SimpleNamespace(colocate=True),
+        args=make_args(colocate=True),
         context_lock=ContextLock("InferenceController"),
+        engine_provider=_StubProvider(),
         **overrides,
     )
 

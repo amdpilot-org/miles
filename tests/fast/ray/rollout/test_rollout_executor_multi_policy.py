@@ -200,6 +200,8 @@ class TestRolloutTimerNaming:
             return [], None, None
 
         executor._get_rollout_data = _get_rollout_data
+        for trainer_model_id in ("a", "b"):
+            executor.set_train_parallel_config({"dp_size": 1}, trainer_model_id=trainer_model_id)
 
         await asyncio.wait_for(
             asyncio.gather(executor.get(0, trainer_model_id="a"), executor.get(0, trainer_model_id="b")), timeout=5
@@ -218,6 +220,7 @@ class TestRolloutTimerNaming:
             return [], None, None
 
         executor._get_rollout_data = _get_rollout_data
+        executor.set_train_parallel_config({"dp_size": 1})
 
         await executor.get(0)
 

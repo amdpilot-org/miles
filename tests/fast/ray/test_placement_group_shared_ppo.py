@@ -259,6 +259,7 @@ def _training_models_args(**overrides):
         "critic_lr": 2e-6,
         "critic_lr_warmup_iters": 3,
         "trainer_controller_addrs": None,
+        "run_uuid": _RUN_UUID,
     }
     values.update(overrides)
     return Namespace(**values)
@@ -458,7 +459,6 @@ class _IdentifyingHandle:
 def _split_run_args(**overrides):
     return _training_models_args(
         megatron_config=None,
-        run_uuid="0" * 16,
         trainer_controller_addrs=["actor=10.0.0.1:8000", "critic=10.0.0.2:8000"],
         **overrides,
     )

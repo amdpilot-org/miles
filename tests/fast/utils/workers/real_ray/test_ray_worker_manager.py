@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import socket
 import time
 
 import pytest
@@ -107,6 +108,27 @@ class TestLaunchOnRealRay:
 
         assert records["0-0"]["context"]["self_addrs"]["primary"]["port"] == 21987
         assert ray.get(handle.get_worker_addrs.remote("router-00000-00000"))["primary"].port == 21987
+
+    def test_a_static_port_a_stale_process_still_holds_is_refused(self, manager_factory, worker_probe_factory):
+        """Readiness is a bare connect probe, which a stale listener satisfies, so a run that
+        launched anyway would silently drive the router an earlier run left behind."""
+        probe = worker_probe_factory()
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as squatter:
+            squatter.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            squatter.bind(("", 0))
+            squatter.listen(1)
+            taken = squatter.getsockname()[1]
+
+            with pytest.raises(Exception, match=f"Port {taken} .* is already in use"):
+                manager_factory(
+                    [
+                        make_command_spec(
+                            "router",
+                            launch_command=probe.launch_command,
+                            port_infos=[PortInfo(name="primary", static_port=taken, allow_dynamic=False)],
+                        )
+                    ]
+                )
 
     def test_a_spec_without_cells_launches_no_worker(self, manager_factory, worker_probe_factory):
         """A disabled spec is accepted and simply contributes no workers."""
@@ -349,6 +371,35 @@ class TestStopCellOnRealRay:
 
         probe.wait_until_gone(stopped_pids)
         assert all(is_process_running(pid) for pid in surviving_pids)
+
+    def test_a_restarted_cell_gets_new_actors_running_the_command_again(
+        self, cell_stoppable_manager_factory, worker_probe_factory
+    ):
+        """Healing is only ever exercised against the fake cluster, and a fake handle cannot show
+        that the dead slot is refilled by a genuinely new actor rather than the corpse of the old one."""
+        probe = worker_probe_factory()
+        manager_handle = cell_stoppable_manager_factory(
+            [make_command_spec("engine", num_cells=2, num_workers_per_cell=1, launch_command=probe.launch_command)]
+        )
+        probe.wait_for_records(2)
+        provider = RayWorkerProvider(worker_manager_handle=RayWorkerManager.get_handle())
+        (before,) = provider.get_worker_infos(cell_ids=["engine-00001"])
+        stopped_pid = probe.read_records()["1-0"]["pid"]
+        survivor_pid = probe.read_records()["0-0"]["pid"]
+
+        ray.get(manager_handle.stop_cell.remote("engine", 1))
+        probe.wait_until_gone([stopped_pid])
+        ray.get(manager_handle.start_cells.remote(["engine-00001"]))
+
+        (after,) = provider.get_worker_infos(cell_ids=["engine-00001"])
+        assert after[0].name == before[0].name
+        assert after[0].generation > before[0].generation
+        deadline = time.monotonic() + 60
+        while (restarted_pid := probe.read_records()["1-0"]["pid"]) == stopped_pid:
+            assert time.monotonic() < deadline, "the restarted worker never recorded a new process"
+            time.sleep(0.2)
+        assert is_process_running(restarted_pid)
+        assert is_process_running(survivor_pid)
 
 
 class TestWorkerInfosOnRealRay:

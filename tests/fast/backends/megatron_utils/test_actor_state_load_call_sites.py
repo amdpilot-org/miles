@@ -1,9 +1,10 @@
 import ast
-from pathlib import Path
 
-import miles.backends.megatron_utils.actor as actor_module
+from tests.fast.source_scan import FRAMEWORK_ROOT
 
-_SOURCE = Path(actor_module.__file__)
+# reading the source, not the module: importing it pulls in torch_memory_saver, which a cpu shard
+# does not have, and a collection error there takes down every other test in the same shard
+_SOURCE = FRAMEWORK_ROOT / "backends" / "megatron_utils" / "actor.py"
 _CORE_METHOD = "_load_state_core"
 _LOAD_FUNCTION = "load_model_state"
 _INIT_METHOD = "init"

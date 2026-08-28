@@ -71,6 +71,10 @@ class TestOrchestrator:
         """The release derives object names from it, so an invalid id must fail before anything is created."""
         assert schema_error_mentions(render_run_error("--set", "run.id=Not_A_Name"), path=("run", "id"))
 
+    def test_refuses_an_orchestrated_run_that_names_no_state_file(self):
+        """The launcher polls that path to learn the run finished; without it the launcher waits forever."""
+        assert "run.stateFile" in render_run_error("--set", "run.stateFile=null")
+
     def test_refuses_a_run_with_nowhere_to_write_its_outcome(self):
         """The launcher learns the outcome by reading the exit file, which needs a directory on a volume."""
         assert "runsRoot" in render_run_error("--set", "infra.paths.runsRoot=null")

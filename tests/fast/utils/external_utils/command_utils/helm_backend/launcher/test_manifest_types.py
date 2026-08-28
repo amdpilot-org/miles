@@ -100,7 +100,7 @@ class TestIdentity:
 class TestFlagValue:
     def test_reads_what_the_installed_release_was_told(self):
         """The pod command line is the only place a launch can read back what the one before it decided."""
-        manifest = Manifest.parse(_rendered(_stateful_set(command=["python", "--state-file", "/runs/a.state"])))
+        manifest = _parse(_rendered(_stateful_set(command=["python", "--state-file", "/runs/a.state"])))
 
         assert (
             manifest.flag_value("--state-file", stateful_set=ORCHESTRATOR, container="orchestrator") == "/runs/a.state"
@@ -108,19 +108,19 @@ class TestFlagValue:
 
     def test_reads_only_the_object_it_was_asked_about(self):
         """Every pod of a run is launched by the same image, so a flag found elsewhere means something else."""
-        manifest = Manifest.parse(_rendered(_stateful_set(command=["python", "--state-file", "/runs/a.state"])))
+        manifest = _parse(_rendered(_stateful_set(command=["python", "--state-file", "/runs/a.state"])))
 
         assert manifest.flag_value("--state-file", stateful_set="another-run", container="orchestrator") is None
 
     def test_reads_only_the_container_it_was_asked_about(self):
         """One pod can carry a sidecar, and its command line answers for the sidecar only."""
-        manifest = Manifest.parse(_rendered(_stateful_set(command=["python", "--state-file", "/runs/a.state"])))
+        manifest = _parse(_rendered(_stateful_set(command=["python", "--state-file", "/runs/a.state"])))
 
         assert manifest.flag_value("--state-file", stateful_set=ORCHESTRATOR, container="worker") is None
 
     def test_refuses_a_flag_the_command_leaves_unanswered(self):
         """Reading past the end would crash with an index, which says nothing about which release is malformed."""
-        manifest = Manifest.parse(_rendered(_stateful_set(command=["python", "--state-file"])))
+        manifest = _parse(_rendered(_stateful_set(command=["python", "--state-file"])))
 
         with pytest.raises(AssertionError, match="takes a value"):
             manifest.flag_value("--state-file", stateful_set=ORCHESTRATOR, container="orchestrator")

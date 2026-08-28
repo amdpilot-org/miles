@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from tests.fast.fixtures.args_fixtures import parser_defaults
 from tests.fast.fixtures.capability_fixtures import FakeBackendCapability
 from tests.fast.fixtures.megatron_config_fixtures import write_megatron_config, write_megatron_config_trainers
 
@@ -25,6 +26,7 @@ pytestmark = pytest.mark.asyncio
 
 def _make_args(**overrides) -> Namespace:
     defaults = dict(
+        rollout_num_gpus=8,
         pin_rollout_manager_to_head=False,
         num_rollout=None,
         num_epoch=2,
@@ -36,7 +38,7 @@ def _make_args(**overrides) -> Namespace:
         use_session_server=False,
     )
     defaults.update(overrides)
-    return Namespace(**defaults)
+    return Namespace(**{**parser_defaults(), **defaults})
 
 
 @pytest.fixture
@@ -56,6 +58,9 @@ def fake_components():
         return {}
 
     async def fake_wait_session_server_ready(args, *, provider):
+        # the real one returns before touching anything when the run asked for no session server
+        if provider is None:
+            return
         args.session_server_addrs = ["10.0.0.2:5000"]
         args.session_server_instance_ids = ["session-0"]
         events.append("session_servers_ready")
@@ -249,7 +254,7 @@ class TestCreatePlacementGroups:
             deploy_component="all",
         )
         defaults.update(overrides)
-        return Namespace(**defaults)
+        return Namespace(**{**parser_defaults(), **defaults})
 
     @staticmethod
     def _patched(monkeypatch, requested: list[int]):
@@ -320,7 +325,7 @@ class TestUpdateWeights:
 
     @staticmethod
     def _args():
-        return Namespace(debug_train_only=True, debug_rollout_only=False, save_inference_engine_weight_checksum=False)
+        return Namespace(**{**parser_defaults(), "debug_train_only": True, "debug_rollout_only": False})
 
     async def test_the_executor_is_told_which_version_the_engines_now_serve(self):
         """Without this the executor stamps every sample it collects with weight_version=None."""
@@ -478,7 +483,7 @@ class TestCreateTrainingModels:
             trainer_controller_addrs=None,
         )
         defaults.update(overrides)
-        return Namespace(**defaults)
+        return Namespace(**{**parser_defaults(), **defaults})
 
     async def test_a_configured_policy_is_addressed_by_its_own_trainer_id(self, tmp_path, monkeypatch):
         """A single entry --megatron-config names the pool '<model_id>-actor'; 'actor' addresses nothing."""
@@ -585,21 +590,22 @@ class TestTakeOverTrainers:
             deploy_component="all",
         )
         defaults.update(overrides)
-        return Namespace(**defaults)
+        return Namespace(**{**parser_defaults(), **defaults})
 
     @staticmethod
     def _identity(**overrides) -> DeploymentIdentity:
         defaults = dict(
-            run_uuid="run-a", deploy_component=DeployComponent.TRAINER.value, deploy_instance="alpha-actor"
+            run_uuid="run-a", deploy_component=DeployComponent.TRAINER.value, deploy_instance_id="alpha-actor"
         )
         defaults.update(overrides)
         return DeploymentIdentity(**defaults)
 
     @staticmethod
     def _patched(monkeypatch, *, events: list[str]) -> None:
-        monkeypatch.setattr(
-            placement_group_module, "wait_static_addrs_ready", lambda addrs: events.append("addrs_ready")
-        )
+        async def wait_static_addrs_ready(addrs) -> None:
+            events.append("addrs_ready")
+
+        monkeypatch.setattr(placement_group_module, "wait_static_addrs_ready", wait_static_addrs_ready)
 
     async def test_the_addresses_are_waited_for_before_anything_reads_a_trainer(self, monkeypatch):
         """Reading a trainer at an address nothing answers at yet fails a take-over on a pod that is merely starting."""
@@ -675,7 +681,10 @@ class TestCreateTrainingModel:
         """A trainer that silently starts somewhere other than where it restored gives the operator nothing to read."""
         with caplog.at_level(logging.INFO, logger="miles.ray.placement_group"):
             await create_training_model(
-                Namespace(start_rollout_id=9), handle=self._handle(restored=[3]), trainer_id="alpha-actor"
+                Namespace(start_rollout_id=9),
+                handle=self._handle(restored=[3]),
+                trainer_id="alpha-actor",
+                resumed=False,
             )
 
         assert "alpha-actor" in caplog.text and "--start-rollout-id 9" in caplog.text
@@ -684,7 +693,10 @@ class TestCreateTrainingModel:
         """Logging every trainer that was told where it already stands is noise on every ordinary launch."""
         with caplog.at_level(logging.INFO, logger="miles.ray.placement_group"):
             await create_training_model(
-                Namespace(start_rollout_id=3), handle=self._handle(restored=[3]), trainer_id="alpha-actor"
+                Namespace(start_rollout_id=3),
+                handle=self._handle(restored=[3]),
+                trainer_id="alpha-actor",
+                resumed=False,
             )
 
         assert "--start-rollout-id" not in caplog.text
@@ -693,7 +705,10 @@ class TestCreateTrainingModel:
         """The ordinary resume names no rollout at all, and it must not be reported as an override."""
         with caplog.at_level(logging.INFO, logger="miles.ray.placement_group"):
             await create_training_model(
-                Namespace(start_rollout_id=None), handle=self._handle(restored=[3]), trainer_id="alpha-actor"
+                Namespace(start_rollout_id=None),
+                handle=self._handle(restored=[3]),
+                trainer_id="alpha-actor",
+                resumed=False,
             )
 
         assert "--start-rollout-id" not in caplog.text

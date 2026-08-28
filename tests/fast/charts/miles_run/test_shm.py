@@ -1,7 +1,16 @@
 import json
 from typing import Any
 
-from tests.fast.charts.utils import objects_of_kind, render_run, render_run_error, requires_helm, with_object_names
+from tests.fast.charts.utils import (
+    NAMESPACE,
+    RUN_RELEASE_NAME,
+    named_object,
+    objects_of_kind,
+    render_run,
+    render_run_error,
+    requires_helm,
+    with_object_names,
+)
 
 TRAINER = [
     {
@@ -11,10 +20,51 @@ TRAINER = [
     }
 ]
 
+ENGINE = [
+    {
+        "name": "engine",
+        "command": ["python", "-m", "miles.utils.workers.process_supervisor"],
+        "resources": {"limits": {"nvidia.com/gpu": 8}},
+    }
+]
+
+COLOCATE = {
+    "namespace": NAMESPACE,
+    "release": RUN_RELEASE_NAME,
+    "trainer_pool_id": TRAINER[0]["name"],
+    "inference_pools": [
+        {
+            "pool_id": ENGINE[0]["name"],
+            "layout": {
+                "num_inference_cells": 1,
+                "num_trainer_cells": 1,
+                "num_pods_per_inference_cell": 1,
+                "num_pods_per_trainer_cell": 1,
+                "num_gpus_per_node": 8,
+                "num_gpus_per_inference_pod": 8,
+                "gpu_offset": 0,
+            },
+        }
+    ],
+}
+
 
 def _pod_spec_of_the_only_pool(*args: str) -> dict[str, Any]:
     rendered = render_run("--set-json", f"run.trainerEngines={json.dumps(with_object_names(TRAINER))}", *args)
     pool = objects_of_kind(rendered, "LeaderWorkerSet")[0]
+    return pool["spec"]["leaderWorkerTemplate"]["workerTemplate"]["spec"]
+
+
+def _pod_spec_of_the_colocated_trainer_pool() -> dict[str, Any]:
+    rendered = render_run(
+        "--set-json",
+        f"run.trainerEngines={json.dumps(with_object_names(TRAINER))}",
+        "--set-json",
+        f"run.inferenceEngines={json.dumps(with_object_names(ENGINE))}",
+        "--set-json",
+        f"run.colocate={json.dumps(COLOCATE)}",
+    )
+    pool = named_object(rendered, "LeaderWorkerSet", f"{RUN_RELEASE_NAME}-miles-run-{TRAINER[0]['name']}")
     return pool["spec"]["leaderWorkerTemplate"]["workerTemplate"]["spec"]
 
 
@@ -53,7 +103,17 @@ class TestPoolPodsShareTheHostSharedMemory:
 
     def test_the_pods_that_mount_it_share_the_host_ipc_namespace(self):
         """Sharing the directory buys nothing unless the pods also share the namespace the handles live in."""
-        assert _pod_spec_of_the_only_pool()["hostIPC"] is True
+        pod_spec = _pod_spec_of_the_colocated_trainer_pool()
+
+        assert len(_shm_mounts(pod_spec)) == 1
+        assert pod_spec["hostIPC"] is True
+
+    def test_a_pool_that_shares_no_handles_gets_the_directory_and_not_the_namespace(self):
+        """A run nothing colocates needs the size nccl asks for, and no second pod holds handles into it."""
+        pod_spec = _pod_spec_of_the_only_pool()
+
+        assert len(_shm_mounts(pod_spec)) == 1
+        assert "hostIPC" not in pod_spec
 
     def test_a_cluster_whose_nodes_keep_shared_memory_elsewhere_can_say_so(self):
         """The path was hardcoded, which left a node that mounts its shm elsewhere with no way to be described."""

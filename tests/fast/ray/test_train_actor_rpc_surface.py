@@ -114,13 +114,12 @@ class TestWhatATrainStepSendsAndReturns:
 
 
 def _init_query(**overrides: object) -> dict[str, object]:
-    return dict(
-        args=Namespace(),
-        role="actor",
-        indep_dp_info=IndepDPInfo.create_trivial(),
-        indep_dp_store_addr=None,
-        **overrides,
-    )
+    return {
+        "args": Namespace(),
+        "role": "actor",
+        "indep_dp_info": IndepDPInfo.create_trivial(),
+        "indep_dp_store_addr": None,
+    } | overrides
 
 
 class TestTheArgsThatBuildATrainer:

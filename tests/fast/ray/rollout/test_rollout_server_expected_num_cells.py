@@ -7,6 +7,7 @@ import pytest
 from tests.fast.ray.rollout.conftest import make_args
 
 from miles.ray.rollout.rollout_server import RolloutServer, create_rollout_servers
+from miles.ray.rollout.router_manager import resolve_router_addrs
 from miles.ray.specs.inference import compute_engine_pool_id, specs_inference_engine
 from miles.utils.context_lock import ContextLock
 from miles.utils.workers.worker_provider.base import BaseWorkerProvider
@@ -241,7 +242,7 @@ class TestRouterFlagsAtStartup:
         args = _make_args_with_config(models=_CONFIG_SINGLE_GROUP, tmp_path=tmp_path)
         args.sglang_router_port = 31000
 
-        assert await _create_servers(args)
+        assert await _create_servers(args, _CONFIG_SINGLE_GROUP)
 
     async def test_an_external_router_ip_is_still_rejected(self, tmp_path: Path) -> None:
         """Attaching to a router miles did not start is not supported yet, and silently starting
@@ -250,7 +251,7 @@ class TestRouterFlagsAtStartup:
         args.sglang_router_ip = "10.0.0.9"
 
         with pytest.raises(AssertionError, match="external router mode was removed"):
-            await _create_servers(args)
+            await resolve_router_addrs(args, router_providers=[_StubProvider()])
 
 
 class TestInitExpectedNumCellsOfARegisteringRun:

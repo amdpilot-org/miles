@@ -5,7 +5,7 @@ import random
 
 import pytest
 
-from miles.utils.workers.naming import compute_cell_id, _worker_name_of_cell
+from miles.utils.workers.naming import _worker_name_of_cell, compute_cell_id
 from miles.utils.workers.registration.models import RegistrationSnapshot
 from miles.utils.workers.registration.reporter import (
     SNAPSHOT_INTERVAL_SECONDS,
@@ -97,7 +97,10 @@ class _FakeTrigger:
         self.notified += 1
 
     async def wait(self) -> None:
-        return None
+        # answering without ever suspending starves the loop this runs in: the reporter sends in a
+        # tight cycle and nothing else gets a turn, the cancellation that ends the test included.
+        # python 3.12 stopped wrapping wait_for's awaitable in a task, so nothing else yields either
+        await asyncio.sleep(0)
 
 
 def _reporter(*, provider: _FakeEngineProvider, hub_endpoint: _FakeHub):

@@ -91,17 +91,17 @@ class EventCollector:
         assert self.error is None, f"stream failed with {self.error=}"
 
 
-def make_pod(name: str, *, cell: str = "cell-a", resource_version: str = "1") -> Pod:
+def make_pod(name: str, *, cell: str | None = "cell-a", resource_version: str = "1") -> Pod:
     return Pod.model_validate(wire_pod(name, cell=cell, resource_version=resource_version))
 
 
-def wire_pod(name: str, *, cell: str = "cell-a", resource_version: str = "1") -> SimpleNamespace:
+def wire_pod(name: str, *, cell: str | None = "cell-a", resource_version: str = "1") -> SimpleNamespace:
     return SimpleNamespace(
         metadata=SimpleNamespace(
             name=name,
             uid=f"uid-{name}",
             resource_version=resource_version,
-            labels={"cell": cell},
+            labels={} if cell is None else {"cell": cell},
             annotations=None,
         ),
         spec=None,

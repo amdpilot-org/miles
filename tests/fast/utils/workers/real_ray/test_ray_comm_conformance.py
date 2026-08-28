@@ -12,9 +12,16 @@ from tests.fast.utils.workers.conformance import (
     HandleCheck,
     compute_spec,
 )
+from tests.fast.utils.workers.conftest import worker_manager_args
+from tests.fast.utils.workers.real_ray.conftest import (
+    kill_named_worker_manager,
+    kill_quietly,
+    wait_until_named_manager_is_gone,
+)
 
 from miles.utils.workers.naming import compute_cell_id, compute_worker_name
 from miles.utils.workers.ray_worker_handle import RayWorkerHandle
+from miles.utils.workers.ray_worker_manager import RayWorkerManager
 from miles.utils.workers.types import WorkerCommBackend
 from miles.utils.workers.worker_handle import BaseWorkerHandle
 from miles.utils.workers.worker_provider.ray import RayWorkerProvider
@@ -24,9 +31,27 @@ CELL_ID = compute_cell_id(pool_id=POOL_ID, cell_index=0)
 CONFIRM_DEAD_TIMEOUT_SECONDS = 60.0
 
 
-@pytest.fixture
-def ray_comm_pool(manager_factory) -> Iterator[ray.actor.ActorHandle]:
-    yield manager_factory([compute_spec(rpc_port=0)], {}, WorkerCommBackend.RAY)
+# every actor this pool launches is a fresh process that imports miles, so the checks below
+# share one pool per class rather than paying that twice each
+@pytest.fixture(autouse=True, scope="class")
+def clean_named_worker_manager(ray_local_mode) -> Iterator[None]:
+    kill_named_worker_manager()
+    wait_until_named_manager_is_gone()
+    yield
+    kill_named_worker_manager()
+    wait_until_named_manager_is_gone()
+
+
+@pytest.fixture(scope="class")
+def ray_comm_pool(ray_local_mode) -> Iterator[ray.actor.ActorHandle]:
+    handle = RayWorkerManager.launch(
+        worker_manager_args(env_report_interval_seconds=0.0),
+        [compute_spec(rpc_port=0)],
+        {},
+        comm_backend=WorkerCommBackend.RAY,
+    )
+    yield handle
+    kill_quietly(handle)
 
 
 @pytest.fixture

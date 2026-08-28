@@ -90,6 +90,7 @@ def make_args(**overrides) -> Namespace:
         rollout_sample_filter_path=None,
         sglang_router_ip="127.0.0.1",
         sglang_router_port=30000,
+        sglang_router_request_timeout_secs=14400,
         eval_num_gpus=0,
     )
     defaults.update(overrides)
@@ -262,25 +263,6 @@ async def test_worker_error_propagates(monkeypatch):
 
     with pytest.raises(RuntimeError, match="generation exploded"):
         await fn(RolloutFnTrainInput(rollout_id=0))
-
-
-async def test_worker_bounds_in_flight_groups(monkeypatch):
-    release = asyncio.Event()
-
-    async def blocking_generate(state, group, sampling_params, evaluation=False, sample_done_callback=None):
-        await release.wait()
-        return group
-
-    data_source = FakeDataSource()
-    fn = make_fn(monkeypatch, make_args(rollout_batch_size=2), data_source, generate=blocking_generate)
-
-    drain = asyncio.create_task(fn(RolloutFnTrainInput(rollout_id=0)))
-    await asyncio.sleep(0.05)
-    assert data_source.num_get_calls == 2  # in-flight bound, not more
-
-    release.set()
-    output = await drain
-    assert len(output.samples) == 2
 
 
 async def test_async_max_concurrent_samples_caps_in_flight_groups(monkeypatch):
@@ -741,7 +723,7 @@ class TestPerPolicyBufferClass:
         )
 
         assert RecordingBuffer.constructed_with.unused_handler_fn == unused.append
-        assert RecordingBuffer.constructed_with.args is buffer._inners["verifier"].args
+        assert RecordingBuffer.constructed_with.args is buffer._inners["verifier"]._args
 
     def test_a_policy_this_run_does_not_train_is_refused(self):
         """A typo would silently leave the policy it meant to configure on the built-in buffer."""
@@ -944,3 +926,22 @@ class TestRolloutFnContract:
         fn = make_fn(monkeypatch, make_args(rollout_batch_size=1), data_source)
 
         assert fn.constructor_input.data_source is data_source
+
+
+async def test_worker_bounds_in_flight_groups(monkeypatch):
+    release = asyncio.Event()
+
+    async def blocking_generate(state, group, sampling_params, evaluation=False, sample_done_callback=None):
+        await release.wait()
+        return group
+
+    data_source = FakeDataSource()
+    fn = make_fn(monkeypatch, make_args(rollout_batch_size=2), data_source, generate=blocking_generate)
+
+    drain = asyncio.create_task(fn(RolloutFnTrainInput(rollout_id=0)))
+    await asyncio.sleep(0.05)
+    assert data_source.num_get_calls == 2  # in-flight bound, not more
+
+    release.set()
+    output = await drain
+    assert len(output.samples) == 2

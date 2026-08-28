@@ -194,6 +194,14 @@ class MockWorkerManager:
             self._summaries[cell_id] = previous.model_copy(update=dict(alive=not suspended))
 
 
+class MockStopCellController:
+    def __init__(self, worker_manager: MockWorkerManager) -> None:
+        self._worker_manager = worker_manager
+
+    async def stop_cell_between_weight_updates(self, cell_id: str) -> None:
+        await self._worker_manager.stop_cells.remote([cell_id])
+
+
 def make_cell_summaries(
     *cell_ids: str, suspended: bool = False, workers_hash: str = "pseudo-hash-0"
 ) -> dict[str, CellInfo]:

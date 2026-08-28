@@ -208,7 +208,7 @@ class TestManifestRefusals:
         assert diff.disallowed_changed == ["example.com/v1/Service/rl/engine: spec.clusterIP"]
 
     def test_names_the_field_it_refused(self):
-        """A refusal the user cannot locate just makes them reach for force."""
+        """A refusal the user cannot locate just makes them reach for --skip-upgrade-check."""
         diff = manifest_diff.diff_manifests(
             before=_manifest(_objects()),
             after=_manifest_after(lambda objects: _worker_container(objects).update(image="miles:other")),

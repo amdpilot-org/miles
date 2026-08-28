@@ -78,7 +78,7 @@ class TestGetBackendCapability:
         monkeypatch.setattr(wiring, "_launch_ray_worker_manager", _refuse_ray)
         monkeypatch.setattr(factory.RayWorkerManager, "get_handle", staticmethod(lambda: object()))
 
-        args = SimpleNamespace(cluster_backend=ClusterBackend.RAY.value)
+        args = make_args(cluster_backend=ClusterBackend.RAY.value)
 
         assert isinstance(wiring.get_backend_capability(args), RayBackendCapability)
 

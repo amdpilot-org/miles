@@ -1,18 +1,25 @@
+from tests.ci.ci_register import register_cpu_ci
+
+register_cpu_ci(est_time=30, suite="stage-a-cpu", labels=[])
+
 import asyncio
 from argparse import Namespace
-from types import SimpleNamespace
+from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
 import train_multi_policy as multi_policy_driver
+from tests.fast.fixtures.args_fixtures import parser_defaults
+from tests.fast.fixtures.megatron_config_fixtures import encode_megatron_config
 from train_multi_policy import train_multi_policy
 
 from miles.utils.multi_policy.checkpoint_state import MultiPolicyCheckpointState
 from miles.utils.multi_policy.utils import TrainerInfo
 
 
-def _make_args(**overrides) -> Namespace:
+def _make_args(**overrides: Any) -> Namespace:
     defaults = dict(
+        megatron_config=encode_megatron_config("a", "b"),
         num_rollout=2,
         update_weights_interval=1,
         save=None,
@@ -25,7 +32,7 @@ def _make_args(**overrides) -> Namespace:
         check_weight_update_skip_list=None,
     )
     defaults.update(overrides)
-    return Namespace(**defaults)
+    return Namespace(**{**parser_defaults(), **defaults})
 
 
 def _make_trainers(model_ids, handles=None, start_rollout_ids=None) -> dict[str, TrainerInfo]:
@@ -76,11 +83,6 @@ def _stub_driver_environment(monkeypatch):
         "assert_consistent_restore",
     ):
         monkeypatch.setattr(multi_policy_driver, name, lambda *a, **kw: None)
-    monkeypatch.setattr(
-        multi_policy_driver,
-        "resolve_megatron_config",
-        lambda args: SimpleNamespace(leader_model_id="a", model_ids=["a", "b"]),
-    )
     monkeypatch.setattr(multi_policy_driver, "create_trainers", AsyncMock(return_value={}))
     monkeypatch.setattr(multi_policy_driver, "create_rollout_components", AsyncMock())
 
@@ -109,25 +111,6 @@ def _let_a_follower_yield(handle) -> None:
 
     if isinstance(handle.train, AsyncMock) and handle.train.side_effect is None:
         handle.train.side_effect = yield_to_the_leader
-
-
-class TestInitialWeightPublication:
-    async def test_every_policy_compares_its_engines_against_its_own_trainer(self):
-        """--ci-test asks for this comparison, and running it for one policy would leave the others unchecked."""
-        context = await _run(_make_args(num_rollout=0, check_weight_update_equal=True))
-
-        compared = [call.kwargs["model_id"] for call in context["inference_controller"].check_weights.await_args_list]
-        assert sorted(compared) == ["a", "b"]
-
-    async def test_a_run_that_does_not_ask_for_the_comparison_does_not_pay_for_it(self):
-        """The comparison walks every parameter, so it stays off unless the run turns it on."""
-        context = await _run(_make_args(num_rollout=0))
-
-        context["inference_controller"].check_weights.assert_not_awaited()
-
-
-async def _slow_train(rollout_id: int, rollout_data_ref, **kwargs) -> None:
-    await asyncio.sleep(0.05)
 
 
 class TestInitialWeightPublication:
@@ -265,6 +248,16 @@ class TestRunPolicies:
 
         assert [call.args[0] for call in trainers["a"].train.await_args_list] == [0]
 
+    async def test_a_debug_run_leaves_the_followers_running(self):
+        """A follower's rounds are the leader's to end, so honouring the flag there would retire it
+        from the checkpoint every remaining round waits at."""
+        trainers = {"a": AsyncMock(), "b": AsyncMock()}
+        trainers["a"].train = _slow_train
+
+        await _run(_make_args(num_rollout=10, debug_exit_after_rollout=1), trainers=trainers)
+
+        assert len(trainers["b"].train.await_args_list) >= 2
+
     async def test_the_run_ends_when_the_leader_runs_out_of_rounds(self):
         """The leader owns --num-rollout; a follower resuming further back must not extend the run."""
         trainers = {"a": AsyncMock(), "b": AsyncMock()}
@@ -308,8 +301,8 @@ class TestSaving:
 
         await _run(_make_args(num_rollout=1, save=None, save_interval=1), trainers=trainers)
 
-        [saved_at] = [call.args[0] for call in trainers["b"].save_model.await_args_list]
-        assert saved_at == trainers["b"].train.await_args_list[-1].args[0]
+        [(saved_at, reached)] = saves
+        assert saved_at == reached
 
     async def test_every_policy_is_on_disk_before_the_record_claims_the_checkpoint_exists(self):
         """An asynchronous follower save still running would leave the record pointing at files nobody wrote."""

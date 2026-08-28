@@ -4,6 +4,7 @@ import argparse
 import dataclasses
 import functools
 import json
+import os
 from argparse import Namespace
 from typing import Any
 
@@ -18,6 +19,17 @@ from sglang.srt.server_args import ServerArgs
 from miles.backends.sglang_utils.server_args_utils import parse_server_args_argv, server_args_to_argv
 from miles.backends.sglang_utils.sglang_engine import _compute_server_args
 from miles.utils.workers.argv_utils import _actions_by_dest, _render_action_argv, _resolve_action
+
+
+@pytest.fixture(autouse=True)
+def _the_sweep_does_not_leave_its_env_behind():
+    # sglang writes tuning switches into the process environment while it validates a ServerArgs, and
+    # this file builds one per cli option, so anything reading os.environ afterwards reads the sweep
+    saved = dict(os.environ)
+    yield
+    os.environ.clear()
+    os.environ.update(saved)
+
 
 _FIELDS_WITHOUT_A_RENDERABLE_CLI: dict[str, str] = {
     "custom_sigquit_handler": "A Python-only callable hook; sglang registers no CLI option for it.",
@@ -291,3 +303,8 @@ def _scalar_candidates(*, action: argparse.Action, default_value: object) -> lis
         return ["other-sweep-value" if default_value == "sweep-value" else "sweep-value"]
 
     return [1, "sweep-value", 1.0]
+
+
+def test_the_sweep_leaves_the_environment_as_it_found_it():
+    """A tuning switch left behind is read as the machine's own by every later test that consults it."""
+    assert os.environ.get("SGLANG_OPT_USE_CUSTOM_ALL_REDUCE_V2") is None

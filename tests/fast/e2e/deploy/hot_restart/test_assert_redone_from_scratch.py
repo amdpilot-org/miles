@@ -191,7 +191,7 @@ class TestAssertARunThatHadSavedNothingWasRedoneFromScratch:
         """A comparison over fewer steps than the run was asked for would quietly prove less."""
         run = _run_restarted_before_it_saved(tmp_path)
 
-        with pytest.raises(AssertionError, match="was asked for 7 steps"):
+        with pytest.raises(AssertionError, match="the run was asked for 7 steps"):
             run.assert_redone_from_scratch(num_rollouts=7)
 
     def test_a_step_the_take_over_should_have_redone_but_did_not_fails(self, tmp_path):

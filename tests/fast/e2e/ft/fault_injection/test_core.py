@@ -1,18 +1,19 @@
 import random
 import threading
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from tests.e2e.ft.conftest_ft.fault_injection import core, fault_forms, state, views
 from tests.fast.e2e.ft.fault_injection.utils import (
-    intervals,
-    api_server_fault_forms,
-    fixed_fault_forms,
-    typed_cell,
-    StubFaultForm,
     SERVING,
+    StubFaultForm,
+    api_server_fault_forms,
     cell,
+    fixed_fault_forms,
+    intervals,
     mock_response,
+    patched_requests,
     staged,
+    typed_cell,
 )
 
 
@@ -34,7 +35,7 @@ def test_loop_never_kills_the_last_live_cell_under_stale_liveness() -> None:
         injected.append(url.rsplit("/cells/", 1)[1].split("/")[0])
         return mock_response({})
 
-    with patch.object(core, "requests") as mock_requests:
+    with patched_requests() as mock_requests:
         mock_requests.get.side_effect = fake_get
         mock_requests.post.side_effect = fake_post
         core.run_fault_injection_loop(
@@ -73,7 +74,7 @@ def test_loop_injects_again_after_an_injected_cell_recovers() -> None:
         down["name"], down["polls_left"] = name, 3  # crashed cell reads unhealthy for a few polls, then heals
         return mock_response({})
 
-    with patch.object(core, "requests") as mock_requests:
+    with patched_requests() as mock_requests:
         mock_requests.get.side_effect = fake_get
         mock_requests.post.side_effect = fake_post
         core.run_fault_injection_loop(
@@ -104,7 +105,7 @@ def _run_typed_injection_loop(cells: list[dict], *, cell_types: tuple[str, ...])
         injected.append(url.rsplit("/cells/", 1)[1].split("/")[0])
         return mock_response({})
 
-    with patch.object(core, "requests") as mock_requests:
+    with patched_requests() as mock_requests:
         mock_requests.get.side_effect = fake_get
         mock_requests.post.side_effect = fake_post
         core.run_fault_injection_loop(
@@ -133,7 +134,7 @@ def test_a_stop_that_arrives_while_listing_buys_no_further_injection() -> None:
         injected.append(url)
         return mock_response({})
 
-    with patch.object(core, "requests") as mock_requests:
+    with patched_requests() as mock_requests:
         mock_requests.get.side_effect = fake_get
         mock_requests.post.side_effect = fake_post
         core.run_fault_injection_loop(
@@ -234,7 +235,7 @@ class TestFaultInjectionLoopErrorHandling:
             injected.append(url.rsplit("/cells/", 1)[1].split("/")[0])
             return mock_response({})
 
-        with patch.object(core, "requests") as mock_requests:
+        with patched_requests() as mock_requests:
             mock_requests.get.side_effect = fake_get
             mock_requests.post.side_effect = fake_post
             core.run_fault_injection_loop(
@@ -243,6 +244,7 @@ class TestFaultInjectionLoopErrorHandling:
                 mean_interval_seconds_of_cell_type=intervals(("actor", "rollout"), 1e-12),
                 stop_event=stop_event,
                 event_log=log,
+                cell_fault_forms=api_server_fault_forms(),
                 poll_interval_seconds=1e-6,
             )
 
@@ -277,7 +279,7 @@ class TestFaultInjectionLoopErrorHandling:
                 raise RuntimeError("inject-fault refused")
             return mock_response({})
 
-        with patch.object(core, "requests") as mock_requests:
+        with patched_requests() as mock_requests:
             mock_requests.get.side_effect = fake_get
             mock_requests.post.side_effect = fake_post
             core.run_fault_injection_loop(
@@ -286,6 +288,7 @@ class TestFaultInjectionLoopErrorHandling:
                 mean_interval_seconds_of_cell_type=intervals(("actor", "rollout"), 1e-6),
                 stop_event=stop_event,
                 event_log=log,
+                cell_fault_forms=api_server_fault_forms(),
                 poll_interval_seconds=1e-6,
             )
 
@@ -321,7 +324,7 @@ def test_the_loop_injects_through_the_forms_of_the_cell_it_picked() -> None:
             stop_event.set()
         return mock_response({"items": [typed_cell(f"actor-{i}", "actor") for i in range(3)]})
 
-    with patch.object(core, "requests") as mock_requests:
+    with patched_requests() as mock_requests:
         mock_requests.get.side_effect = fake_get
         core.run_fault_injection_loop(
             base_url="http://control",
@@ -353,11 +356,11 @@ def test_the_loop_draws_a_form_that_has_never_worked_before_repeating_a_proven_o
 
     def fake_get(url: str, timeout: float) -> MagicMock:
         polls["n"] += 1
-        if polls["n"] >= 5:
+        if polls["n"] >= 6:
             stop_event.set()
-        return mock_response({"items": [typed_cell(f"actor-{i}", "actor") for i in range(3)]})
+        return mock_response({"items": [typed_cell(f"actor-{i}", "actor") for i in range(4)]})
 
-    with patch.object(core, "requests") as mock_requests:
+    with patched_requests() as mock_requests:
         mock_requests.get.side_effect = fake_get
         core.run_fault_injection_loop(
             base_url="http://control",
@@ -386,7 +389,7 @@ def test_a_form_that_always_refuses_keeps_being_drawn_so_the_soak_can_see_it() -
             stop_event.set()
         return mock_response({"items": [typed_cell(f"actor-{i}", "actor") for i in range(3)]})
 
-    with patch.object(core, "requests") as mock_requests:
+    with patched_requests() as mock_requests:
         mock_requests.get.side_effect = fake_get
         core.run_fault_injection_loop(
             base_url="http://control",

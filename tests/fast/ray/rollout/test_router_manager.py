@@ -3,12 +3,12 @@ from __future__ import annotations
 from argparse import Namespace
 from collections.abc import Callable, Coroutine
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Any
 
 import pytest
 from tests.fast.ray.rollout.conftest import make_args
 
+import miles.ray.rollout.router_manager as router_manager
 from miles.ray.rollout.router_manager import resolve_router_addrs, wait_router_ready, wait_session_server_ready
 from miles.utils.workers.worker_spec import HostAndPort, NamedHostAndPorts
 
@@ -160,14 +160,10 @@ class TestWaitRouterReady:
         async def _refuse(host: str, port: int, *, timeout: float) -> None:
             raise RuntimeError(f"Server at {host}:{port} not ready after {timeout}s")
 
-        monkeypatch.setattr(
-            "miles.ray.rollout.router_manager.RayWorkerProvider",
-            SimpleNamespace(create=lambda: _FakeProvider()),
-        )
         monkeypatch.setattr("miles.ray.rollout.router_manager.wait_tcp_ready_async", _refuse)
 
         with pytest.raises(RuntimeError, match="10.0.0.9:12345 not ready"):
-            await wait_router_ready(model_idx=1)
+            await wait_router_ready(model_idx=1, provider=_FakeProvider())
 
     async def test_a_failed_router_addr_lookup_fails_before_any_tcp_wait(self, monkeypatch):
         """A router the worker manager cannot resolve must abort startup, not be probed anyway."""
@@ -178,42 +174,26 @@ class TestWaitRouterReady:
 
         waited: list[tuple[str, int]] = []
         monkeypatch.setattr(
-            "miles.ray.rollout.router_manager.RayWorkerProvider",
-            SimpleNamespace(create=lambda: _FakeProvider()),
-        )
-        monkeypatch.setattr(
             "miles.ray.rollout.router_manager.wait_tcp_ready_async",
             _recording_probe(waited),
         )
 
         with pytest.raises(RuntimeError, match="not registered"):
-            await wait_router_ready(model_idx=1)
+            await wait_router_ready(model_idx=1, provider=_FakeProvider())
         assert waited == []
 
 
 class TestWaitSessionServerReady:
     async def test_disabled_session_server_does_not_create_a_provider_or_publish_addresses(self, monkeypatch):
         """Disabling the session server publishes no addr / instance-id fields and resolves no addrs."""
-        created: list[object] = []
 
         class _FakeProvider:
             async def get_addrs(self, worker_name: str) -> NamedHostAndPorts:
                 raise AssertionError("the disabled branch must not resolve any addrs")
 
-        def _create() -> _FakeProvider:
-            provider = _FakeProvider()
-            created.append(provider)
-            return provider
-
-        monkeypatch.setattr(
-            "miles.ray.rollout.router_manager.RayWorkerProvider",
-            SimpleNamespace(create=_create),
-        )
-
         args = make_args(use_session_server=False)
-        await wait_session_server_ready(args, provider=None)
+        await wait_session_server_ready(args, provider=_FakeProvider())
 
-        assert created == []
         assert not hasattr(args, "session_server_addrs")
         assert not hasattr(args, "session_server_instance_ids")
 
@@ -224,18 +204,16 @@ class TestWaitSessionServerReady:
             await wait_session_server_ready(args, provider=None)
 
     @pytest.mark.parametrize("workers", [0, -1])
-    async def test_a_non_positive_worker_count_is_rejected(self, workers, monkeypatch):
+    async def test_a_non_positive_worker_count_is_rejected(self, workers):
         """A zero count published an empty address list, so the run only failed once a session was requested."""
-        created: list[object] = []
-        monkeypatch.setattr(
-            "miles.ray.rollout.router_manager.RayWorkerProvider",
-            SimpleNamespace(create=lambda: created.append(None)),
-        )
+
+        class _FakeProvider:
+            async def get_addrs(self, worker_name: str) -> NamedHostAndPorts:
+                raise AssertionError("a non-positive worker count must not resolve any addrs")
 
         args = make_args(use_session_server=True, hf_checkpoint="/fake/model", session_server_workers=workers)
         with pytest.raises(ValueError, match="session-server-workers"):
-            await wait_session_server_ready(args)
-        assert created == []
+            await wait_session_server_ready(args, provider=_FakeProvider())
 
     async def test_publishes_the_manager_addrs_and_instance_ids(self, monkeypatch):
         """The driver-side contract (ip, ports, instance ids) comes from the worker manager addrs."""
@@ -316,15 +294,11 @@ class TestWaitSessionServerReady:
             if port == 5006:
                 raise RuntimeError(f"Server at {host}:{port} not ready after {timeout}s")
 
-        monkeypatch.setattr(
-            "miles.ray.rollout.router_manager.RayWorkerProvider",
-            SimpleNamespace(create=lambda: _FakeProvider()),
-        )
         monkeypatch.setattr("miles.ray.rollout.router_manager.wait_tcp_ready_async", _refuse_one)
 
         args = make_args(use_session_server=True, hf_checkpoint="/fake/model", session_server_workers=2)
         with pytest.raises(RuntimeError, match="10.0.0.9:5006 not ready"):
-            await wait_session_server_ready(args)
+            await wait_session_server_ready(args, provider=_FakeProvider())
 
     async def test_a_failed_instance_addr_lookup_fails_before_any_tcp_wait(self, monkeypatch):
         """A session server the worker manager cannot resolve aborts startup before any TCP probe."""
@@ -335,15 +309,64 @@ class TestWaitSessionServerReady:
 
         waited: list[tuple[str, int]] = []
         monkeypatch.setattr(
-            "miles.ray.rollout.router_manager.RayWorkerProvider",
-            SimpleNamespace(create=lambda: _FakeProvider()),
-        )
-        monkeypatch.setattr(
             "miles.ray.rollout.router_manager.wait_tcp_ready_async",
             _recording_probe(waited),
         )
 
         args = make_args(use_session_server=True, hf_checkpoint="/fake/model", session_server_workers=2)
         with pytest.raises(RuntimeError, match="not registered"):
-            await wait_session_server_ready(args)
+            await wait_session_server_ready(args, provider=_FakeProvider())
         assert waited == []
+
+
+class TestTheWaitCoversWhatEachServerDoesBeforeItBinds:
+    async def test_a_session_server_is_given_longer_than_a_router(self, monkeypatch):
+        """A router binds its port first thing. A session server imports transformers and loads the
+        tokenizer and chat template first, and it is scheduled by the platform before any of that, so
+        holding it to the router's budget reports a server that is merely still starting as unreachable."""
+
+        class _FakeProvider:
+            async def get_addrs(self, worker_name: str) -> NamedHostAndPorts:
+                return {"primary": HostAndPort(host="10.0.0.9", port=5004)}
+
+        budgets: list[float] = []
+
+        async def record_budget(host, port, timeout) -> None:
+            budgets.append(timeout)
+
+        monkeypatch.setattr("miles.ray.rollout.router_manager.wait_tcp_ready_async", record_budget)
+
+        await wait_router_ready(model_idx=0, provider=_FakeProvider())
+        router_budget = budgets.pop()
+
+        args = make_args(
+            use_session_server=True,
+            hf_checkpoint="/fake/model",
+            session_server_workers=1,
+            run_uuid="00112233445566aa",
+        )
+        await wait_session_server_ready(args, provider=_FakeProvider())
+
+        assert budgets == [router_manager._SESSION_SERVER_READY_TIMEOUT_SECONDS]
+        assert budgets[0] > router_budget
+
+    async def test_a_session_server_that_never_binds_still_fails(self, monkeypatch):
+        """The budget is there to cover a slow start, not to wait out one that is never coming."""
+
+        class _FakeProvider:
+            async def get_addrs(self, worker_name: str) -> NamedHostAndPorts:
+                return {"primary": HostAndPort(host="10.0.0.9", port=5004)}
+
+        def _refuse(host: str, port: int, timeout: float) -> None:
+            raise RuntimeError(f"Server at {host}:{port} not ready after {timeout}s")
+
+        monkeypatch.setattr("miles.ray.rollout.router_manager.wait_tcp_ready_async", _refuse)
+        args = make_args(
+            use_session_server=True,
+            hf_checkpoint="/fake/model",
+            session_server_workers=1,
+            run_uuid="00112233445566aa",
+        )
+
+        with pytest.raises(RuntimeError, match="not ready after"):
+            await wait_session_server_ready(args, provider=_FakeProvider())

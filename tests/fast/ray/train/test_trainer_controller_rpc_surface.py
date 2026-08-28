@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pytest
-from pydantic import ValidationError
+from pydantic_core import PydanticSerializationError
 
 from miles.ray.rollout.inference_controller import UpdatableEngines
 from miles.ray.train.group import TrainerController
@@ -64,5 +64,5 @@ class TestTheHandshakeThatJoinsTwoDeployments:
         """A half-built identity would compare unequal for a reason the message would not name."""
         spec = collect_rpc_method_specs(TrainerController)["get_deployment_identity"]
 
-        with pytest.raises(ValidationError):
+        with pytest.raises(PydanticSerializationError, match="DeploymentIdentity"):
             spec.serializer.encode_result({"run_uuid": "0123456789abcdef"})

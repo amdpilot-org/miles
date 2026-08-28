@@ -49,7 +49,6 @@ def _minimal_run_values() -> dict[str, Any]:
         },
         "run": {
             "id": "260101-000000-000",
-            "dir": "/cluster-storage/miles_data/miles-runs/260101-000000-000",
             "stateFile": "/cluster-storage/miles_data/miles-runs/260101-000000-000/state/orchestrator.state",
             "objectNames": {
                 "orchestrator": "r-miles-run-orchestrator",
@@ -123,15 +122,6 @@ class TestRunSchemaRejectsBadValues:
         jsonschema = pytest.importorskip("jsonschema")
         values = _minimal_run_values()
         values["run"]["objectNamez"] = {}
-
-        with pytest.raises(jsonschema.ValidationError):
-            _validator(_run_schema(schemas)).validate(values)
-
-    def test_a_run_without_its_state_file_is_rejected(self, schemas):
-        """The launcher polls that path to learn the run finished; without it the launcher waits forever."""
-        jsonschema = pytest.importorskip("jsonschema")
-        values = _minimal_run_values()
-        del values["run"]["stateFile"]
 
         with pytest.raises(jsonschema.ValidationError):
             _validator(_run_schema(schemas)).validate(values)

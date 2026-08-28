@@ -382,5 +382,5 @@ class TestWhatAReloadRefuses:
         """There is no checkpoint for this reload to restore, and starting the trainer over would replay the run."""
         actor = _actor(actor_module, role="actor", args=_args(tmp_path, requested_load=None))
 
-        with pytest.raises(AssertionError, match="needs a run started with --load"):
+        with pytest.raises(AssertionError, match="a hot restart needs --load"):
             actor.load_state()

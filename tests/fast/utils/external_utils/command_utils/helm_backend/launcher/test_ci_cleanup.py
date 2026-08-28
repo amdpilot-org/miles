@@ -103,7 +103,7 @@ class TestUninstallLeftoverCiReleases:
     def test_keeps_the_sibling_releases_of_the_run_being_launched(self, monkeypatch):
         """A split run installs one ci release per component, so cleaning them would tear down its own halves."""
         run_id = "260101-000000-000"
-        siblings = [f"miles-run-{run_id}", f"miles-run-{run_id}-trainer", f"miles-run-{run_id}-primary"]
+        siblings = [f"miles-run-{run_id}-all", f"miles-run-{run_id}-trainer", f"miles-run-{run_id}-primary"]
         cluster = _cluster(
             monkeypatch,
             [{"name": name, "namespace": NAMESPACE, "ci": True} for name in ("ci-of-another-run", *siblings)],

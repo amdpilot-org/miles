@@ -120,6 +120,10 @@ def _orchestration_args(**overrides) -> Namespace:
         debug_rollout_only=False,
         save_inference_engine_weight_checksum=True,
         start_rollout_id=0,
+        ci_ft_test_actions=None,
+        ci_ft_test_actions_path=None,
+        mini_ft_controller_enable=True,
+        mini_ft_controller_poll_interval=0.01,
     )
     values.update(overrides)
     return Namespace(**values)

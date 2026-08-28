@@ -8,6 +8,7 @@ import ray
 from tests.fast.ray.train import conftest as train_conftest
 from tests.fast.ray.train.conftest import get_raw_actor_handles, make_deployment_identity, make_provider
 
+import miles.ray.train.group as group_module
 from miles.backends.megatron_utils.ft.types import TrainStepOutcome, TrainStepOutput
 from miles.ray.train.group import TrainerController, compute_trainer_health_checker_config
 from miles.utils import object_store
@@ -16,14 +17,14 @@ from miles.utils.audit_utils.event_logger.models import CellReconfigureEvent
 from miles.utils.audit_utils.process_identity import SimpleProcessIdentity
 from miles.utils.audit_utils.witness.allocator import WitnessIdAllocator
 from miles.utils.data import RolloutDataPack
-from miles.utils.object_store import StoreObjectRef
+from miles.utils.object_store import _MooncakeStoreObjectRef
 from miles.utils.ray_utils import Box
 from miles.utils.retry_utils import NonRetryableError
 from miles.utils.workers.naming import compute_cell_id
 
 pytestmark = pytest.mark.asyncio
 
-_DUMMY_DATA_PACK = RolloutDataPack(sample_indices=[0], data_ref=StoreObjectRef(payload="data"))
+_DUMMY_DATA_PACK = RolloutDataPack(sample_indices=[0], data_ref=_MooncakeStoreObjectRef(payload="data"))
 
 
 def _make_mock_args(
@@ -33,6 +34,7 @@ def _make_mock_args(
     gpus_per_cell: int = 1,
     num_cells: int = 3,
     ci_ft_test_actions: str | None = None,
+    ci_ft_test_actions_path: str | None = None,
 ) -> SimpleNamespace:
     # Use SimpleNamespace (not MagicMock) so the args object is picklable. TrainerCell.init
     # passes self.args through Ray to the remote actor; pickling a MagicMock blows the
@@ -49,7 +51,7 @@ def _make_mock_args(
         trainer_heartbeat_checker_first_wait=300.0,
         trainer_heartbeat_checker_failure_threshold=3,
         ci_ft_test_actions=ci_ft_test_actions,
-        ci_ft_test_actions_path=None,
+        ci_ft_test_actions_path=ci_ft_test_actions_path,
         debug_train_only=False,
         debug_rollout_only=False,
         # compute_megatron_world_size_except_dp(args) = TP * PP * CP. Set CP to
@@ -83,7 +85,7 @@ def _make_controller(
         with_ref=with_ref,
         with_opd_teacher=with_opd_teacher,
         cell_provider=make_provider(),
-        cell_operations=MagicMock(),
+        cell_operations=AsyncMock(),
     )
     group.args = _make_mock_args(
         indep_dp=True,
@@ -95,6 +97,8 @@ def _make_controller(
     group._health_checker_config = compute_trainer_health_checker_config(
         group.args, expected_num_cells=group._expected_num_cells
     )
+    if group._expected_num_cells > 1:
+        group._indep_dp_store, group._indep_dp_store_addr = group_module.create_tcp_store()
     for cell_index in range(num_cells):
         cell = group._create_cell(
             compute_cell_id(pool_id=group._pool_id, cell_index=cell_index),
@@ -168,12 +172,13 @@ class TestInit:
     def test_the_controller_watches_the_pool_of_its_trainer_id(self):
         """A policy's controller owns the pool named after its trainer id, which the role no longer determines."""
         group = TrainerController(
+            deployment_identity=make_deployment_identity(),
             trainer_id="alpha-actor",
             role="actor",
             with_ref=False,
             with_opd_teacher=False,
             cell_provider=make_provider(),
-            cell_operations=MagicMock(),
+            cell_operations=AsyncMock(),
         )
 
         assert group._pool_id == "trainer-engine-alpha-actor"
@@ -1114,7 +1119,7 @@ class TestLogStepEndEvent:
 
 
 class TestCellStatusesUnderConcurrentReconcile:
-    def test_a_cell_removed_while_the_statuses_are_read_does_not_abort_the_read(self):
+    async def test_a_cell_removed_while_the_statuses_are_read_does_not_abort_the_read(self):
         """The api server reads this from its own thread while reconcile adds and drops cells,
         and iterating the live dict raises RuntimeError instead of answering the request."""
         controller = _make_controller(num_cells=3)
@@ -1128,7 +1133,7 @@ class TestCellStatusesUnderConcurrentReconcile:
 
         controller._cells_by_id[compute_cell_id(pool_id=controller._pool_id, cell_index=0)] = _EvictingCell()
 
-        statuses = controller.get_cell_statuses()
+        statuses = await controller.get_cell_statuses()
 
         # The snapshot is taken before the first cell_status() call, so the evicted cell is still
         # answered for. What matters is that the read completes instead of raising.
@@ -1182,21 +1187,25 @@ class TestInitForwardsModelFlags:
 class TestTrainRunsFTTestActions:
     async def test_train_applies_the_action_armed_for_that_rollout_before_returning(self):
         """The FT scenario's stop must have landed by the time the driver starts the next rollout."""
-        actions = json.dumps([{"at_rollout": 4, "action": "stop_cell_at_end", "cell_id": "trainer-actor-2"}])
+        actions = json.dumps(
+            [{"at_rollout": 4, "action": "stop_cell_at_end", "cell_id": "trainer-engine-actor-00002"}]
+        )
         group = await _make_alive_controller(num_cells=3, ci_ft_test_actions=actions)
 
         await group.train(rollout_id=4, rollout_data_pack=_DUMMY_DATA_PACK)
 
-        assert train_conftest.fake_worker_manager.stopped_cell_ids == [["trainer-actor-00002"]]
+        group._cell_operations.suspend.assert_awaited_once_with(cell_id="trainer-engine-actor-00002")
 
     async def test_train_leaves_the_pool_alone_on_a_rollout_no_action_names(self):
         """An action that fires on every rollout would tear the pool down for the whole run."""
-        actions = json.dumps([{"at_rollout": 4, "action": "stop_cell_at_end", "cell_id": "trainer-actor-2"}])
+        actions = json.dumps(
+            [{"at_rollout": 4, "action": "stop_cell_at_end", "cell_id": "trainer-engine-actor-00002"}]
+        )
         group = await _make_alive_controller(num_cells=3, ci_ft_test_actions=actions)
 
         await group.train(rollout_id=3, rollout_data_pack=_DUMMY_DATA_PACK)
 
-        assert train_conftest.fake_worker_manager.stopped_cell_ids == []
+        group._cell_operations.suspend.assert_not_awaited()
 
 
 class TestSaveModel:

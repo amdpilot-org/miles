@@ -7,8 +7,9 @@ from typing import Any
 
 import pytest
 import yaml
+from megatron.training import arguments as megatron_arguments
 from tests.fast.charts.utils import NAMESPACE, RUN_CHART_DIR, RUN_ID, RUN_RELEASE_NAME, requires_helm
-from tests.fast.launch_scripts.sh_harness import REPO_ROOT, assert_matches_snapshot, sanitize
+from tests.fast.launch_scripts.sh_harness import REPO_ROOT, SANDBOX_PLACEHOLDER, assert_matches_snapshot
 
 from miles.ray.specs.entrypoint import compute_specs
 from miles.utils.arguments import parse_args
@@ -25,6 +26,7 @@ SGLANG_CONFIG = FIXTURE_DIR / "typical-sglang.yaml"
 HF_CHECKPOINT = FIXTURE_DIR / "typical-model"
 
 PYTHON_PLACEHOLDER = "<PYTHON>"
+FIXTURE_DIR_PLACEHOLDER = "<FIXTURE_DIR>"
 RANDOM_SEED_PLACEHOLDER = "<RANDOM_SEED>"
 RANDOM_SEED_FLAG = "--random-seed"
 
@@ -45,6 +47,10 @@ PARSER_ENV = {"CUDA_DEVICE_MAX_CONNECTIONS": "1"}
 
 SCENARIO_ARGV = [
     *shlex.split(load_model_args(MODEL_TYPE, rotary_base=ROTARY_BASE)),
+    # named rather than left to sglang's own probe, which reads the launcher's accelerator and
+    # has none to read on the cpu lane that renders this snapshot
+    "--sglang-device",
+    "cuda",
     "--hf-checkpoint",
     str(HF_CHECKPOINT),
     "--load",
@@ -151,6 +157,21 @@ SCENARIO_ARGV = [
 def parser_process_env(monkeypatch: pytest.MonkeyPatch) -> None:
     for name, value in PARSER_ENV.items():
         monkeypatch.setenv(name, value)
+    # megatron validates the arguments against the local accelerator, which the cpu lane that
+    # runs this snapshot has none of; the rendered values do not depend on the answer
+    monkeypatch.setattr(megatron_arguments, "get_device_arch_version", lambda: _DEVICE_ARCH_VERSION)
+
+
+_DEVICE_ARCH_VERSION = 9
+
+
+def _dump_values(values: dict[str, Any]) -> str:
+    # unwrapped: yaml folds long lines against the real interpreter path, which the snapshot
+    # only replaces afterwards, so a machine whose path is a different length folds elsewhere
+    return yaml.safe_dump(values, default_flow_style=False, sort_keys=True, width=_NO_WRAP)
+
+
+_NO_WRAP = 1 << 30
 
 
 def synthetic_specs() -> list[Any]:
@@ -197,7 +218,11 @@ def render_from(values_file: Path) -> str:
 
 
 def freeze(text: str, sandbox: Path) -> str:
-    return mask_random_seeds(sanitize(text, sandbox=sandbox).replace(sys.executable, PYTHON_PLACEHOLDER))
+    # only this test's own fixtures really move from machine to machine. the chart mounts the repo at
+    # a fixed container path, so masking the whole checkout instead would mask that constant away on
+    # any machine that happens to be checked out there, and record a snapshot only it can reproduce
+    masked = text.replace(str(sandbox), SANDBOX_PLACEHOLDER).replace(str(FIXTURE_DIR), FIXTURE_DIR_PLACEHOLDER)
+    return mask_random_seeds(masked.replace(sys.executable, PYTHON_PLACEHOLDER))
 
 
 def mask_random_seeds(text: str) -> str:
@@ -221,7 +246,7 @@ def _yaml_scalar(line: str) -> str:
 class TestGeneratedValuesSnapshot:
     def test_the_launcher_turns_the_specs_into_exactly_the_recorded_values(self, tmp_path):
         """The spec to values transform decides a run's whole shape, so it is pinned end to end."""
-        values = yaml.safe_dump(synthetic_run_values(), default_flow_style=False, sort_keys=True)
+        values = _dump_values(synthetic_run_values())
 
         assert_matches_snapshot(
             SNAPSHOT_DIR / "typical-values.yaml", freeze(values, sandbox=tmp_path), "miles-run generated values"
@@ -230,7 +255,7 @@ class TestGeneratedValuesSnapshot:
     def test_those_values_render_exactly_the_recorded_manifests(self, tmp_path):
         """Rendering the file the launcher really writes is what pins the two halves to each other."""
         values_file = tmp_path / "run-values.yaml"
-        values_file.write_text(yaml.safe_dump(synthetic_run_values(), sort_keys=True))
+        values_file.write_text(_dump_values(synthetic_run_values()))
 
         assert_matches_snapshot(
             SNAPSHOT_DIR / "typical.yaml", freeze(render_from(values_file), sandbox=tmp_path), "miles-run manifests"

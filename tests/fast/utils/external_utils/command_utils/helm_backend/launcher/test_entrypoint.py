@@ -21,7 +21,9 @@ def _infra_file(tmp_path: Path, name: str, values: dict[str, Any]) -> str:
 def _stub_launch_inputs(monkeypatch, *, specs, colocate: bool = False) -> None:
     monkeypatch.setattr(entrypoint, "compute_specs", lambda args: specs)
     monkeypatch.setattr(
-        entrypoint, "parse_args", lambda: SimpleNamespace(colocate=colocate, deploy_component="all", argv=[])
+        entrypoint,
+        "parse_args",
+        lambda: SimpleNamespace(colocate=colocate, deploy_component="all", deploy_instance_id=None, argv=[]),
     )
     monkeypatch.setattr(MooncakeInfo, "plan_of_args", staticmethod(lambda args: None))
     monkeypatch.setattr(entrypoint, "_follow_until_finished", lambda **kwargs: None)
@@ -82,8 +84,10 @@ def _record_launch(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, ci_run: b
     commands: list[list[str]] = []
 
     def fake_run(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess:
-        commands.append([str(part) for part in command])
-        return subprocess.CompletedProcess(args=command, returncode=0, stdout="", stderr="")
+        argv = [str(part) for part in command]
+        commands.append(argv)
+        rendered = '{"manifest": ""}' if "--dry-run" in argv else ""
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=rendered, stderr="")
 
     monkeypatch.setattr(command_wrapper, "run_process", fake_run)
     monkeypatch.setattr(Helm, "get_manifest", lambda release, namespace: None)
@@ -139,6 +143,6 @@ class TestCiRunCleanup:
     def test_labels_the_release_it_installs_so_the_next_run_can_find_it(self, monkeypatch, tmp_path):
         """The cleanup selects on this label, and an unlabelled CI release is one nothing will ever remove."""
         commands = _record_launch(monkeypatch, tmp_path, ci_run=True)
-        upgrade = [command for command in commands if command[1] == "upgrade"]
+        installed = [command for command in commands if command[1] == "upgrade" and "--dry-run" not in command]
 
-        assert upgrade[0][upgrade[0].index("--labels") + 1] == f"{command_wrapper.CI_LABEL}=true"
+        assert installed[0][installed[0].index("--labels") + 1] == f"{command_wrapper.CI_LABEL}=true"

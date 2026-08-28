@@ -1,5 +1,7 @@
 import argparse
+import contextlib
 import dataclasses
+import io
 import json
 import os
 import subprocess
@@ -22,6 +24,7 @@ from miles.utils.workers.argv_utils import (
     parse_config_argv,
     parse_declared_args,
     render_cli_argv,
+    with_relax_parser_required_args,
 )
 
 
@@ -372,8 +375,9 @@ class TestRenderCliArgv:
         assert from_parsed(_make_parser().parse_args(argv)) == args_obj
 
     def test_unrenderable_false_on_a_true_default_flag_fails_loudly(self):
-        """A store-true flag whose CLI default is True cannot express False."""
-        with pytest.raises(AssertionError, match="cannot be rendered"):
+        """A store-true flag whose CLI default is True cannot express False, and the roundtrip
+        must refuse the argv rather than let the value disappear from it."""
+        with pytest.raises(AssertionError, match="enabled: parsed True != wanted False"):
             _render(_make_cli_default_args(enabled=False))
 
     def test_roundtrip_mismatch_aborts_the_render(self):
@@ -385,6 +389,24 @@ class TestRenderCliArgv:
                 expected_obj=args_obj,
                 make_parser=_make_parser,
                 from_parsed=lambda parsed: _make_cli_default_args(count=999),
+            )
+
+    def test_a_value_the_parser_refuses_is_raised_rather_than_exited(self):
+        """argparse answers a value it will not accept by exiting the process. This renders inside the
+        worker that launches the command, so exiting takes it down past everything that reports a
+        failure, and the run waits out its whole timeout on an engine nobody ever started."""
+
+        def make_parser() -> argparse.ArgumentParser:
+            parser = argparse.ArgumentParser()
+            parser.add_argument("--flavour", choices=["vanilla"], default="vanilla")
+            return parser
+
+        with pytest.raises(AssertionError, match="rejects the rendered --flavour durian"):
+            render_cli_argv(
+                {"flavour": "durian"},
+                expected_obj=make_parser().parse_args([]),
+                make_parser=make_parser,
+                from_parsed=lambda parsed: parsed,
             )
 
     def test_a_field_the_parser_rewrites_blocks_the_render(self):
@@ -732,9 +754,7 @@ class TestCoerceDictToArgs:
 
     def _coerce(self, values: dict, *, allowed: set[str] | None = None) -> dict:
         allowed_names = frozenset(allowed if allowed is not None else values)
-        return coerce_dict_to_args(
-            values, parser=self._parser(), allowed_names=allowed_names, context="the overlay"
-        )
+        return coerce_dict_to_args(values, parser=self._parser(), allowed_names=allowed_names, context="the overlay")
 
     def test_a_yaml_scalar_is_coerced_the_way_the_command_line_would(self):
         """The overlay never reaches argparse, so this is the only place its strings become typed values."""
@@ -815,3 +835,66 @@ class TestParseDeclaredArgs:
         """A model script this run cannot parse must not quietly yield a shorter override set."""
         with pytest.raises(AssertionError, match="does not declare"):
             parse_declared_args("--rotary-base 1000000", parser=self._parser())
+
+    def test_an_argument_the_run_is_required_to_carry_is_not_demanded_of_the_model_script(self):
+        """The real parser marks run-level arguments required, and argparse answers a missing one by
+        exiting the process, so a model script that names only its architecture kills the launcher."""
+        parser = self._parser()
+        parser.add_argument("--rollout-batch-size", type=int, required=True)
+
+        assert parse_declared_args("--num-layers 24", parser=parser) == {"num_layers": 24}
+
+    def test_the_parser_still_demands_it_of_the_run_afterwards(self):
+        """Relaxing it for one parse must not disarm the check for every later caller of the parser."""
+        parser = self._parser()
+        parser.add_argument("--rollout-batch-size", type=int, required=True)
+
+        parse_declared_args("--num-layers 24", parser=parser)
+
+        with pytest.raises(SystemExit):
+            parser.parse_args(["--num-layers", "24"])
+
+
+class TestWithRelaxParserRequiredArgs:
+    def test_lets_a_parser_read_argv_that_omits_its_required_arguments(self):
+        """A throwaway parser is asked what it declares, not to validate a run, so required must not fire."""
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--needed", required=True)
+        parser.add_argument("--optional", default="d")
+
+        with with_relax_parser_required_args(parser):
+            namespace, _ = parser.parse_known_args(["--optional", "v"])
+
+        assert namespace.optional == "v"
+
+    def test_prints_nothing_while_the_requirement_is_relaxed(self):
+        """argparse writes a whole usage screen before exiting, which a caller in a loop turns into a flood."""
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--needed", required=True)
+        stderr = io.StringIO()
+
+        with contextlib.redirect_stderr(stderr), with_relax_parser_required_args(parser):
+            parser.parse_known_args([])
+
+        assert stderr.getvalue() == ""
+
+    def test_puts_the_requirement_back_so_a_real_parse_still_refuses(self):
+        """The relaxation is for one read; a run that genuinely omits the argument must still be rejected."""
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--needed", required=True)
+
+        with with_relax_parser_required_args(parser):
+            parser.parse_known_args([])
+
+        with pytest.raises(SystemExit):
+            parser.parse_known_args([])
+
+    def test_puts_the_requirement_back_even_when_the_parse_raises(self):
+        """An exception mid-read must not leave the process with a parser that validates nothing."""
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--needed", required=True)
+
+        with contextlib.suppress(RuntimeError), with_relax_parser_required_args(parser):
+            raise RuntimeError("boom")
+
+        assert [action for action in parser._actions if action.required]

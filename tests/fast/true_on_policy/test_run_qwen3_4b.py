@@ -2,15 +2,18 @@ from __future__ import annotations
 
 from scripts import run_qwen3_4b
 
+from miles.utils.external_utils import command_utils
+from miles.utils.external_utils.command_utils.base_backend import BaseCommandBackend
+
 
 def test_qwen3_script_true_on_policy_single_knob_expands_to_megatron_contract(monkeypatch):
     captured = {}
 
-    def fake_execute_train(**kwargs):
+    def fake_execute_train(_self, **kwargs):
         captured.update(kwargs)
 
-    monkeypatch.setattr(run_qwen3_4b.U, "execute_train", fake_execute_train)
-    monkeypatch.setattr(run_qwen3_4b.U, "get_default_wandb_args", lambda *args, **kwargs: "")
+    monkeypatch.setattr(BaseCommandBackend, "execute_train", fake_execute_train)
+    monkeypatch.setattr(command_utils, "get_default_wandb_args", lambda *args, **kwargs: "")
 
     args = run_qwen3_4b.ScriptArgs(
         hardware="H100",
@@ -49,11 +52,11 @@ def test_qwen3_script_true_on_policy_single_knob_expands_to_megatron_contract(mo
 def test_qwen3_script_true_on_policy_tp2_cp4_normal_topology_contract(monkeypatch):
     captured = {}
 
-    def fake_execute_train(**kwargs):
+    def fake_execute_train(_self, **kwargs):
         captured.update(kwargs)
 
-    monkeypatch.setattr(run_qwen3_4b.U, "execute_train", fake_execute_train)
-    monkeypatch.setattr(run_qwen3_4b.U, "get_default_wandb_args", lambda *args, **kwargs: "")
+    monkeypatch.setattr(BaseCommandBackend, "execute_train", fake_execute_train)
+    monkeypatch.setattr(command_utils, "get_default_wandb_args", lambda *args, **kwargs: "")
 
     args = run_qwen3_4b.ScriptArgs(
         hardware="H100",
@@ -103,11 +106,11 @@ def test_qwen3_script_true_on_policy_tp2_cp4_normal_topology_contract(monkeypatc
 def test_qwen3_script_off_policy_does_not_emit_true_on_policy_contract(monkeypatch):
     captured = {}
 
-    def fake_execute_train(**kwargs):
+    def fake_execute_train(_self, **kwargs):
         captured.update(kwargs)
 
-    monkeypatch.setattr(run_qwen3_4b.U, "execute_train", fake_execute_train)
-    monkeypatch.setattr(run_qwen3_4b.U, "get_default_wandb_args", lambda *args, **kwargs: "")
+    monkeypatch.setattr(BaseCommandBackend, "execute_train", fake_execute_train)
+    monkeypatch.setattr(command_utils, "get_default_wandb_args", lambda *args, **kwargs: "")
 
     args = run_qwen3_4b.ScriptArgs(
         hardware="H100",

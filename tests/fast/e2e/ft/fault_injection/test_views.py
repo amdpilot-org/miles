@@ -7,6 +7,7 @@ from tests.fast.e2e.ft.fault_injection.utils import (
     cell,
     log_of,
     names,
+    note_injected,
     staged,
 )
 
@@ -23,7 +24,7 @@ def test_injected_cell_is_excluded_while_its_crash_is_still_undetected() -> None
     """The api server's stale 'still healthy' view must not count a just-killed cell."""
     log = state.EventLog()
     cells = [cell("c0", healthy=True), cell("c1", healthy=True)]
-    log.note_injected("c0")
+    note_injected(log, "c0")
     log.observe(cells)  # c0 really dead but still reported Healthy
     assert names(views.compute_genuinely_alive(log.events, cells)) == {"c1"}
 
@@ -42,7 +43,7 @@ def test_injected_cell_counts_again_only_after_a_full_down_then_up_cycle() -> No
     log = state.EventLog()
     healthy = [cell("c0", healthy=True), cell("c1", healthy=True)]
     down = [cell("c0", healthy=False), cell("c1", healthy=True)]
-    log.note_injected("c0")
+    note_injected(log, "c0")
 
     log.observe(healthy)  # stale-alive
     assert names(views.compute_genuinely_alive(log.events, healthy)) == {"c1"}
@@ -55,7 +56,7 @@ def test_injected_cell_counts_again_only_after_a_full_down_then_up_cycle() -> No
 def test_vanished_cell_counts_as_the_down_half_of_the_cycle() -> None:
     """A cell missing from the snapshot is treated as observed-down, then recovers when back."""
     log = state.EventLog()
-    log.note_injected("c0")
+    note_injected(log, "c0")
     log.observe([cell("c1", healthy=True)])  # c0 absent == down
     healthy = [cell("c0", healthy=True), cell("c1", healthy=True)]
     log.observe(healthy)
@@ -67,14 +68,14 @@ def test_allows_overlapping_crashes_while_one_cell_stays_alive() -> None:
     log = state.EventLog()
     cells = [cell("c0", healthy=True), cell("c1", healthy=True), cell("c2", healthy=True)]
 
-    log.note_injected("c0")
+    note_injected(log, "c0")
     log.observe(cells)
     assert names(views.compute_genuinely_alive(log.events, cells)) == {
         "c1",
         "c2",
     }  # 2 still alive -> a 2nd inject is allowed
 
-    log.note_injected("c1")
+    note_injected(log, "c1")
     log.observe(cells)
     assert names(views.compute_genuinely_alive(log.events, cells)) == {"c2"}  # now only 1 -> loop would skip
 
@@ -137,7 +138,7 @@ def test_recoveries_of_another_cell_kind_do_not_count() -> None:
     """A mixed soak injects both kinds, and the rollout view must only see rollout cells."""
     log = state.EventLog()
     log.observe([staged("actor-0", SERVING, cell_type="actor")])
-    log.note_injected("actor-0")
+    note_injected(log, "actor-0")
     for cell_state in [PENDING, SERVING]:
         log.observe([staged("actor-0", cell_state, cell_type="actor")])
 
@@ -150,7 +151,7 @@ class TestRecoveryPairing:
         """A sibling engine's relaunch-and-serve cycle must not discharge the injected cell's debt."""
         log = state.EventLog()
         log.observe([staged("rollout-engine-0", SERVING), staged("rollout-engine-1", SERVING)])
-        log.note_injected("rollout-engine-0")
+        note_injected(log, "rollout-engine-0")
         for sibling_state in [PENDING, SERVING]:
             log.observe([staged("rollout-engine-0", SERVING), staged("rollout-engine-1", sibling_state)])
 

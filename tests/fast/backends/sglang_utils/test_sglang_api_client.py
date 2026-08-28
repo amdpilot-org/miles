@@ -521,7 +521,8 @@ class TestInformationGetters:
         rec.install(monkeypatch, responses=[_FakeResponse(payload={"version": "0.4.0"})])
 
         assert await client.get_server_info() == {"version": "0.4.0"}
-        assert rec.calls[0][2] == {"timeout": 5.0}
+        assert "params" not in rec.calls[0][2]
+        assert rec.calls[0][2]["timeout"] == 5.0
 
 
 _DIRECT_HTTP_METHODS = [

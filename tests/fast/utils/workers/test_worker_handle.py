@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 import ray
 
-from miles.utils.workers import ray_worker_handle as ray_worker_handle_module
+from miles.utils.workers import worker_handle as worker_handle_module
 from miles.utils.workers.ray_worker_handle import RayWorkerHandle
 from miles.utils.workers.rpc.client.handle import RpcWorkerHandle
 from miles.utils.workers.worker_handle import BaseWorkerHandle, WorkerUnreachableError
@@ -244,7 +244,7 @@ class TestRayWorkerHandleWaitDead:
 
     async def test_a_hung_probe_is_timed_out_and_retried(self, monkeypatch):
         """A probe that never answers is abandoned on the probe budget, and the next probe confirms death."""
-        monkeypatch.setattr(ray_worker_handle_module, "_WAIT_DEAD_PROBE_INTERVAL_SECONDS", 0.01)
+        monkeypatch.setattr(worker_handle_module, "_WAIT_DEAD_PROBE_INTERVAL_SECONDS", 0.01)
         handle, inner = _make_handle(
             __ray_ready__=_FakeRemoteMethod([_never_resolving_factory, _raise_factory(_ray_actor_error())])
         )
@@ -260,8 +260,8 @@ class TestRayWorkerHandleWaitDead:
         async def _noop_sleep(seconds):
             slept.append(seconds)
 
-        monkeypatch.setattr(ray_worker_handle_module.asyncio, "sleep", _noop_sleep)
-        monkeypatch.setattr(ray_worker_handle_module, "time", SimpleNamespace(monotonic=_make_monotonic([0.0, 1.0])))
+        monkeypatch.setattr(worker_handle_module.asyncio, "sleep", _noop_sleep)
+        monkeypatch.setattr(worker_handle_module, "time", SimpleNamespace(monotonic=_make_monotonic([0.0, 1.0])))
         handle, inner = _make_handle(
             __ray_ready__=_FakeRemoteMethod(
                 [
@@ -283,9 +283,9 @@ class TestRayWorkerHandleWaitDead:
         async def _noop_sleep(seconds: float) -> None:
             slept.append(seconds)
 
-        monkeypatch.setattr(ray_worker_handle_module.asyncio, "sleep", _noop_sleep)
+        monkeypatch.setattr(worker_handle_module.asyncio, "sleep", _noop_sleep)
         monkeypatch.setattr(
-            ray_worker_handle_module, "time", SimpleNamespace(monotonic=_make_monotonic([0.0, 60.0, 200.0]))
+            worker_handle_module, "time", SimpleNamespace(monotonic=_make_monotonic([0.0, 60.0, 200.0]))
         )
         handle, inner = _make_handle(__ray_ready__=_FakeRemoteMethod([_return_factory(None)]))
 
@@ -304,8 +304,8 @@ class TestRayWorkerHandleWaitDead:
         async def _noop_sleep(seconds):
             return None
 
-        monkeypatch.setattr(ray_worker_handle_module.asyncio, "sleep", _noop_sleep)
-        monkeypatch.setattr(ray_worker_handle_module, "time", SimpleNamespace(monotonic=_make_monotonic([0.0, 200.0])))
+        monkeypatch.setattr(worker_handle_module.asyncio, "sleep", _noop_sleep)
+        monkeypatch.setattr(worker_handle_module, "time", SimpleNamespace(monotonic=_make_monotonic([0.0, 200.0])))
         handle, inner = _make_handle(__ray_ready__=_FakeRemoteMethod([_raise_factory(asyncio.TimeoutError())]))
 
         with caplog.at_level(logging.ERROR, logger="miles.utils.workers.ray_worker_handle"):

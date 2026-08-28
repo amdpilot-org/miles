@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Any
 
 import pytest
 from examples.infra_features.split_deployment.address_book import (
@@ -189,7 +190,7 @@ class TestBuildArgs:
 
     def test_a_colocated_mode_is_refused(self, mode):
         """Colocation shares gpus between the very deployments this scenario installs apart."""
-        with pytest.raises(AssertionError, match="colocates them"):
+        with pytest.raises(AssertionError, match="colocates them on shared gpus"):
             scenario._build_args(_colocated(mode), DUMP_DIR)
 
     def test_a_mode_without_engines_is_refused(self, mode):
@@ -283,10 +284,14 @@ class _Pipeline:
 @pytest.fixture
 def pipeline(monkeypatch, tmp_path) -> _Pipeline:
     recorded = _Pipeline()
+    run_pipeline = ft_app.run_pipeline
 
     def run_unsplit(request: RunSideRequest) -> None:
         recorded.unsplit_sides.append((request.side, request.train_args))
         ft_app.run_one_release(request)
+
+    def run_pipeline_without_release(**kwargs: Any) -> None:
+        run_pipeline(**kwargs, release_side=lambda _request: None)
 
     monkeypatch.setattr(deploy_utils, "assert_the_cluster_can_deploy_runs", lambda config: None)
     monkeypatch.setattr(scenario, "_build_args", _fake_target_args)
@@ -295,6 +300,7 @@ def pipeline(monkeypatch, tmp_path) -> _Pipeline:
     monkeypatch.setattr(scenario, "_compare", recorded.compare)
     monkeypatch.setattr(ft_app, "resolve_dump_dir", lambda test_name: str(tmp_path / test_name))
     monkeypatch.setattr(ft_app, "prepare", lambda mode: None)
+    monkeypatch.setattr(ft_app, "run_pipeline", run_pipeline_without_release)
     monkeypatch.setattr(command_utils, "default_config", _pipeline_config)
     monkeypatch.setattr(
         ft_app, "run_training", lambda *, train_args, mode, dump_dir=None, config: recorded.record(config)

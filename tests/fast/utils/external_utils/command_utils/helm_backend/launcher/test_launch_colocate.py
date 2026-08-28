@@ -108,6 +108,8 @@ def _stub_helm(monkeypatch, *, failing_command: str | None = None) -> list[list[
 
     def fake_run(command: list[str], **kwargs: Any) -> Any:
         issued.append([str(part) for part in command])
+        if "--dry-run" in command:
+            return subprocess.CompletedProcess(args=command, returncode=0, stdout='{"manifest": ""}', stderr="")
         if failing_command is not None and failing_command in " ".join(str(part) for part in command):
             raise subprocess.CalledProcessError(returncode=1, cmd=command)
         return subprocess.CompletedProcess(args=command, returncode=0, stdout="", stderr="")
@@ -138,7 +140,9 @@ def _written_values(sandbox: Path) -> dict[str, Any]:
 def _stub_launch_inputs(monkeypatch, *, specs, colocate: bool = False) -> None:
     monkeypatch.setattr(entrypoint, "compute_specs", lambda args: specs)
     monkeypatch.setattr(
-        entrypoint, "parse_args", lambda: SimpleNamespace(colocate=colocate, deploy_component="all", argv=[])
+        entrypoint,
+        "parse_args",
+        lambda: SimpleNamespace(colocate=colocate, deploy_component="all", deploy_instance_id=None, argv=[]),
     )
     monkeypatch.setattr(MooncakeInfo, "plan_of_args", staticmethod(lambda args: None))
     monkeypatch.setattr(entrypoint, "_follow_until_finished", lambda **kwargs: None)

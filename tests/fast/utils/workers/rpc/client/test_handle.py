@@ -1167,7 +1167,9 @@ class TestTheCallStoreOwnsACallRatherThanItsClient:
 
             submitted = next(request for request in transport.seen if request.method == "POST")
             call_id = json.loads(submitted.content)["call_id"]
-            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app)) as http_client:
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+            ) as http_client:
                 response = await http_client.get(CALL_STATUS_PATH.format(call_id=call_id), params={"timeout": 1.0})
 
             assert response.status_code == 200

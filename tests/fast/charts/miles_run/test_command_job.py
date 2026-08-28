@@ -23,11 +23,29 @@ class TestCommandJob:
         assert job["metadata"]["name"] == "myrun-miles-run-convert"
         assert job["spec"]["template"]["spec"]["containers"][0]["command"] == ["bash", "-c", "convert"]
 
+    def test_renders_without_the_values_a_run_would_carry(self):
+        """The launcher renders a command job off the bare chart, and helm evaluates every template
+        before --show-only picks one, so a run's own guard would reject work that has no run."""
+        job = single_object_of_kind(
+            render_run(*ENABLE_COMMAND_JOB, "--set-json", "run.orchestrator.command=[]"), "Job"
+        )
+
+        assert job["metadata"]["name"] == "myrun-miles-run-convert"
+
     def test_names_the_container_after_the_kind_of_work_it_does(self):
         """kubectl logs picks a container by name, so the launcher needs a name that never changes."""
         job = single_object_of_kind(render_run(*ENABLE_COMMAND_JOB), "Job")
 
         assert [container["name"] for container in job["spec"]["template"]["spec"]["containers"]] == ["command-job"]
+
+    def test_an_eviction_does_not_spend_the_one_attempt(self):
+        """Kubernetes counts a displaced pod against backoffLimit like a failed one, so without this
+        a step the cluster evicted before it ran is reported as a step that ran and failed."""
+        job = single_object_of_kind(render_run(*ENABLE_COMMAND_JOB), "Job")
+
+        assert job["spec"]["podFailurePolicy"]["rules"] == [
+            {"action": "Ignore", "onPodConditions": [{"type": "DisruptionTarget"}]}
+        ]
 
     def test_never_retries_a_failure(self):
         """The caller reports the failure; a silent retry would hide it and double the side effects."""

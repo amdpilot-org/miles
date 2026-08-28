@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pydantic
 import pytest
 import yaml
+from tests.fast.fixtures.args_fixtures import parser_defaults
 from tests.fast.fixtures.megatron_config_fixtures import encode_megatron_config
 
 from miles.backends.megatron_utils import megatron_config as megatron_config_module
@@ -78,7 +79,7 @@ def _make_args(megatron_config: str | None = None, **overrides) -> Namespace:
         multi_lora_n_adapters=0,
     )
     defaults.update(overrides)
-    return Namespace(**defaults)
+    return Namespace(**{**parser_defaults(), **defaults})
 
 
 class TestResolveMegatronConfig:
@@ -129,12 +130,12 @@ class TestResolveMegatronConfig:
 
     def test_a_trainer_id_defaults_to_the_model_id_and_the_role(self, tmp_path):
         """The trainer id addresses a pool, so its default must stay the name every deployment already uses."""
-        path = _write_yaml({"trainers": [{"model_id": "a"}, {"model_id": "b", "role": "critic"}]}, tmp_path)
+        path = _write_yaml({"trainers": [{"model_id": "a"}, {"model_id": "b"}]}, tmp_path)
 
         config = resolve_megatron_config(_make_args(path))
 
-        assert [trainer.trainer_id for trainer in config.trainers] == ["a-actor", "b-critic"]
-        assert [trainer.role for trainer in config.trainers] == ["actor", "critic"]
+        assert [trainer.trainer_id for trainer in config.trainers] == ["a-actor", "b-actor"]
+        assert [trainer.role for trainer in config.trainers] == ["actor", "actor"]
 
     def test_an_explicit_trainer_id_wins_over_the_derived_one(self, tmp_path):
         """A deployment that already named its pools must be able to keep those names."""
@@ -158,13 +159,11 @@ class TestResolveMegatronConfig:
 
     def test_several_entries_of_one_model_id_are_not_a_multi_policy_run(self, tmp_path):
         """An actor and a critic of one policy share its id, and one policy is not several policies."""
-        path = _write_yaml(
-            {"trainers": [{"model_id": "a"}, {"model_id": "a", "role": "critic"}]},
-            tmp_path,
-        )
+        path = _write_yaml({"trainers": [{"model_id": "a"}]}, tmp_path)
 
-        config = resolve_megatron_config(_make_args(path))
+        config = resolve_megatron_config(_make_args(path, use_critic=True))
 
+        assert [trainer.trainer_id for trainer in config.trainers] == ["a-actor", "a-critic"]
         assert config.model_ids == ["a"]
         assert config.leader_model_id == "a"
         assert not config.is_multi_policy
@@ -192,9 +191,12 @@ class TestResolveMegatronConfig:
 
     def test_getting_a_model_id_answers_its_first_trainer(self, tmp_path):
         """Callers ask by model id and expect the actor: the critic of that policy is addressed by role."""
-        path = _write_yaml({"trainers": [{"model_id": "a"}, {"model_id": "a", "role": "critic"}]}, tmp_path)
+        path = _write_yaml({"trainers": [{"model_id": "a"}]}, tmp_path)
 
-        assert resolve_megatron_config(_make_args(path)).get("a").role == "actor"
+        config = resolve_megatron_config(_make_args(path, use_critic=True))
+
+        assert [trainer.role for trainer in config.trainers] == ["actor", "critic"]
+        assert config.get("a").role == "actor"
 
     def test_a_run_without_the_flag_has_no_leader_model_id(self):
         """A single policy run has no leader to index the trainers by, and must answer None rather than invent one."""
@@ -299,7 +301,7 @@ def _make_checkpoint_args(tmp_path, **overrides) -> Namespace:
         start_rollout_id=None,
     )
     defaults.update(overrides)
-    return Namespace(**defaults)
+    return Namespace(**{**parser_defaults(), **defaults})
 
 
 def _write_megatron_checkpoint(tmp_path) -> str:
@@ -447,25 +449,28 @@ class TestComputeTrainerArgs:
 class TestTrainerCheckpointDirs:
     def test_a_multi_policy_run_gives_every_trainer_its_own_checkpoint_dir(self, tmp_path):
         """A shared --save makes two policies write the same iter_* directory and overwrite each other."""
+        old = tmp_path / "old"
+        for trainer_id in ("a-actor", "b-actor"):
+            trainer_dir = old / "trainers" / trainer_id
+            trainer_dir.mkdir(parents=True)
+            (trainer_dir / "latest_checkpointed_iteration.txt").write_text("7")
         path = _write_yaml({"trainers": [{"model_id": "a"}, {"model_id": "b"}]}, tmp_path)
-        args = _make_args(path, save="/ckpt/run", load="/ckpt/old")
+        args = _make_args(path, save="/ckpt/run", load=str(old))
 
         model_a = _model_args(args, model_id="a")
         model_b = _model_args(args, model_id="b")
 
-        assert (model_a.save, model_a.load) == ("/ckpt/run/trainers/a-actor", "/ckpt/old/trainers/a-actor")
-        assert (model_b.save, model_b.load) == ("/ckpt/run/trainers/b-actor", "/ckpt/old/trainers/b-actor")
+        assert (model_a.save, model_a.load) == ("/ckpt/run/trainers/a-actor", str(old / "trainers" / "a-actor"))
+        assert (model_b.save, model_b.load) == ("/ckpt/run/trainers/b-actor", str(old / "trainers" / "b-actor"))
 
-    def test_two_trainers_of_one_policy_do_not_share_a_directory(self, tmp_path):
+    def test_a_checkpoint_dir_is_keyed_by_the_trainer_id_and_not_by_the_model_id(self, tmp_path):
         """A trainer id is unique where a model id is not, so keying the directory by the model would collide."""
-        path = _write_yaml(
-            {"trainers": [{"model_id": "a"}, {"model_id": "a", "role": "critic"}, {"model_id": "b"}]}, tmp_path
-        )
+        path = _write_yaml({"trainers": [{"model_id": "a", "trainer_id": "a-second"}, {"model_id": "b"}]}, tmp_path)
         args = _make_args(path, save="/ckpt/run")
 
         saves = [compute_trainer_args(args, trainer).save for trainer in resolve_megatron_config(args).trainers]
 
-        assert saves == ["/ckpt/run/trainers/a-actor", "/ckpt/run/trainers/a-critic", "/ckpt/run/trainers/b-actor"]
+        assert saves == ["/ckpt/run/trainers/a-second", "/ckpt/run/trainers/b-actor"]
 
     def test_an_explicitly_named_policy_gets_its_own_checkpoint_dir(self, tmp_path):
         """A split trainer must not share its checkpoint paths with another policy's release."""
@@ -524,7 +529,7 @@ class TestTrainerCheckpointDirs:
             {"trainers": [{"model_id": "a", "overrides": {"load": "/ckpt/a"}}, {"model_id": "b"}]}, tmp_path
         )
 
-        with pytest.raises(AssertionError, match="not a per-policy argument"):
+        with pytest.raises(AssertionError, match="sets 'load', which it may not override"):
             resolve_megatron_config(_make_args(path))
 
 
@@ -639,8 +644,9 @@ class TestSynthesizedCriticTrainer:
         with pytest.raises(AssertionError, match="does not support --use-critic"):
             resolve_megatron_config(_make_args(path, use_critic=True))
 
-    def test_a_config_that_already_declares_a_critic_gets_no_second_one(self, tmp_path):
-        """A config naming its own critic owns that critic's overrides, which a synthesized one would not carry."""
+    def test_a_config_that_declares_its_own_critic_is_refused(self, tmp_path):
+        """The critic checkpoint, learning rate and neutralized knobs only reach the synthesized critic, so a
+        declared one would run as a plain trainer under a critic's name."""
         path = _write_yaml(
             {
                 "trainers": [
@@ -651,10 +657,8 @@ class TestSynthesizedCriticTrainer:
             tmp_path,
         )
 
-        config = resolve_megatron_config(_make_args(path, use_critic=True))
-
-        assert [(t.trainer_id, t.role) for t in config.trainers] == [("a-actor", "actor"), ("a-critic", "critic")]
-        assert config.trainers[1].overrides == {"lr": 5e-7}
+        with pytest.raises(AssertionError, match="declares a critic for"):
+            resolve_megatron_config(_make_args(path, use_critic=True))
 
     def test_the_critic_of_a_named_policy_inherits_its_id_and_its_overlay(self, tmp_path):
         """The critic trains the same policy, so it must be addressed by that policy and see its settings."""
@@ -708,7 +712,10 @@ class TestSynthesizedCriticTrainer:
         """kl_coef and load are not per-policy yaml arguments, yet the critic must still be able to set them."""
         args = _make_args(use_critic=True, critic_load="/ckpt/critic")
 
-        assert set(resolve_megatron_config(args).trainers[1].overrides) > set(PER_POLICY_ARGS)
+        overrides = set(resolve_megatron_config(args).trainers[1].overrides)
+
+        assert {"kl_coef", "load"} <= overrides
+        assert not {"kl_coef", "load"} & set(PER_POLICY_ARGS)
 
     def test_a_critic_without_its_own_schedule_inherits_the_unset_values(self, tmp_path):
         """--critic-lr is unset by default, and the critic takes it as it is: the policy's own lr does not apply."""
@@ -758,10 +765,17 @@ class TestPerPolicyArgsCoverage:
     @pytest.mark.parametrize("model_type", ["qwen2.5-0.5B", "qwen3-0.6B"])
     def test_the_whitelist_admits_every_argument_of_a_model_script(self, model_type):
         """A policy that cannot override one of its own architecture arguments would train another model's shape."""
-        declared = {
-            token.removeprefix("--").replace("-", "_")
-            for token in load_model_args(model_type).split()
-            if token.startswith("--")
-        }
+        options = get_megatron_arg_parser()._option_string_actions
+        flags = [token for token in load_model_args(model_type).split() if token.startswith("--")]
+        unknown = [flag for flag in flags if flag not in options]
+        assert not unknown, f"{model_type} passes {unknown}, which the megatron parser does not declare"
 
-        assert declared <= PER_POLICY_ARGS
+        assert {options[flag].dest for flag in flags} <= PER_POLICY_ARGS
+
+    def test_the_whitelist_names_arguments_the_parser_actually_produces(self):
+        """The override keys are compared against this set and then looked up by the same name in the
+        parser, so a flag spelled the way it appears on a command line admits nothing at all: a config
+        carrying the argument's real name is refused, and the name in the set can never be reached."""
+        parsed = {action.dest for action in get_megatron_arg_parser()._actions}
+
+        assert PER_POLICY_ARGS <= parsed

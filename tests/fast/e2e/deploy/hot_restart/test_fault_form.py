@@ -192,7 +192,7 @@ class TestInject:
         """An injection counted as landed would let this soak pass on a run nothing ever replaced."""
         _install_run(monkeypatch, stamps=[_stamps()])
 
-        with pytest.raises(AssertionError, match="without its workloads ever carrying"):
+        with pytest.raises(AssertionError, match="returned without restamping"):
             _form(lambda _config: None).inject(CELL, Random(0))
 
     def test_a_relaunch_the_cluster_refused_is_reported_rather_than_counted(self, monkeypatch):

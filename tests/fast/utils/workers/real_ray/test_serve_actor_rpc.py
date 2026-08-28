@@ -14,7 +14,15 @@ from tests.fast.utils.workers.conformance import (
     compute_spec,
 )
 
+from tests.fast.utils.workers.conftest import worker_manager_args
+from tests.fast.utils.workers.real_ray.conftest import (
+    kill_named_worker_manager,
+    kill_quietly,
+    wait_until_named_manager_is_gone,
+)
+
 from miles.utils.workers.naming import compute_cell_id
+from miles.utils.workers.ray_worker_manager import RayWorkerManager
 from miles.utils.workers.rpc.client.handle import RpcWorkerHandle
 from miles.utils.workers.types import WorkerCommBackend
 from miles.utils.workers.worker_handle import BaseWorkerHandle
@@ -33,13 +41,53 @@ class _LaunchedPool:
     handles: list[BaseWorkerHandle]
 
 
-@pytest.fixture
-def rpc_pool(manager_factory) -> Iterator[_LaunchedPool]:
-    manager = manager_factory([compute_spec(rpc_port=0)], {}, WorkerCommBackend.RPC)
+# every actor the manager launches is a fresh process that imports miles, so the checks that
+# only read from the pool share one, and only the class that stops the cell rebuilds it
+@pytest.fixture(autouse=True, scope="class")
+def clean_named_worker_manager(ray_local_mode) -> Iterator[None]:
+    _free_the_well_known_name()
+    yield
+    _free_the_well_known_name()
+
+
+def _free_the_well_known_name() -> None:
+    kill_named_worker_manager()
+    wait_until_named_manager_is_gone()
+
+
+def _launch_rpc_pool() -> _LaunchedPool:
+    _free_the_well_known_name()
+    manager = RayWorkerManager.launch(
+        worker_manager_args(env_report_interval_seconds=0.0),
+        [compute_spec(rpc_port=0)],
+        {},
+        comm_backend=WorkerCommBackend.RPC,
+    )
     provider = RayWorkerProvider(worker_manager_handle=manager, pool_ids=[POOL_ID])
     (infos,) = provider.get_worker_infos(cell_ids=[CELL_ID])
     handles = provider.get_handles_of_worker_infos(infos)
-    yield _LaunchedPool(manager=manager, infos=infos, handles=[handles[info.name] for info in infos])
+    return _LaunchedPool(manager=manager, infos=infos, handles=[handles[info.name] for info in infos])
+
+
+@pytest.fixture(scope="class")
+def shared_rpc_pool(ray_local_mode) -> Iterator[_LaunchedPool]:
+    pool = _launch_rpc_pool()
+    yield pool
+    kill_quietly(pool.manager)
+
+
+@pytest.fixture
+def rpc_pool(ray_local_mode) -> Iterator[_LaunchedPool]:
+    pool = _launch_rpc_pool()
+    yield pool
+    kill_quietly(pool.manager)
+
+
+@pytest.fixture
+async def shared_rpc_handle(shared_rpc_pool: _LaunchedPool) -> AsyncIterator[BaseWorkerHandle]:
+    handle = shared_rpc_pool.handles[0]
+    await handle.wait_ready(timeout=READY_TIMEOUT_SECONDS)
+    yield handle
 
 
 @pytest.fixture
@@ -50,26 +98,26 @@ async def rpc_handle(rpc_pool: _LaunchedPool) -> AsyncIterator[BaseWorkerHandle]
 
 
 class TestARayLaunchedWorkerServedOverRpc:
-    def test_the_launcher_answers_with_an_rpc_handle(self, rpc_pool: _LaunchedPool):
+    def test_the_launcher_answers_with_an_rpc_handle(self, shared_rpc_pool: _LaunchedPool):
         """Under rpc comm the driver must not be handed an actor handle it would call over ray."""
-        assert isinstance(rpc_pool.handles[0], RpcWorkerHandle)
+        assert isinstance(shared_rpc_pool.handles[0], RpcWorkerHandle)
 
-    def test_the_worker_serves_on_the_port_the_launcher_allocated(self, rpc_pool: _LaunchedPool):
+    def test_the_worker_serves_on_the_port_the_launcher_allocated(self, shared_rpc_pool: _LaunchedPool):
         """A dynamically allocated port is the only thing that lets two workers share one node."""
-        assert rpc_pool.infos[0].self_addrs["rpc"].port > 0
+        assert shared_rpc_pool.infos[0].self_addrs["rpc"].port > 0
 
-    async def test_the_worker_is_reachable(self, rpc_handle: BaseWorkerHandle):
+    async def test_the_worker_is_reachable(self, shared_rpc_handle: BaseWorkerHandle):
         """This is the end to end claim of the mode: ray started the worker, http drives it."""
-        assert await rpc_handle.add(a=2, b=5) == 7
+        assert await shared_rpc_handle.add(a=2, b=5) == 7
 
-    async def test_the_worker_runs_inside_a_ray_actor(self, rpc_handle: BaseWorkerHandle):
+    async def test_the_worker_runs_inside_a_ray_actor(self, shared_rpc_handle: BaseWorkerHandle):
         """RDT and the rest of the ray ecosystem need the worker in the actor, not in a child process of it."""
-        assert await rpc_handle.report_ray_actor_id() is not None
+        assert await shared_rpc_handle.report_ray_actor_id() is not None
 
     @pytest.mark.parametrize("check", CHECKS, ids=CHECK_IDS)
-    async def test_the_handle_contract_holds(self, rpc_handle: BaseWorkerHandle, check: HandleCheck):
+    async def test_the_handle_contract_holds(self, shared_rpc_handle: BaseWorkerHandle, check: HandleCheck):
         """The same contract as the serve-subprocess column, now over a worker that ray launched."""
-        await check(rpc_handle)
+        await check(shared_rpc_handle)
 
 
 class TestWhenTheLauncherStopsTheCell:

@@ -4,6 +4,7 @@ import pytest
 import ray
 from tests.fast.ray.train.conftest import get_raw_actor_handles, make_alive_cell
 
+from miles.ray.specs.train import compute_trainer_pool_id
 from miles.ray.train import group as group_module
 from miles.ray.train.group import TrainerController
 from miles.utils.init_once import InitOnce
@@ -37,11 +38,14 @@ def _guard(*, initialized: bool) -> InitOnce:
     return guard
 
 
-def _make_controller(cells: list[_FakeCell], *, initialized: bool, expected_num_cells: int | None = None):
+def _make_controller(
+    cells: list[_FakeCell], *, initialized: bool, expected_num_cells: int | None = None
+) -> TrainerController:
     controller = object.__new__(TrainerController)
     controller._cells_by_id = {f"trainer-engine-actor-{cell.cell_index}": cell for cell in cells}
     controller._init_once = _guard(initialized=initialized)
     controller._role = "actor"
+    controller._pool_id = compute_trainer_pool_id("actor")
     controller.args = SimpleNamespace(
         expected_num_cells=len(cells) if expected_num_cells is None else expected_num_cells
     )

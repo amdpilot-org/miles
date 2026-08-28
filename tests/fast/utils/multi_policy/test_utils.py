@@ -1,8 +1,10 @@
 from argparse import Namespace
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
+from tests.fast.fixtures.args_fixtures import parser_defaults
 from tests.fast.fixtures.megatron_config_fixtures import encode_megatron_config
 
 from miles.backends.megatron_utils.megatron_config import MegatronConfig, resolve_megatron_config
@@ -15,7 +17,7 @@ def _make_config(*model_ids: str) -> MegatronConfig:
     return resolve_megatron_config(Namespace(megatron_config=encode_megatron_config(*model_ids), use_critic=False))
 
 
-def _make_args(*model_ids: str, **overrides) -> Namespace:
+def _make_args(*model_ids: str, **overrides: Any) -> Namespace:
     defaults = dict(
         megatron_config=encode_megatron_config(*model_ids),
         use_critic=False,
@@ -33,7 +35,7 @@ def _make_args(*model_ids: str, **overrides) -> Namespace:
         ci_inject_rollout_data_path=None,
     )
     defaults.update(overrides)
-    return Namespace(**defaults)
+    return Namespace(**{**parser_defaults(), **defaults})
 
 
 def _stub_sglang_models(monkeypatch, *names_updatable: tuple[str, bool]) -> None:
@@ -114,7 +116,7 @@ class TestValidateMultiPolicyArgs:
         self._validate(_make_args("a", "b", save="/ckpt", save_interval=10))
 
 
-def _make_trainer_args(*model_ids: str, **overrides) -> Namespace:
+def _make_trainer_args(*model_ids: str, **overrides: Any) -> Namespace:
     defaults = dict(
         megatron_config=encode_megatron_config(*model_ids),
         use_critic=False,
@@ -134,7 +136,7 @@ def _make_trainer_args(*model_ids: str, **overrides) -> Namespace:
         trainer_controller_addrs=None,
     )
     defaults.update(overrides)
-    return Namespace(**defaults)
+    return Namespace(**{**parser_defaults(), **defaults})
 
 
 class TestCreatePolicyTrainers:

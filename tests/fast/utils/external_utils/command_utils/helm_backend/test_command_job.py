@@ -83,7 +83,9 @@ def _stub_cluster(monkeypatch: pytest.MonkeyPatch, kubectl: FakeKubectl) -> None
 
 
 def _job(**overrides: Any) -> command_job._CommandJob:
-    context_fields = {key: overrides.pop(key) for key in ("helm_values_files", "timeout_seconds") if key in overrides}
+    context_fields = {
+        key: overrides.pop(key) for key in ("helm_values_files", "timeout_seconds", "chart_dir") if key in overrides
+    }
     fields: dict[str, Any] = {
         "context": _context(gpus_per_node=8, **context_fields),
         "step": "convert",
@@ -95,7 +97,9 @@ def _job(**overrides: Any) -> command_job._CommandJob:
 
 
 def _context(**overrides: Any) -> command_job.CommandJobContext:
-    return command_job.CommandJobContext(namespace=NAMESPACE, chart_dir=CHART_DIR, **{"gpus_per_node": 1, **overrides})
+    return command_job.CommandJobContext(
+        namespace=NAMESPACE, **{"chart_dir": CHART_DIR, "gpus_per_node": 1, **overrides}
+    )
 
 
 def _gpu_backend() -> Any:
@@ -117,7 +121,7 @@ def _record_run_job(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, Any]]:
     return calls
 
 
-def _render(monkeypatch: pytest.MonkeyPatch, **overrides: Any) -> list[str]:
+def _render_calls(monkeypatch: pytest.MonkeyPatch, **overrides: Any) -> list[list[str]]:
     captured: list[list[str]] = []
 
     def fake_run(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess:
@@ -129,7 +133,13 @@ def _render(monkeypatch: pytest.MonkeyPatch, **overrides: Any) -> list[str]:
     command_job._render_job(
         _job(timeout_seconds=overrides.pop("timeout_seconds", 10800.0), **overrides), command=command
     )
-    return captured[0]
+    return captured
+
+
+def _render(monkeypatch: pytest.MonkeyPatch, **overrides: Any) -> list[str]:
+    templates = [call for call in _render_calls(monkeypatch, **overrides) if call[:2] == ["helm", "template"]]
+    assert len(templates) == 1, f"expected one helm template call, got {templates}"
+    return templates[0]
 
 
 class TestNaming:
@@ -147,6 +157,15 @@ class TestNaming:
 
 
 class TestRenderJob:
+    def test_builds_the_chart_dependencies_before_rendering(self, monkeypatch, tmp_path):
+        """A checkout carries the lock, not the subchart it pins, so a run whose first step is a
+        command job renders against a chart helm calls incomplete."""
+        monkeypatch.setattr(command_wrapper, "_locked_dependency_names", lambda chart: ["miles-common"])
+        calls = _render_calls(monkeypatch, chart_dir=tmp_path)
+
+        assert [call[:3] for call in calls][0] == ["helm", "dependency", "build"]
+        assert any(call[:2] == ["helm", "template"] for call in calls)
+
     def test_renders_only_the_command_job_out_of_the_run_chart(self, monkeypatch):
         """The chart also holds the run's own workloads, and applying those would start a training run."""
         arguments = _render(monkeypatch)

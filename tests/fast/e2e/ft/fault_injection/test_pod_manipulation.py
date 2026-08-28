@@ -17,8 +17,8 @@ _PODS_OF_RELEASE: dict[str, str] = {
 }
 
 
-def _completed(stdout: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.CompletedProcess(args=[], returncode=0, stdout=stdout, stderr="")
+def _completed(stdout: str = "", *, returncode: int = 0, stderr: str = "") -> subprocess.CompletedProcess[str]:
+    return subprocess.CompletedProcess(args=[], returncode=returncode, stdout=stdout, stderr=stderr)
 
 
 def _pods_matching(selector: str) -> str:
@@ -108,13 +108,8 @@ class TestDeleteOnePodOfCell:
             )
 
 
-_NAMESPACE = "miles-e2e"
 _POD_NAME = "rollout-engine-0-0"
 _PATTERN = "sglang::"
-
-
-def _completed(returncode: int = 0, stdout: str = "", stderr: str = "") -> subprocess.CompletedProcess[str]:
-    return subprocess.CompletedProcess(args=[], returncode=returncode, stdout=stdout, stderr=stderr)
 
 
 def _fake_kubectl(monkeypatch: pytest.MonkeyPatch, respond) -> list[list[str]]:

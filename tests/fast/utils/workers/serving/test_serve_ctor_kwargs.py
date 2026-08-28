@@ -7,6 +7,7 @@ import pytest
 from tests.fast.fixtures.kubernetes_fixtures import _RELEASE, NAMESPACE, install_workers
 
 from miles.utils.function_registry import function_registry
+from miles.utils.workers.env_vars import CELL_INDEX_ENV_VAR
 from miles.utils.workers.serving import serve_inner
 from miles.utils.workers.serving.utils import compute_serve_worker_spec
 from miles.utils.workers.serving.worker_identity import SUBPROCESS_INDEX_ENV_VAR, read_worker_in_pod_index
@@ -36,6 +37,12 @@ def compute_specs(worker_argv: list[str]) -> list[ServeWorkerSpec]:
             ctor_kwargs=lambda context: dict(args=f"{POOL_ID}:{' '.join(worker_argv)}"),
         )
     ]
+
+
+@pytest.fixture(autouse=True)
+def pod_identity(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Every pod is told which cell of its pool it serves before serve runs."""
+    monkeypatch.setenv(CELL_INDEX_ENV_VAR, "0")
 
 
 @pytest.fixture

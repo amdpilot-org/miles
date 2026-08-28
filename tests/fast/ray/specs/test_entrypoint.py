@@ -7,11 +7,19 @@ from tests.fast.fixtures.megatron_config_fixtures import encode_megatron_config
 from tests.fast.ray.rollout.conftest import make_args, make_args_with_sglang_config, make_sglang_config_yaml
 
 from miles.ray.specs.entrypoint import compute_specs
-from miles.ray.specs.inference import INFERENCE_REGISTRATION_REPORTER_POOL_ID
+from miles.ray.specs.inference import INFERENCE_REGISTRATION_REPORTER_POOL_ID, compute_router_providers
 from miles.utils.workers.types import DeployComponent
 from miles.utils.workers.worker_provider.kubernetes.helm.builder import compute_helm_backend_capability
 from miles.utils.workers.worker_provider.kubernetes.helm.env import NAMESPACE_ENV_VAR, RELEASE_ENV_VAR
 from miles.utils.workers.worker_spec import BaseWorkerSpec, WorkerCtorContext
+
+
+def _capability_that_refuses_to_be_used():
+    class _Unusable:
+        def static_worker_provider(self, *, pool_id):
+            raise AssertionError(f"a train-only run asked for a worker provider for {pool_id!r}")
+
+    return _Unusable()
 
 
 class TestComputeSpecs:
@@ -42,6 +50,19 @@ class TestComputeSpecs:
             "trainer-controller-actor",
             "trainer-engine-actor",
         ]
+
+    def test_a_train_only_debug_run_specs_no_inference_at_all(self):
+        """--debug-train-only leaves --rollout-num-gpus unset, so anything that sizes an engine
+        fleet from it cannot even be built, let alone launched."""
+        args = make_args(rollout_num_gpus=None, debug_train_only=True, use_session_server=True)
+
+        specs = {spec.name: spec for spec in compute_specs(args)}
+
+        assert not [name for name in specs if name.startswith(("inference-router", "inference-engine"))]
+        assert specs["session-server"].scheduling.num_cells == 0
+        # the controller resolves the same config again inside its own actor, where a failure
+        # is a dead actor rather than a readable error at launch
+        assert compute_router_providers(args, capability=_capability_that_refuses_to_be_used()) == []
 
     def test_a_disabled_session_server_is_listed_with_no_cells(self, tmp_path):
         """Disabling the session server must not remove it from the inventory, only empty it."""
@@ -121,12 +142,14 @@ class TestDeployComponentFiltering:
         return make_args_with_sglang_config(
             tmp_path,
             server_groups=[{"worker_type": "regular", "num_gpus": 4, "num_gpus_per_engine": 2}],
-            rollout_num_gpus=4,
-            use_session_server=True,
-            use_critic=True,
-            critic_num_nodes=1,
-            critic_num_gpus_per_node=2,
-            **overrides,
+            **{
+                "rollout_num_gpus": 4,
+                "use_session_server": True,
+                "use_critic": True,
+                "critic_num_nodes": 1,
+                "critic_num_gpus_per_node": 2,
+                **overrides,
+            },
         )
 
     def test_a_trainer_deployment_holds_the_trainer_controllers_and_their_ranks_only(self, tmp_path):
@@ -163,8 +186,8 @@ class TestDeployComponentFiltering:
             spec.name: spec.ctor_kwargs(context) for spec in specs if spec.name.startswith("trainer-controller-")
         }
 
-        assert kwargs_by_name["trainer-controller-actor"]["inference_controller"] is None
-        assert kwargs_by_name["trainer-controller-critic"]["inference_controller"] is None
+        assert sorted(kwargs_by_name) == ["trainer-controller-actor", "trainer-controller-critic"]
+        assert all("inference_controller" not in kwargs for kwargs in kwargs_by_name.values())
 
     def test_a_subset_carries_exactly_the_workers_of_its_own_component(self, tmp_path):
         """A worker two subsets carry is installed twice, and one no subset carries is never installed at all."""

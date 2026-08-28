@@ -1,5 +1,6 @@
 from argparse import Namespace
 from dataclasses import dataclass, field
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -44,9 +45,7 @@ class _RunResult:
     samples: list[Sample]
 
 
-async def _run(
-    monkeypatch, *, solver_response: str, verifier_response: str, abort_solver: bool = False
-) -> _RunResult:
+async def _run(monkeypatch, *, solver_response: str, verifier_response: str, abort_solver: bool = False) -> _RunResult:
     fake = _FakeGenerate(
         responses={SOLVER_URL: solver_response, VERIFIER_URL: verifier_response},
         aborted_urls=frozenset({SOLVER_URL}) if abort_solver else frozenset(),
@@ -215,9 +214,7 @@ class TestIsCorrect:
 class TestBuildVerifierSample:
     def test_the_verifier_sample_keeps_the_identity_of_the_solver_sample(self):
         """Both samples belong to one trajectory, and the group is what advantage is computed over."""
-        solver = Sample(
-            group_index=3, index=7, rollout_id=2, prompt=[dict(role="user", content="q")], label="#### 18"
-        )
+        solver = Sample(group_index=3, index=7, rollout_id=2, prompt=[dict(role="user", content="q")], label="#### 18")
         solver.response = "#### 18"
 
         verifier = solver_verifier._build_verifier_sample(solver)
@@ -350,3 +347,32 @@ class TestAbortedSolver:
         )
 
         assert result.samples[0].reward is None
+
+
+class TestTheLauncherLeavesThePromptAsMessages:
+    def test_the_e2e_test_does_not_ask_the_dataset_to_apply_the_chat_template(self):
+        """--apply-chat-template renders the messages into one templated string at dataset build time.
+        This example quotes the question into a second prompt, which a string carrying special tokens
+        cannot be used for, and a list prompt is chat templated at generation anyway. Getting this wrong
+        costs an 8-GPU run to notice."""
+        source = (
+            Path(__file__).resolve().parents[4] / "examples/multi_policy/run_solver_verifier_gsm8k.py"
+        ).read_text()
+        # the comment saying why the flag is absent names the flag, so read only what is handed to the run
+        launched = "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))
+
+        assert "--custom-generate-function-path examples.multi_policy.solver_verifier.generate" in launched
+        assert "--apply-chat-template" not in launched
+
+    def test_a_templated_string_prompt_is_refused_rather_than_quoted(self):
+        """The refusal is what keeps a prompt full of special tokens out of the verifier's question."""
+        with pytest.raises(AssertionError, match="the dataset must use messages"):
+            solver_verifier._extract_question("<|im_start|>user\nWhat is 9 + 9?<|im_end|>\n")
+
+    def test_a_message_prompt_gives_up_its_question(self):
+        """The other half: the shape the launcher now preserves is the one this reads."""
+        question = solver_verifier._extract_question(
+            [dict(role="system", content="be terse"), dict(role="user", content="What is 9 + 9?")]
+        )
+
+        assert question == "What is 9 + 9?"

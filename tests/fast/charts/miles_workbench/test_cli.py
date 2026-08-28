@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from tests.fast.charts.utils import CHART_DIR, REPO_ROOT, run_workbench
 
+from miles.utils.external_utils.miles_workbench import __main__ as workbench_main
 from miles.utils.external_utils.miles_workbench.naming import DEFAULT_RELEASE, PACKAGE, object_name, run_release_name
 from miles.utils.workers.types import DeployComponent
 
@@ -63,12 +64,6 @@ def run_cli(*args: str) -> subprocess.CompletedProcess:
 
 def calls_of(fake_tools: dict) -> list[str]:
     return fake_tools["calls_path"].read_text().splitlines()
-
-
-def _listed_subcommands(help_text: str) -> set[str]:
-    listed = help_text.split("Commands", 1)[1].splitlines()
-    named = [line.lstrip() for line in listed if line.lstrip().startswith("│ ")]
-    return {line.split()[1] for line in named if len(line) > 2 and line[2] != " " and len(line.split()) > 1}
 
 
 class TestInstall:
@@ -484,7 +479,9 @@ class TestMissingBinaries:
     )
     def test_a_missing_binary_is_reported_not_raised(self, tmp_path, monkeypatch, args):
         """It runs before any Miles environment exists, so an absent client is the expected first failure."""
-        monkeypatch.setenv("PATH", f"{tmp_path}:/usr/bin:/bin")
+        # an empty PATH, not one that merely omits a directory: a runner that ships kubectl in
+        # /usr/bin would run it for real and fail on the cluster instead of on the missing client
+        monkeypatch.setenv("PATH", str(tmp_path))
         result = run_cli(*args)
 
         assert result.returncode == 1
@@ -533,10 +530,7 @@ class TestCli:
 
     def test_it_offers_exactly_these_subcommands(self):
         """The subcommand set is the cli's whole contract with a runbook, so a rename must be deliberate."""
-        result = run_workbench("--help", capture_output=True)
-
-        assert result.returncode == 0, result.stderr
-        assert _listed_subcommands(result.stdout) == {
+        assert {command.name for command in workbench_main.app.registered_commands} == {
             "install",
             "exec",
             "stop",

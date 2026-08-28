@@ -18,6 +18,8 @@ from tests.fast.utils.workers.e2e.harness import (
 )
 from tests.fast.utils.workers.import_probe import unexpected_light_entrypoint_imports
 
+from miles.utils.workers.env_vars import CELL_INDEX_ENV_VAR
+
 SMOKE_MODULE = "tests.fast.utils.workers.e2e.env_var_hooks"
 SMOKE_SPECS_PATH = f"{SMOKE_MODULE}.compute_specs"
 SMOKE_RAISING_SPECS_PATH = f"{SMOKE_MODULE}.compute_failing_specs"
@@ -34,6 +36,7 @@ def spawn_with_specs(state_dir: Path, tmp_path: Path) -> Iterator[Callable[..., 
         env = dict(os.environ)
         env["PYTHONPATH"] = f"{REPO_ROOT}{os.pathsep}{env.get('PYTHONPATH', '')}"
         env["PYTHONUNBUFFERED"] = "1"
+        env[CELL_INDEX_ENV_VAR] = "0"
 
         argv = [sys.executable, "-m", "miles.utils.workers.serving.serve"]
         argv += ["--specs", specs_path, "--pool-id", POOL_ID]

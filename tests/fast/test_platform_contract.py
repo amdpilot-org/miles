@@ -23,8 +23,7 @@ TRAIN_ONLY_SUBCOMMAND = "train"
 
 ORCHESTRATION_SCRIPTS = ("train.py", "train_async.py", "train_multi_lora_async.py")
 
-BACKEND_CAPABILITY_FN = "create_backend_capability"
-ORCHESTRATION_INIT_FN = "init_orchestration_script"
+BACKEND_CAPABILITY_FN = "launch_worker_manager"
 
 UPPER_LAYER_MODULES = (
     "kubernetes",
@@ -43,20 +42,26 @@ UPPER_LAYER_NAMES = (
     "RayWorkerManager",
     "compute_ctor_kwargs",
     "compute_specs",
-    "create_backend_capability",
+    "launch_worker_manager",
     "get_backend_capability",
     "create_worker_backend_capability",
 )
 
 UPPER_LAYER_EXEMPTIONS = {
-    "miles/ray/specs": "the composition root of a worker process: a spec says what its worker is built from",
     "miles/ray/wiring.py": "the glue layer holding the driver process's single fork between the backends",
     "miles/utils/orchestration_utils.py": (
         "the shared driver composition root that launches the selected worker manager"
     ),
     "miles/utils/workers/worker_provider": "the infrastructure that owns every provider implementation",
+    "miles/utils/workers/backend_capability": "the package that owns every capability implementation",
+    "miles/utils/workers/cell_operations": "the package that owns every cell-operations implementation",
+    "miles/ray/placement_group.py": "the driver composition the orchestration scripts delegate their wiring to",
+    "miles/utils/ft_utils/mini_ft_controller.py": "kubernetes is the only backend that resumes a cell without being asked",
     "miles/utils/workers/serving/serve_inner.py": "the composition root of a served worker process",
     "miles/utils/workers/ray_worker_manager.py": "the composition root of a worker process an actor wraps",
+    "miles/utils/workers/deployment_entrypoint.py": "the composition root of a deployment that carries no orchestration script",
+    "miles/utils/workers/backend_capability/factory.py": "the fork itself: it is the switch every composition root asks",
+    "miles/ray/multi_lora/controller.py": "multi-LoRA is a ray actor and the charts render no form of it",
     "miles/utils/workers/reconcile/k8s_api.py": "the kubernetes client the observing provider is written against",
     "miles/utils/arguments.py": "declares the --cluster-backend flag the composition roots read",
     "miles/utils/tracking_utils/base.py": "the prometheus collector is a ray actor and has no kubernetes form",
@@ -138,15 +143,9 @@ class TestLayering:
         assert reaching != [], f"{exemption} no longer reaches upwards: {UPPER_LAYER_EXEMPTIONS[exemption]}"
 
     @pytest.mark.parametrize("script", ORCHESTRATION_SCRIPTS)
-    def test_an_orchestration_script_initializes_the_shared_driver_exactly_once(self, script: str):
-        """Every driver enters the shared composition root once, or it starts no manager or starts two."""
-        assert len(_calls_of(REPO_ROOT / script, ORCHESTRATION_INIT_FN)) == 1
-
-    def test_the_shared_driver_forks_the_backend_exactly_once(self):
+    def test_an_orchestration_script_forks_the_backend_exactly_once(self, script: str):
         """The whole run hangs off one factory, and a second one would observe the same workers twice."""
-        path = FRAMEWORK_ROOT / "utils" / "orchestration_utils.py"
-
-        assert len(_calls_of(path, BACKEND_CAPABILITY_FN)) == 1
+        assert len(_calls_of(REPO_ROOT / script, BACKEND_CAPABILITY_FN)) == 1
 
 
 class TestImportDirection:
@@ -163,7 +162,15 @@ class TestImportDirection:
 
     def test_the_replaceable_code_may_import_the_framework(self):
         """The dependency has to point one way, and this is the way it points."""
-        launcher = FRAMEWORK_ROOT / "utils" / "external_utils" / "command_utils" / "helm_backend" / "entrypoint.py"
+        launcher = (
+            FRAMEWORK_ROOT
+            / "utils"
+            / "external_utils"
+            / "command_utils"
+            / "helm_backend"
+            / "launcher"
+            / "entrypoint.py"
+        )
 
         assert any(module.startswith("miles.utils.workers") for module in imported_modules(launcher))
 

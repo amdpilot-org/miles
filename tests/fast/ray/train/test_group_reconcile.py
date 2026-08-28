@@ -142,7 +142,7 @@ class TestPublicCellInventory:
         assert group.num_cells == 3
         assert group.cell_ids == [_cell_id(cell_index) for cell_index in range(3)]
 
-        statuses = group.get_cell_statuses()
+        statuses = await group.get_cell_statuses()
         assert sorted(statuses) == group.cell_ids
         assert [status.phase for status in statuses.values()] == ["Running"] * 3
         assert _healthy_condition(statuses[_cell_id(0)]) == (TriState.TRUE, None)

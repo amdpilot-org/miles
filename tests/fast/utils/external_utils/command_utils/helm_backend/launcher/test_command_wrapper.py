@@ -184,7 +184,12 @@ class TestDeleteJob:
         Kubectl.delete_job("miles-run-command-convert", namespace="rl")
 
 
-def _recorded_ci_cleanup(monkeypatch, namespace: str, *, listed: list[dict] | None = None) -> list[list[str]]:
+LAUNCHING_RUN_ID = "260101-000000-000"
+
+
+def _recorded_ci_cleanup(
+    monkeypatch: pytest.MonkeyPatch, namespace: str, *, listed: list[dict] | None = None
+) -> list[list[str]]:
     commands: list[list[str]] = []
 
     def fake_run(command: list[str], capture_output: bool) -> subprocess.CompletedProcess:
@@ -192,7 +197,7 @@ def _recorded_ci_cleanup(monkeypatch, namespace: str, *, listed: list[dict] | No
         return subprocess.CompletedProcess(args=command, returncode=0, stdout=json.dumps(listed or []), stderr="")
 
     monkeypatch.setattr(command_wrapper, "_run", fake_run)
-    entrypoint._uninstall_leftover_ci_releases(namespace)
+    entrypoint._uninstall_leftover_ci_releases(namespace, keep_run_id=LAUNCHING_RUN_ID)
     return commands
 
 

@@ -184,7 +184,10 @@ def only_container_of(objects: list[dict[str, Any]], kind: str, name: str) -> di
 
 def run_workbench(*args: str, interpreter: str | None = None, **kwargs: Any) -> subprocess.CompletedProcess:
     command = [interpreter or sys.executable, "-m", WORKBENCH_PACKAGE, *args]
-    return subprocess.run(command, cwd=REPO_ROOT, text=True, timeout=60, **kwargs)
+    # rich colours an option name in pieces, so a coloured '--namespace' contains no such
+    # substring; a runner that reports colour support would hide every message assertion here
+    env = {**os.environ, "NO_COLOR": "1", "TERM": "dumb", **kwargs.pop("env", {})}
+    return subprocess.run(command, cwd=REPO_ROOT, text=True, timeout=60, env=env, **kwargs)
 
 
 def merged_rules(*rules: dict[str, tuple[str, ...]]) -> dict[str, tuple[str, ...]]:

@@ -13,6 +13,11 @@ def install(api: object) -> object:
     return api
 
 
+def current() -> Any:
+    assert _INSTALLED, "no fake pod api was installed"
+    return _INSTALLED[-1]
+
+
 @asynccontextmanager
 async def installed() -> AsyncIterator[Any]:
     assert _INSTALLED, "no fake pod api was installed, so this test would talk to a real cluster"

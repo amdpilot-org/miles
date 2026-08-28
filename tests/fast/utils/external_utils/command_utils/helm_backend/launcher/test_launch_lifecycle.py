@@ -19,6 +19,7 @@ from miles.utils.external_utils.command_utils.helm_backend.launcher.observabilit
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values.misc import MooncakeInfo
 from miles.utils.external_utils.command_utils.helm_backend.naming import (
     ORCHESTRATOR_COMPONENT,
+    ReleaseName,
     RunFiles,
     _orchestrator_state_path,
 )
@@ -162,7 +163,7 @@ class TestADeploymentWithoutTheOrchestrationScript:
 
         _launch(monkeypatch, tmp_path, recorded, installed=False, deploy_component="trainer")
 
-        assert recorded.upgraded == [f"{_RELEASE}-trainer"]
+        assert recorded.upgraded == [_TRAINER_RELEASE]
 
     def test_installs_no_orchestrator_and_waits_for_no_verdict(self, monkeypatch, tmp_path):
         """It carries no training to finish, so a launcher waiting for an exit file would hang forever."""
@@ -219,7 +220,7 @@ class TestDefusingAPendingUninstall:
             installed=True,
             rendered=_RENDERED_ORCHESTRATOR,
             proposed=_RENDERED_ORCHESTRATOR_REPLACED,
-            force=True,
+            skip_upgrade_check=True,
         )
 
         assert _DELETE_UNINSTALL_JOB in recorded.kubectl
@@ -235,7 +236,10 @@ class TestDefusingAPendingUninstall:
 
 
 _RUN_ID = "260101-000000-000"
-_RELEASE = f"miles-run-{_RUN_ID}"
+_RELEASE = ReleaseName(run_id=_RUN_ID, deploy_component=DeployComponent.ALL, deploy_instance_id=None).serialize()
+_TRAINER_RELEASE = ReleaseName(
+    run_id=_RUN_ID, deploy_component=DeployComponent.TRAINER, deploy_instance_id=None
+).serialize()
 _DELETE_UNINSTALL_JOB = [
     "kubectl",
     "delete",
@@ -265,7 +269,7 @@ class TestChoosingTheStateFile:
             installed=True,
             rendered=_RENDERED_ORCHESTRATOR,
             proposed=_RENDERED_ORCHESTRATOR_REPLACED,
-            force=True,
+            skip_upgrade_check=True,
         )
 
         assert followed[0]["state_file"] != tmp_path / "attached.state"
@@ -368,7 +372,9 @@ class TestAnOrdinaryRelaunchOfAHotRestartedRun:
         assert followed[0]["state_file"] == tmp_path / "attached.state"
         assert proposals[-1]["orchestrator"]["restartAt"] == _STAMP
 
-    def test_a_relaunch_that_changes_the_orchestration_arguments_is_refused_without_force(self, monkeypatch, tmp_path):
+    def test_a_relaunch_that_changes_the_orchestration_arguments_is_refused_without_skip_upgrade_check(
+        self, monkeypatch, tmp_path
+    ):
         """Changing the arguments of a live run is what --hot-restart is for, and nothing else may do it."""
         recorded = _Recorded(kubectl=[], upgraded=[])
 
@@ -389,7 +395,7 @@ class TestAnOrdinaryRelaunchOfAHotRestartedRun:
 class TestTheRelaunchKeepsThePodsItAttachesTo:
     def test_the_pods_keep_the_record_of_the_launch_that_installed_them(self, monkeypatch, tmp_path):
         """A new record in the pod template is a new pod template, so a resize would restart every worker."""
-        recorded = _Recorded()
+        recorded = _Recorded(kubectl=[], upgraded=[])
 
         _launch(monkeypatch, tmp_path, recorded, installed=True, rendered=_RENDERED_WITH_RECORD)
 
@@ -411,7 +417,7 @@ class TestTheRelaunchKeepsThePodsItAttachesTo:
         assert _written_values(tmp_path)["run"]["launchRecord"] == _INSTALLED_RECORD
 
     def test_a_first_install_points_the_pods_at_the_record_of_this_launch(self, monkeypatch, tmp_path):
-        recorded = _Recorded()
+        recorded = _Recorded(kubectl=[], upgraded=[])
 
         _launch(monkeypatch, tmp_path, recorded, installed=False)
 
@@ -420,7 +426,7 @@ class TestTheRelaunchKeepsThePodsItAttachesTo:
 
     def test_this_launch_is_still_recorded_on_disk_when_the_pods_keep_an_older_one(self, monkeypatch, tmp_path):
         """The pods keeping their own record must not cost the run the record of this invocation."""
-        recorded = _Recorded()
+        recorded = _Recorded(kubectl=[], upgraded=[])
 
         _launch(monkeypatch, tmp_path, recorded, installed=True, rendered=_RENDERED_WITH_RECORD)
 
@@ -439,7 +445,7 @@ def _launch(
     proposed: str | None = None,
     proposals: list[dict] | None = None,
     delete_fails: bool = False,
-    force: bool = False,
+    skip_upgrade_check: bool = False,
     hot_restart: str = "",
     rendered: str | None = None,
     deploy_component: str = "all",
@@ -474,17 +480,22 @@ def _launch(
     monkeypatch.setattr(Helm, "upgrade", staticmethod(lambda **kwargs: recorded.upgraded.append(kwargs["release"])))
     monkeypatch.setattr(Manifest, "state_file", lambda self, stateful_set, container: tmp_path / "attached.state")
     monkeypatch.setattr(entrypoint, "repo_base_dir", str(REPO_ROOT))
+    monkeypatch.setattr(
+        entrypoint, "_compute_trainer_controller_addrs", lambda args, *, release, namespace: _REACHABLE_AT
+    )
 
     followed = _stub_launch_inputs(monkeypatch, specs=[], deploy_component=deploy_component)
 
+    component = DeployComponent(deploy_component)
     entrypoint.execute_train(
         request=_train_request(),
         config=ExecuteTrainConfig(
             namespace="rl",
             run_id=_RUN_ID,
             helm_values=(str(_launchable_infra_file(tmp_path)),),
-            deploy_component=DeployComponent(deploy_component),
-            force=force,
+            deploy_component=component,
+            run_uuid=_RUN_UUID if component.is_split() else None,
+            skip_upgrade_check=skip_upgrade_check,
             hot_restart=hot_restart,
         ),
     )
@@ -594,6 +605,7 @@ spec:
 _RENDERED_WITH_ANOTHER_KEY = _RENDERED + "data:\n  extra: added\n"
 _ORCHESTRATOR_OBJECT = component_name(_RELEASE, ORCHESTRATOR_COMPONENT)
 _RUN_UUID = "0123456789abcdef"
+_REACHABLE_AT = {"actor": f"{_RELEASE}-trainer-controller-actor-0.rl.svc.cluster.local:29500"}
 _INSTALLED_ARGV = ["python", "/repo/train.py", "--cluster-backend", "kubernetes", "--run-uuid", _RUN_UUID]
 _RENDERED_ORCHESTRATOR = f"""---
 apiVersion: apps/v1

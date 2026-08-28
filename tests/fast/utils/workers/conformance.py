@@ -52,7 +52,9 @@ def compute_spec(*, rpc_port: int) -> ServeWorkerSpec:
     return ServeWorkerSpec(
         name=POOL_ID,
         port_infos=[PortInfo(name="rpc", static_port=rpc_port, allow_dynamic=rpc_port == 0)],
-        env_var=lambda _ctx: {"PYTHONPATH": str(REPO_ROOT)},
+        # prepend rather than replace: the inherited path is what carries sglang and megatron,
+        # which the worker's own imports reach through miles.utils.arguments
+        env_var=lambda _ctx: {"PYTHONPATH": os.pathsep.join([str(REPO_ROOT), os.environ.get("PYTHONPATH", "")])},
         scheduling=SchedulingSpec(num_cells=1, num_workers_per_cell=1, num_gpus_per_worker=0),
         worker_class=f"{__name__}.ConformanceWorker",
         ctor_kwargs=lambda ctx: dict(tag=f"cell-{ctx.cell_index}-worker-{ctx.worker_in_cell_index}"),

@@ -241,7 +241,7 @@ class TestServeWorkerClassFailures:
         manager = RayWorkerManager()
 
         with pytest.raises(Exception, match="DemoServeWorkerMissing"):
-            await manager.init([spec], {})
+            await manager.init(worker_manager_args(), [spec], {}, comm_backend=WorkerCommBackend.RAY)
 
         assert fake_ray_cluster.handles == []
         assert not manager.get_cell_infos(pool_ids=["trainer"])["trainer-00000"].alive
@@ -454,7 +454,7 @@ class TestTheBootstrappedClass:
 
         actor_class(ctor_kwargs=probe, context=_launch_context())
 
-        assert probe.contexts[0].cell_operations() is built.operations
+        assert probe.contexts[0].capability.cell_operations() is built.operations
 
     async def test_the_capability_costs_nothing_until_the_spec_asks(self, monkeypatch):
         """Reaching for the worker manager at construction time would make every gpu-less worker pay for it."""
@@ -528,7 +528,10 @@ class TestTheBootstrappedClass:
             [sys.executable, "-c", _REBUILD_IN_CHILD],
             input=payload,
             capture_output=True,
-            env=dict(os.environ, PYTHONPATH=str(_REPO_ROOT)),
+            env=dict(
+                os.environ,
+                PYTHONPATH=os.pathsep.join(filter(None, [str(_REPO_ROOT), os.environ.get("PYTHONPATH", "")])),
+            ),
         )
 
         assert completed.returncode == 0, completed.stderr.decode()

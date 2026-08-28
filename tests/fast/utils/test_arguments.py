@@ -31,6 +31,7 @@ from miles.utils.arguments import (
 from miles.utils.env_report.redaction import _SECRET_ARG_NAMES, _SECRET_ENV_VAR_PATTERN
 from miles.utils.ft_utils.health_checker import SimpleHealthCheckerConfig
 from miles.utils.function_registry import function_registry
+from miles.utils.object_store_config import compute_mooncake_init_kwargs
 from miles.utils.run_uuid import RUN_UUID_LENGTH, validate_run_uuid
 from miles.utils.workers.naming import DEPLOY_INSTANCE_ID_MAX_LENGTH
 
@@ -159,9 +160,8 @@ class TestAddArgumentsSupport:
 
 
 class TestFullyAsyncDataBufferFlags:
-    def test_a_fully_async_run_reaches_the_data_buffer_flags_through_its_rollout_function(self, monkeypatch):
+    def test_a_fully_async_run_reaches_the_data_buffer_flags_through_its_rollout_function(self):
         """The flag sits beside --custom-async-data-buffer-path, so a fully async run parses it like any other."""
-        monkeypatch.setenv("MILES_EXPERIMENTAL_ROLLOUT_REFACTOR", "1")
         argv = [
             "test",
             "--fully-async",
@@ -175,33 +175,14 @@ class TestFullyAsyncDataBufferFlags:
 
         assert args.custom_async_data_buffer_path_per_model == ["solver=pkg.SolverBuffer"]
 
-    def test_a_run_that_is_not_fully_async_never_declares_the_flag(self, monkeypatch):
+    def test_a_run_that_is_not_fully_async_never_declares_the_flag(self):
         """The flag belongs to the fully async rollout function, so no other run should accept or expose it."""
-        monkeypatch.setenv("MILES_EXPERIMENTAL_ROLLOUT_REFACTOR", "1")
         with patch.object(sys, "argv", ["test"] + REQUIRED_ARGS):
             parser = argparse.ArgumentParser()
             get_miles_extra_args_provider()(parser)
             args, _ = parser.parse_known_args()
 
         assert not hasattr(args, "custom_async_data_buffer_path_per_model")
-
-
-class TestAddArgumentsWithoutTheExperimentalRolloutFlag:
-    def test_an_engine_provider_registers_its_own_flags_in_the_default_environment(self, monkeypatch):
-        """External rollout does not need MILES_EXPERIMENTAL_ROLLOUT_REFACTOR, so a provider's
-        add_arguments hook must run when that env var is off, as the docs promise."""
-        monkeypatch.delenv("MILES_EXPERIMENTAL_ROLLOUT_REFACTOR", raising=False)
-        fn = make_function_with_add_arguments()
-        with function_registry.temporary("test:fn", fn), patch.object(
-            sys,
-            "argv",
-            ["test", "--custom-inference-engine-provider-path", "test:fn", "--my-custom-arg", "100"] + REQUIRED_ARGS,
-        ):
-            parser = argparse.ArgumentParser()
-            get_miles_extra_args_provider()(parser)
-            args, _ = parser.parse_known_args()
-
-        assert args.my_custom_arg == 100
 
 
 class TestRolloutExternalDerivation:
@@ -562,6 +543,36 @@ class TestClusterBackend:
 
         assert args.object_store_backend == "mooncake"
 
+    def test_the_store_this_backend_chose_is_also_configured_by_it(self):
+        """The launcher asserts these kwargs exist and rewrites their host to the master it starts, so
+        a run that never asked for mooncake in the first place must not have to name them itself: with
+        them unset, every kubernetes run using the defaults died before a single pod did any work."""
+        args = self._parse(["--cluster-backend", "kubernetes", "--num-rollout", "1"])
+
+        miles_validate_args(args)
+
+        assert ":" in args.mooncake_store_init_kwargs["master_server_address"]
+        assert set(args.mooncake_store_init_kwargs) == set(compute_mooncake_init_kwargs())
+
+    def test_a_named_store_configuration_is_left_alone(self):
+        """A run that configured the store itself knows something the default cannot."""
+        named = '{"master_server_address": "10.0.0.2:60000", "protocol": "rdma"}'
+        args = self._parse(
+            ["--cluster-backend", "kubernetes", "--mooncake-store-init-kwargs", named, "--num-rollout", "1"]
+        )
+
+        miles_validate_args(args)
+
+        assert args.mooncake_store_init_kwargs == {"master_server_address": "10.0.0.2:60000", "protocol": "rdma"}
+
+    def test_a_ray_run_is_not_given_a_store_it_does_not_use(self):
+        """The ray store needs none of this, and inventing kwargs would misreport what the run uses."""
+        args = self._parse(["--cluster-backend", "ray", "--num-rollout", "1"])
+
+        miles_validate_args(args)
+
+        assert args.mooncake_store_init_kwargs is None
+
     def test_a_ray_run_may_keep_the_ray_object_store(self):
         """Every existing run takes this path, and nothing about it changed."""
         args = self._parse(["--cluster-backend", "ray", "--object-store-backend", "ray", "--num-rollout", "1"])
@@ -635,13 +646,18 @@ _INFERENCE_ARGS = [
 ]
 
 
-def _parse_deploy_args(extra, *, use_critic: bool = False):
+def _parse_deploy_args(extra, *, use_critic: bool = False, resolve_fault_tolerance: bool = False):
     parser = argparse.ArgumentParser()
     get_miles_extra_args_provider()(parser)
     args = parser.parse_args(["--cluster-backend", "kubernetes", *extra, *REQUIRED_ARGS, "--num-rollout", "1"])
-    args.ft_components = []
-    args.mini_ft_controller_enable = False
     args.use_critic = use_critic
+    if resolve_fault_tolerance:
+        args.ft_components = _resolve_ft_components(args)
+        args.api_server_port = _resolve_api_server_port(args)
+        args.mini_ft_controller_enable = _resolve_mini_ft_controller_enable(args)
+    else:
+        args.ft_components = []
+        args.mini_ft_controller_enable = False
     return args
 
 
@@ -650,11 +666,7 @@ class TestDeployComponent:
         return _parse_deploy_args(extra)
 
     def _parse_validated(self, extra):
-        args = self._parse(extra)
-        args.ft_components = _resolve_ft_components(args)
-        args.api_server_port = _resolve_api_server_port(args)
-        args.mini_ft_controller_enable = _resolve_mini_ft_controller_enable(args)
-        return args
+        return _parse_deploy_args(extra, resolve_fault_tolerance=True)
 
     def test_defaults_to_deploying_the_whole_run(self):
         """A run that does not mention the flag is one deployment, exactly as before the flag existed."""
@@ -824,7 +836,7 @@ class TestDeployComponent:
         args = self._parse([*_PRIMARY_ARGS, *_SHARED_STORE_ARGS])
         args.use_critic = True
 
-        with pytest.raises(AssertionError, match="exactly one"):
+        with pytest.raises(AssertionError, match=r"--trainer-controller-addrs must name each of .* exactly once"):
             _validate_deploy_component(args)
 
     def test_refuses_an_address_that_is_not_a_host_and_port(self):
@@ -1034,11 +1046,12 @@ class TestRunUuidOfASplitRun:
 
         assert len(_resolve_run_uuid(args)) == RUN_UUID_LENGTH
 
-    def test_a_kubernetes_split_launch_still_invents_its_own(self):
-        """Its launcher derives the same uuid from the run id for every component, so both halves agree."""
+    def test_a_kubernetes_split_launch_has_to_be_told_it_too(self):
+        """Its launcher is given the uuid and stamps it on every part, so no backend mints one of its own."""
         args = self._parse(["--cluster-backend", "kubernetes", "--deploy-component", "trainer"])
 
-        assert len(_resolve_run_uuid(args)) == RUN_UUID_LENGTH
+        with pytest.raises(AssertionError, match="--run-uuid"):
+            _resolve_run_uuid(args)
 
 
 class TestEvalSglangOverrides:
@@ -2134,6 +2147,7 @@ class TestRolloutHealthCheckArguments:
         assert args.rollout_health_check_interval == 30.0
         assert args.rollout_health_check_timeout == 30.0
         assert args.rollout_health_check_first_wait == 0.0
+        assert args.rollout_health_check_failure_threshold == 1
 
     def test_the_first_wait_grace_period_is_still_tunable(self):
         """A first launch compiling deepgemm kernels needs a grace period, or it is killed while warming up."""
@@ -2270,6 +2284,9 @@ class TestMilesValidateArgsCheckpointResolution:
     def _parse(extra, tmp_path):
         parser = argparse.ArgumentParser()
         get_miles_extra_args_provider()(parser)
+        # megatron owns --finetune and the fallback only ever turns it on, so the run that
+        # leaves it alone has to start from the default megatron would have given it
+        parser.set_defaults(finetune=False)
         return parser.parse_args(
             ["--hf-checkpoint", str(tmp_path), "--ref-load", str(tmp_path), "--num-rollout", "1"]
             + extra

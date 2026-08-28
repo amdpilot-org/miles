@@ -126,7 +126,7 @@ class TestWatching:
 
         assert operations._provider.watches == 1
 
-    def test_later_reads_reuse_the_watch_already_running(self):
+    def test_later_reads_reuse_the_watch_already_running(self, deleted):
         """A second reflector would double the apiserver load and leak the first one's session."""
         operations = _operations({"trainer-engine-actor-0": _info()})
 

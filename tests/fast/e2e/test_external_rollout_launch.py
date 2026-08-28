@@ -16,6 +16,7 @@ from miles.utils.external_utils.command_utils.helm_backend import naming
 from miles.utils.external_utils.command_utils.helm_backend.launcher import command_wrapper, entrypoint
 from miles.utils.external_utils.command_utils.helm_backend.launcher.command_wrapper import Helm
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values.misc import LaunchPlan
+from miles.utils.external_utils.model_args_utils import shell_safe_model_args
 from miles.utils.workers.serving.utils import override_argv
 from miles.utils.workers.types import ClusterBackend
 
@@ -100,9 +101,18 @@ def model_dir(sandbox: Path) -> Path:
     return path
 
 
+def ref_load_dir(sandbox: Path) -> Path:
+    path = sandbox / f"{script.MODEL_NAME}_torch_dist"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def train_args_of(config: ExecuteTrainConfig, addrs: list[str], sandbox: Path) -> str:
-    written = script._train_args(addrs, object_store_args=script._object_store_args(config))
-    return written.replace(f"/root/models/{script.MODEL_NAME}/", f"{model_dir(sandbox)}/")
+    written = f"{shell_safe_model_args(script.MODEL_TYPE)} " + script._train_args(
+        addrs, object_store_args=script._object_store_args(config)
+    )
+    written = written.replace(f"/root/models/{script.MODEL_NAME}/", f"{model_dir(sandbox)}/")
+    return written.replace(f"/root/{script.MODEL_NAME}_torch_dist/", f"{ref_load_dir(sandbox)}/")
 
 
 def launch(monkeypatch, sandbox: Path) -> _Launch:
@@ -119,7 +129,7 @@ def launch(monkeypatch, sandbox: Path) -> _Launch:
         megatron_model_type=script.MODEL_TYPE,
         train_script="tests/e2e/short/test_qwen2.5_0.5B_external_rollout.py",
         train_backend_fsdp=False,
-        extra_env_vars={"MILES_EXPERIMENTAL_ROLLOUT_REFACTOR": "1"},
+        extra_env_vars={},
         megatron_path="/root/Megatron-LM",
         before_ray_job_submit=None,
         prepare_cmd=engines.prepare_cmd,
@@ -134,11 +144,14 @@ def launch(monkeypatch, sandbox: Path) -> _Launch:
         return build_values(specs, plan)
 
     monkeypatch.setattr(entrypoint, "build_values", record_plan)
-    monkeypatch.setattr(
-        command_wrapper,
-        "run_process",
-        lambda command, **kwargs: subprocess.CompletedProcess(args=command, returncode=0, stdout="", stderr=""),
-    )
+
+    def helm_answered_nothing(command, **kwargs) -> subprocess.CompletedProcess:
+        # the launcher renders the upgrade it is about to install and reads the manifest out of the
+        # json, so a helm that answers with nothing at all has to answer with an empty manifest
+        rendered = '{"manifest": ""}' if "json" in command else ""
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=rendered, stderr="")
+
+    monkeypatch.setattr(command_wrapper, "run_process", helm_answered_nothing)
     monkeypatch.setattr(Helm, "get_manifest", staticmethod(lambda release, namespace: None))
     monkeypatch.setattr(entrypoint, "repo_base_dir", str(REPO_ROOT))
     monkeypatch.setattr(naming, "_new_launch_token", lambda: LAUNCH_TOKEN)
@@ -185,7 +198,7 @@ class TestTheScriptOwnArgvSelectsTheExternalPath:
 
         argv = shlex.split(train_args_of(config, script._external_engines(config).addrs, tmp_path))
 
-        with override_argv(["train.py", *argv]):
+        with override_argv(argv):
             args = parse_args()
 
         assert args.rollout_external

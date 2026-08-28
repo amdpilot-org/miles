@@ -104,12 +104,13 @@ class FakeRayModule:
             return FakeRayRemoteClass(cluster=self.cluster, actor_class=actor_class)
         return lambda cls: FakeRayRemoteClass(cluster=self.cluster, actor_class=cls, actor_options=decorator_options)
 
-    def method(self, *, concurrency_group: str):
-        def annotate(func: Any) -> Any:
-            func.__ray_concurrency_group__ = concurrency_group
-            return func
+    def method(self, **decorator_options: Any):
+        def _decorator(fn: Any) -> Any:
+            for name, value in decorator_options.items():
+                setattr(fn, f"__ray_{name}__", value)
+            return fn
 
-        return annotate
+        return _decorator
 
     def get(self, ref: FakeRayObjectRef, timeout: float | None = None) -> Any:
         self.cluster.resolved_refs.append(ref.method)

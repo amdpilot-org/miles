@@ -75,8 +75,9 @@ class _RecordingRouterApiClient:
 class _RecordingApiClient:
     calls: list[tuple[str, dict]] = []
 
-    def __init__(self, server_url: str):
+    def __init__(self, server_url: str, api_key: str | None = None):
         self.server_url = server_url
+        self.api_key = api_key
 
     async def release_memory_occupation(self, tags=None):
         _RecordingApiClient.calls.append(("release", dict(tags=tags)))
@@ -93,8 +94,9 @@ class _ResultApiClient:
     results: dict[str, dict] = {}
     errors: dict[str, Exception] = {}
 
-    def __init__(self, server_url: str):
+    def __init__(self, server_url: str, api_key: str | None = None):
         self.server_url = server_url
+        self.api_key = api_key
 
     async def release_memory_occupation(self, tags=None):
         return await self._record("release_memory_occupation", dict(tags=tags))
@@ -195,22 +197,8 @@ class TestInit:
         with pytest.raises(AssertionError):
             await cell.init()
 
-    async def test_external_rollout_initialization_is_rejected_before_allocating_an_address(
-        self, cell_env, monkeypatch
-    ):
-        """External address allocation was removed, so the cell must refuse instead of opening a gate it does not own."""
-
-        async def _unexpected_compute_addr_info(self) -> CellAddrInfo:
-            raise AssertionError("external rollout initialization looked up a worker address")
-
-        monkeypatch.setattr(ServerCell, "_compute_addr_info", _unexpected_compute_addr_info)
-        cell = _make_cell(args_overrides=dict(rollout_external=True))
-
-        with pytest.raises(NotImplementedError):
-            await cell.init()
-
-        assert cell.is_uninitialized
-        assert cell_env["activated"] == []
+        assert cell.is_initializing
+        assert len(cell_env["activated"]) == 1
 
     async def test_an_address_lookup_failure_leaves_the_cell_uninitialized_and_retryable(self, cell_env, monkeypatch):
         """Worker addresses appear late, so a lookup error must not consume the cell's only init."""

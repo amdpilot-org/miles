@@ -3,9 +3,11 @@ import socket
 from types import SimpleNamespace
 
 import pytest
+
 from miles.ray import train_actor
 from miles.ray.train_actor import TrainRayActor
 from miles.utils.init_once import InitOnce
+from miles.utils.workers.env_vars import CELL_INDEX_ENV_VAR, SUBPROCESS_INDEX_ENV_VAR
 
 
 def _inited_guard() -> InitOnce:
@@ -98,3 +100,41 @@ class TestInitRunsExactlyOnce:
     def test_a_worker_that_ran_init_reports_itself_initialized(self):
         """The take-over path has to see the worker the previous script built as built."""
         assert _actor_with(_inited_guard()).is_initialized() is True
+
+
+class TestTheLocalGpuIsFoundWithoutRay:
+    def test_a_supervised_rank_reads_its_index_rather_than_asking_ray(self, monkeypatch):
+        """A served worker is a plain process, not an actor, so ray owns no assignment and answers []."""
+        monkeypatch.setenv(CELL_INDEX_ENV_VAR, "0")
+        monkeypatch.setenv(SUBPROCESS_INDEX_ENV_VAR, "3")
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+        monkeypatch.setattr(train_actor.ray, "get_gpu_ids", lambda: [])
+
+        assert train_actor.get_local_gpu_id() == 3
+
+    def test_a_pod_running_one_worker_needs_no_supervisor_to_know_its_card(self, monkeypatch):
+        """A cell one worker wide is launched without the supervisor, so the index it would set is absent."""
+        monkeypatch.setenv(CELL_INDEX_ENV_VAR, "0")
+        monkeypatch.delenv(SUBPROCESS_INDEX_ENV_VAR, raising=False)
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+        monkeypatch.setattr(train_actor.ray, "get_gpu_ids", lambda: [])
+
+        assert train_actor.get_local_gpu_id() == 0
+
+    def test_a_ray_placed_actor_still_reads_its_assignment_from_ray(self, monkeypatch):
+        """Every existing run takes this path, where ray does own the assignment."""
+        monkeypatch.delenv(CELL_INDEX_ENV_VAR, raising=False)
+        monkeypatch.delenv(SUBPROCESS_INDEX_ENV_VAR, raising=False)
+        monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "4,5,6,7")
+        monkeypatch.setattr(train_actor.ray, "get_gpu_ids", lambda: [6])
+
+        assert train_actor.get_local_gpu_id() == 2
+
+    def test_a_ray_actor_without_a_visible_device_list_still_reads_its_assignment(self, monkeypatch):
+        """The other ray shape: no mask, so the assignment is the id itself."""
+        monkeypatch.delenv(CELL_INDEX_ENV_VAR, raising=False)
+        monkeypatch.delenv(SUBPROCESS_INDEX_ENV_VAR, raising=False)
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+        monkeypatch.setattr(train_actor.ray, "get_gpu_ids", lambda: [5])
+
+        assert train_actor.get_local_gpu_id() == 5

@@ -415,8 +415,8 @@ class TestRetryUntilDeadline:
         with pytest.raises(ValueError, match="still down"):
             await retry_until_deadline(attempt, total_seconds=0.1, retry_on=ValueError, initial_delay=0.02)
 
-    async def test_failed_attempts_emit_structured_info_logs(self, caplog: pytest.LogCaptureFixture) -> None:
-        """Each failed attempt emits its structured retry diagnostics."""
+    async def test_a_retried_attempt_emits_structured_info_logs(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Every condition the caller declared retryable is expected, so the log says retrying, not failed."""
         attempts = 0
 
         async def attempt(remaining: float) -> str:
@@ -438,7 +438,7 @@ class TestRetryUntilDeadline:
         records = [
             record
             for record in caplog.records
-            if "op=retry_until_deadline" in record.message and "phase=attempt_failed" in record.message
+            if "op=retry_until_deadline" in record.message and "phase=retrying" in record.message
         ]
         assert result == "done"
         assert len(records) == 2
@@ -469,7 +469,7 @@ class TestRetryUntilDeadline:
                 log_fields={"op": "submit", "call": "c1"},
             )
 
-        records = [record for record in caplog.records if "phase=attempt_failed" in record.message]
+        records = [record for record in caplog.records if "phase=retrying" in record.message]
         assert len(records) == 1
         assert "op=submit" in records[0].message
         assert "call=c1" in records[0].message

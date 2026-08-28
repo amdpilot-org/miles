@@ -123,7 +123,7 @@ class TestCompareInferenceEngineChecksums:
             tmp_path / "target", [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "aaa"}])]
         )
 
-        with pytest.raises(AssertionError, match="rollout_id sets differ"):
+        with pytest.raises(AssertionError, match=r"\(model_id, rollout_id\) sets differ"):
             compare_inference_engine_checksums(str(tmp_path / "baseline"), str(tmp_path / "target"))
 
     def test_empty_baseline_fails(self, tmp_path: Path) -> None:
@@ -165,7 +165,7 @@ class TestSeveralPolicies:
             tmp_path / "target", [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "ccc"}])], model_id="b"
         )
 
-        with pytest.raises(AssertionError, match="b-actor"):
+        with pytest.raises(AssertionError, match=r"baseline/b/rollout_1 vs target/b/rollout_1"):
             compare_inference_engine_checksums(str(tmp_path / "baseline"), str(tmp_path / "target"))
 
 

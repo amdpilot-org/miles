@@ -53,7 +53,7 @@ class TestTheChoiceThatIsStored:
         """The wire is resolved once, so everything downstream reads a value rather than resolving again."""
         parser = argparse.ArgumentParser()
         get_miles_extra_args_provider()(parser)
-        args = parser.parse_args([*requested, "--rollout-batch-size", "64"])
+        args = parser.parse_args([*requested, "--rollout-batch-size", "64", "--num-rollout", "1"])
 
         miles_validate_args(args)
 
@@ -75,6 +75,6 @@ class TestTheChoiceThatIsStored:
 def _validated_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     get_miles_extra_args_provider()(parser)
-    args = parser.parse_args([*argv, "--rollout-batch-size", "64"])
+    args = parser.parse_args([*argv, "--rollout-batch-size", "64", "--num-rollout", "1"])
     miles_validate_args(args)
     return args

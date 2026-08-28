@@ -8,6 +8,7 @@ import pkgutil
 import subprocess
 import sys
 import textwrap
+import types
 import warnings
 from unittest.mock import patch
 
@@ -89,6 +90,23 @@ class TestConfigureLogger:
             self._configure(report_env=False)
 
         assert start.call_count == 0
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _stub_the_gpu_image_only_imports():
+    """The megatron actor imports the memory saver at module scope, and that ships with the gpu
+    image rather than with miles, so the cpu lane cannot import the class to read its source."""
+    if "torch_memory_saver" in sys.modules:
+        yield
+        return
+
+    stub = types.ModuleType("torch_memory_saver")
+    stub.torch_memory_saver = object()
+    sys.modules["torch_memory_saver"] = stub
+    try:
+        yield
+    finally:
+        del sys.modules["torch_memory_saver"]
 
 
 class TestServedWorkerLogging:

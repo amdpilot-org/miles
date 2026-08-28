@@ -21,6 +21,7 @@ from miles.utils.external_utils.command_utils.helm_backend.launcher.command_wrap
 from miles.utils.external_utils.command_utils.helm_backend.launcher.manifest_types import Manifest
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values.builder import build_values
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values.misc import LaunchPlan, MooncakeInfo
+from miles.utils.external_utils.command_utils.helm_backend.naming import ReleaseName
 from miles.utils.run_uuid import RUN_UUID_LENGTH
 from miles.utils.workers.types import ClusterBackend, DeployComponent
 from miles.utils.workers.worker_spec import CommandWorkerSpec, PortInfo, SchedulingSpec
@@ -36,9 +37,14 @@ def declared_deploy_components(argv: list[str]) -> list[str]:
 
 NAMESPACE = "rl"
 RUN_ID = "260101-000000-000"
+RUN_ID_SHORT_ENOUGH_FOR_FULL_OBJECT_NAMES = "260101-0000"
 
 
 SPLIT_RUN_UUID = "0123456789abcdef"
+
+
+def _release(deploy_component: DeployComponent = DeployComponent.ALL) -> str:
+    return ReleaseName(run_id=RUN_ID, deploy_component=deploy_component, deploy_instance_id=None).serialize()
 
 
 def _config(run_id: str = RUN_ID, deploy_component: DeployComponent = DeployComponent.ALL) -> ExecuteTrainConfig:
@@ -76,6 +82,17 @@ def _router() -> CommandWorkerSpec:
     )
 
 
+@pytest.fixture(autouse=True)
+def run_files_under_tmp(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
+    # the shared root comes from the chart and points at the cluster's storage mount, which the
+    # cpu lane neither has nor may create
+    monkeypatch.setattr(
+        entrypoint.InfraInfo,
+        "shared_root",
+        staticmethod(lambda _infra, *, namespace: str(tmp_path)),
+    )
+
+
 def launch_argv(
     monkeypatch: pytest.MonkeyPatch,
     *,
@@ -94,18 +111,26 @@ def launch_argv(
         argv = list(sys.argv[1:])
         declared = declared_deploy_components(argv)
         return SimpleNamespace(
-            colocate=False, deploy_component=declared[-1] if declared else DeployComponent.ALL.value, argv=argv
+            colocate=False,
+            deploy_component=declared[-1] if declared else DeployComponent.ALL.value,
+            deploy_instance_id=None,
+            argv=argv,
         )
 
     def fake_upgrade(**kwargs: Any) -> None:
         if recorded_releases is not None:
             recorded_releases.append(kwargs["release"])
 
+    def fake_render_upgrade(*, release: str, namespace: str, chart: Any, values_files: list[Any]) -> Manifest:
+        return Manifest.parse("", namespace=namespace)
+
     monkeypatch.setattr(entrypoint, "compute_specs", fake_compute_specs)
     monkeypatch.setattr(entrypoint, "parse_args", fake_parse_args)
     monkeypatch.setattr(MooncakeInfo, "plan_of_args", staticmethod(lambda args: None))
     monkeypatch.setattr(entrypoint, "_write_helm_values", lambda path, values: None)
+    monkeypatch.setattr(entrypoint, "_compute_trainer_controller_addrs", lambda args, *, release, namespace: {})
     monkeypatch.setattr(Helm, "get_manifest", staticmethod(lambda release, namespace: None))
+    monkeypatch.setattr(Helm, "render_upgrade", staticmethod(fake_render_upgrade))
     monkeypatch.setattr(entrypoint, "_remove_pending_uninstall", lambda release, *, namespace: None)
     monkeypatch.setattr(Helm, "build_dependencies", lambda chart: None)
     monkeypatch.setattr(Helm, "upgrade", staticmethod(fake_upgrade))
@@ -253,18 +278,20 @@ class TestExecuteTrainTellsThePodsWhichPartOfTheRunTheyAre:
 
     def test_every_object_of_a_split_release_is_named_after_that_release(self, monkeypatch: pytest.MonkeyPatch):
         """The chart computes no names, so an object named after the whole run would collide with the whole run."""
+        run_id = RUN_ID_SHORT_ENOUGH_FOR_FULL_OBJECT_NAMES
         releases: list[str] = []
         argv = launch_argv(
             monkeypatch,
             train_args="--rollout-num-gpus 8",
+            run_id=run_id,
             deploy_component=DeployComponent.TRAINER,
             recorded_releases=releases,
         )
 
-        run = _values_of_release(argv, release=releases[0])["run"]
+        run = _values_of_release(argv, run_id=run_id, release=releases[0])["run"]
 
-        assert run["objectNames"]["orchestrator"] == f"miles-run-{RUN_ID}-trainer-orchestrator"
-        assert run["staticWorkers"][0]["objectName"] == f"miles-run-{RUN_ID}-trainer-inference-router-0"
+        assert run["objectNames"]["orchestrator"] == f"miles-run-{run_id}-trainer-orchestrator"
+        assert run["staticWorkers"][0]["objectName"] == f"miles-run-{run_id}-trainer-inference-router-0"
 
     def test_a_user_supplied_agreeing_flag_is_appended_over_rather_than_detected(self, monkeypatch):
         """A relaunch from a recorded command line repeats the flag, and the last one argparse reads still wins."""
@@ -288,7 +315,7 @@ class TestApiServerHost:
         config = _config()
         host = KubernetesCommandBackend(config).api_server_host(config)
 
-        assert host == f"miles-run-{RUN_ID}-orchestrator.{NAMESPACE}.svc.cluster.local"
+        assert host == f"{_release()}-orchestrator.{NAMESPACE}.svc.cluster.local"
 
     @pytest.mark.parametrize("component", [DeployComponent.PRIMARY, DeployComponent.TRAINER])
     def test_no_deployment_of_a_split_run_has_an_api_server_to_name(self, component):
@@ -300,11 +327,11 @@ class TestApiServerHost:
             backend.api_server_host(config)
 
 
-def _values_of_release(train_argv: list[str], *, release: str) -> dict[str, Any]:
+def _values_of_release(train_argv: list[str], *, run_id: str, release: str) -> dict[str, Any]:
     return build_values(
         [_router()],
         LaunchPlan(
-            run_id=RUN_ID,
+            run_id=run_id,
             state_file="",
             release=release,
             namespace=NAMESPACE,
@@ -323,7 +350,7 @@ spec:
   template:
     spec:
       containers:
-        - name: main
+        - name: orchestrator
           command: ["python", "train.py", "--run-uuid", "aaaabbbbccccdddd"]
 """
 
@@ -335,22 +362,28 @@ class TestTheRunUuidALaunchStamps:
         config.run_uuid = None
 
         with pytest.raises(AssertionError, match="--run-uuid"):
-            entrypoint._resolve_run_uuid(config, installed_manifest=None)
+            entrypoint._resolve_run_uuid(config, installed_manifest=None, release=_release(DeployComponent.TRAINER))
 
     def test_a_split_launch_keeps_the_one_it_was_given(self):
         """It is the value the layer deploying every part chose, and changing it would fail the handshake."""
         config = _config(deploy_component=DeployComponent.TRAINER)
 
-        assert entrypoint._resolve_run_uuid(config, installed_manifest=None) == SPLIT_RUN_UUID
+        assert (
+            entrypoint._resolve_run_uuid(config, installed_manifest=None, release=_release(DeployComponent.TRAINER))
+            == SPLIT_RUN_UUID
+        )
 
     def test_a_first_install_mints_one(self):
         """A single deployment is the whole run, so nothing outside it has to agree on the value."""
-        stamped = entrypoint._resolve_run_uuid(_config(), installed_manifest=None)
+        stamped = entrypoint._resolve_run_uuid(_config(), installed_manifest=None, release=_release())
 
         assert len(stamped) == RUN_UUID_LENGTH
 
     def test_an_upgrade_in_place_keeps_the_uuid_the_pods_already_carry(self):
         """Resizing is the same training, and a fresh uuid would change every pod argv and trip the upgrade guard."""
-        installed = Manifest.parse(_INSTALLED_MANIFEST)
+        installed = Manifest.parse(_INSTALLED_MANIFEST, namespace=NAMESPACE)
 
-        assert entrypoint._resolve_run_uuid(_config(), installed_manifest=installed) == "aaaabbbbccccdddd"
+        assert (
+            entrypoint._resolve_run_uuid(_config(), installed_manifest=installed, release=_release())
+            == "aaaabbbbccccdddd"
+        )

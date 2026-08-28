@@ -11,7 +11,7 @@ from tests.fast.fixtures.driver_fakes import (
     FakeTrainingModel,
 )
 
-from miles.utils.multi_lora import EmptyBatchTimeoutError
+from miles.utils.data import RolloutDataPack
 
 _ACTIVE_SNAPSHOT = {"pending": [], "active": ["alpha"], "retiring": [], "cleanup": []}
 _EMPTY_SNAPSHOT = {"pending": [], "active": [], "retiring": [], "cleanup": []}
@@ -149,13 +149,13 @@ class TestEmptyBatchTimeout:
             events,
             snapshots=[_ACTIVE_SNAPSHOT, _ACTIVE_SNAPSHOT, _ACTIVE_SNAPSHOT, _ACTIVE_SNAPSHOT, _EMPTY_SNAPSHOT],
         )
-        components.rollout_executor.generation_errors = [_task_error(EmptyBatchTimeoutError("no trainable groups"))]
+        components.rollout_executor.generation_packs = [RolloutDataPack(empty_batch_timeout=True)]
 
         await multi_lora_driver.main(args)
 
         assert [event for event in events if event.startswith(("generate_", "actor_train", "actor_save"))] == [
             "generate_start:0",
-            "generate_failed:0",
+            "generate_empty:0",
             "generate_start:0",
             "generate_done:0",
             "actor_train:0",

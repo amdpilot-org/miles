@@ -215,8 +215,8 @@ class TestBuildArgs:
         """A shared checkpoint directory would let the target resume from what the baseline wrote."""
         args = scenario._build_args(scenario.CHECKPOINTED, scenario._MODE, "/dumps/target")
 
-        assert compute_checkpoint_dir("/dumps/target") in args
-        assert compute_checkpoint_dir("/dumps/baseline") not in args
+        assert str(compute_checkpoint_dir("/dumps/target")) in args
+        assert str(compute_checkpoint_dir("/dumps/baseline")) not in args
 
     def test_the_run_is_installed_with_the_save_interval_its_mode_is_reasoned_from(self):
         """The pinned triggers are read off this cadence, so a run saving at another pace lands elsewhere."""
@@ -254,7 +254,7 @@ class TestTheFreezeTheRunIsInstalledWith:
 
     def test_the_relaunch_repeats_the_frozen_arguments_the_run_is_up_with(self, tmp_path):
         """A relaunch whose argv differs from the installed one is refused as more than a hot restart."""
-        dump_dir = f"{tmp_path}/installed"
+        dump_dir = f"{tmp_path}/target"
         args = scenario._build_frozen_args(scenario.CHECKPOINTED, scenario._MODE, dump_dir, False)
 
         assert read_installed_args(dump_dir) == args

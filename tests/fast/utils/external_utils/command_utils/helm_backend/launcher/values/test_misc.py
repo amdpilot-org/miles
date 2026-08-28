@@ -218,6 +218,18 @@ class TestMooncakeWithClusterMaster:
 
         assert _rewritten_kwargs(rewritten)["master_server_address"] == "mooncake.myns.svc.cluster.local:50051"
 
+    def test_a_run_that_never_named_the_flag_is_given_it(self):
+        """The backend moves a run onto this store without being asked, so the flag is missing exactly
+        when the run did not choose mooncake. Every pod parses this argv on its own, so omitting it
+        leaves each of them looking for a master on its own loopback."""
+        plan = MooncakeInfo.plan_of_args(_mooncake_args())
+        argv = ["python", "train.py", "--num-rollout", "1"]
+
+        rewritten = MooncakeInfo.with_cluster_master(argv, plan=plan, host="mooncake.myns.svc.cluster.local")
+
+        assert _rewritten_kwargs(rewritten)["master_server_address"] == "mooncake.myns.svc.cluster.local:50051"
+        assert rewritten[: len(argv)] == argv
+
     def test_keeps_the_port_the_run_configured(self):
         """The Service publishes the port the values carry, so rewriting the host must not move the port."""
         plan = MooncakeInfo.plan_of_args(_mooncake_args(master_server_address="1.2.3.4:60000"))

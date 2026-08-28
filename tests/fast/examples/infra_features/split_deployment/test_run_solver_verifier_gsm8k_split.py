@@ -147,10 +147,15 @@ class TestBuildDeploymentTrainArgs:
         """One address per trainer is the only thing tying the driver to releases it did not install."""
         address_book = RunAddressBook.of_config(args)
         driver = train_args_of_identity[(DeployComponent.PRIMARY, None)]
-        addresses = " ".join(values_after(driver, TRAINER_CONTROLLER_ADDRS_FLAG))
+        expected = address_book.trainer_controller_addrs_arg(
+            deploy_instance_id_of_trainer_id={
+                compute_trainer_id(model_id): compute_trainer_id(model_id) for model_id in MODEL_IDS
+            }
+        )
 
-        for model_id in MODEL_IDS:
-            assert address_book.release(DeployComponent.TRAINER, compute_trainer_id(model_id)) in addresses
+        assert values_after(driver, TRAINER_CONTROLLER_ADDRS_FLAG) == values_after(
+            expected, TRAINER_CONTROLLER_ADDRS_FLAG
+        )
 
     def test_only_the_engine_commands_are_told_where_to_register(self, train_args_of_identity):
         """Every other command holds the controller itself and refuses to be pointed at one."""

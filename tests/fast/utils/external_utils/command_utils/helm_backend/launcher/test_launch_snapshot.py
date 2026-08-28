@@ -156,7 +156,7 @@ def record_launch(monkeypatch, sandbox: Path, **request_overrides) -> list[str]:
 
 
 def freeze(text: str, sandbox: Path) -> str:
-    return sanitize(text, sandbox=sandbox).replace(sys.executable, PYTHON_PLACEHOLDER)
+    return sanitize(text.replace(sys.executable, PYTHON_PLACEHOLDER), sandbox=sandbox)
 
 
 def format_launch(commands: list[str], values_text: str, sandbox: Path) -> str:
@@ -174,7 +174,9 @@ def format_launch(commands: list[str], values_text: str, sandbox: Path) -> str:
 def _stub_launch_inputs(monkeypatch, *, specs, colocate: bool = False) -> None:
     monkeypatch.setattr(entrypoint, "compute_specs", lambda args: specs)
     monkeypatch.setattr(
-        entrypoint, "parse_args", lambda: SimpleNamespace(colocate=colocate, deploy_component="all", argv=[])
+        entrypoint,
+        "parse_args",
+        lambda: SimpleNamespace(colocate=colocate, deploy_component="all", deploy_instance_id=None, argv=[]),
     )
     monkeypatch.setattr(MooncakeInfo, "plan_of_args", staticmethod(lambda args: None))
     monkeypatch.setattr(entrypoint, "_follow_until_finished", lambda **kwargs: None)

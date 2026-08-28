@@ -6,7 +6,8 @@ import pytest
 from tests.fast.cluster_backends import both_backends, require_backend
 
 import miles.utils.external_utils.command_utils as command_utils
-from miles.utils.external_utils.command_utils import base_backend
+from miles.utils.external_utils.command_utils.helm_backend.backend import KubernetesCommandBackend
+from miles.utils.external_utils.command_utils.ray_backend.backend import RayCommandBackend
 from miles.utils.workers.types import ClusterBackend
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -93,7 +94,8 @@ def _capture_backend(monkeypatch) -> list[ClusterBackend]:
     def _execute_train_inner(self, *, request, config) -> None:
         chosen.append(config.cluster_backend)
 
-    monkeypatch.setattr(base_backend.BaseCommandBackend, "_execute_train_inner", _execute_train_inner, raising=False)
+    for backend_cls in (RayCommandBackend, KubernetesCommandBackend):
+        monkeypatch.setattr(backend_cls, "_execute_train_inner", _execute_train_inner)
     return chosen
 
 
