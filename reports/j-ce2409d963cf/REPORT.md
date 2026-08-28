@@ -159,18 +159,29 @@ python3 reports/j-ce2409d963cf/verify_against_repo.py
 
 ## Reproduce
 
+All three scripts are self-contained and read the GPU/torch/HIP versions from
+the machine at startup. Run from the repo checkout root:
+
 ```sh
-cd /tmp/delivery   # the repo checkout
+# 1. square-GEMM benchmark (BF16 + FP8 + BF16 backward) -> results.json
 python3 reports/j-ce2409d963cf/bench_gemm.py --out reports/j-ce2409d963cf/results.json
+
+# 2. per-projection GEMM at actual transformer shapes -> layer_results.json
+python3 reports/j-ce2409d963cf/bench_layer_gemms.py --out reports/j-ce2409d963cf/layer_results.json
+
+# 3. cross-check: tie measured throughput to the repo's own FLOPs model
+python3 reports/j-ce2409d963cf/verify_against_repo.py
 ```
 
-`results.json` is the machine-written copy of the table above.
+`results.json` and `layer_results.json` are the machine-written copies of the
+tables above.
 
 - hipBLASLt prints many `Warning: Latency not found ... Returning latency value
   of 32` lines to **stderr** during FP8 autotuning; these are harmless tuning
   messages, not errors. For clean stdout: append `2>/dev/null`. The JSON is
   unaffected.
-- Tunable: `--sizes 8192 --repeats 100 --warmup 20 --dtypes bf16 fp8`.
+- Tunable: `--sizes 8192 --repeats 100 --warmup 20 --dtypes bf16 fp8`
+  (bench_gemm); `--seqlen 8192` (bench_layer_gemms).
 
 ## Gaps and what I did not do
 
