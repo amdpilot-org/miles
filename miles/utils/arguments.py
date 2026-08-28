@@ -2441,6 +2441,14 @@ def get_miles_extra_args_provider(add_custom_arguments=None):
                 "(lazy imports, a swapped shared disk) is still captured. Non-positive records only at startup.",
             )
             parser.add_argument(
+                "--debug-unified-grad-fused-logprob",
+                action="store_true",
+                default=False,
+                help="Debug/test only: compute the stored log probabilities through the same grad-enabled fused "
+                "cross entropy the training step uses, then detach the result, so the two invocations of the "
+                "fused kernel take one execution path instead of two.",
+            )
+            parser.add_argument(
                 "--debug-deterministic-collective",
                 action="store_true",
                 default=False,

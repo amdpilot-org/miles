@@ -260,6 +260,7 @@ def get_log_probs_and_entropy(
             true_on_policy=args.true_on_policy_mode,
             vocab_size=getattr(args, "vocab_size", None),
             sampling_mask=sampling_mask,
+            debug_unified_grad_fused_logprob=args.debug_unified_grad_fused_logprob,
         )
 
         log_probs_list.append(log_prob.squeeze(-1))
