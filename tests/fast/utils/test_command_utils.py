@@ -175,6 +175,22 @@ class TestFp8CastBf16:
 
 
 class TestStartMooncakeMaster:
+    def test_the_backend_routes_startup_through_its_command_boundary(self, commands, monkeypatch):
+        """Backend recorders must see Mooncake startup instead of letting a fast test execute it on the host."""
+        direct_commands: list[str] = []
+        monkeypatch.setattr(ray_command, "_is_tcp_server_ready", lambda host, port: False)
+        monkeypatch.setattr(ray_command, "run_shell_command", direct_commands.append)
+        monkeypatch.setattr(ray_command, "wait_for_server_ready", lambda *args, **kwargs: None)
+
+        _backend().execute_train(
+            train_args="--object-store-backend mooncake",
+            num_gpus_per_node=1,
+            megatron_model_type="qwen3-4B",
+        )
+
+        assert direct_commands == []
+        assert any("mooncake_master --rpc_port" in command for command in commands)
+
     def test_reuses_a_ready_server(self, monkeypatch):
         """An already listening master must not be restarted out from under its clients."""
         commands = []
@@ -390,12 +406,20 @@ class TestExecuteTrain:
         assert "ray job submit" in commands[-1]
 
     def test_can_skip_the_ray_job_submit(self, commands, monkeypatch):
-        """Preparation-only runs disable the submit but still clean up and start ray."""
+        """Preparation-only runs leave the prepared Ray cluster intact for the later submission stage."""
         monkeypatch.setenv("MILES_SCRIPT_ENABLE_RAY_SUBMIT", "0")
 
         _backend().execute_train(train_args="", num_gpus_per_node=8, megatron_model_type="qwen3-4B")
 
         assert not any("ray job submit" in command for command in commands)
+        assert "ray start --head" in commands[-1]
+
+    def test_a_finished_run_does_not_sweep_every_process_on_the_host(self, commands):
+        """Run-owned workers clean themselves up, so the launcher must not kill unrelated concurrent processes."""
+        _backend().execute_train(train_args="", num_gpus_per_node=8, megatron_model_type="qwen3-4B")
+
+        assert "ray job submit" in commands[-1]
+        assert sum("pkill -9 sglang" in command for command in commands) == 1
 
     def test_expands_the_model_config_into_the_submitted_command(self, commands):
         """The megatron model type is expanded into the argv its model script declares."""

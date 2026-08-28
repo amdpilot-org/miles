@@ -1224,6 +1224,15 @@ class TestCellLifecycle:
 
 
 class TestCellStop:
+    async def test_shutting_down_the_manager_stops_every_cell_it_owns(self, fake_ray_cluster: FakeRayCluster):
+        """A finished run releases its own workers without selecting unrelated host processes by name."""
+        manager = await _launch([_make_spec("engine", num_cells=2), _make_spec("router")])
+
+        await manager.shutdown()
+
+        assert fake_ray_cluster.events.count(EVENT_KILL) == 3
+        assert not any(info.alive for info in manager.get_cell_infos(pool_ids=["engine", "router"]).values())
+
     async def test_stopping_a_cell_shuts_down_and_kills_every_worker(self, fake_ray_cluster: FakeRayCluster):
         """A stopped cell releases all of its workers, not just the first one."""
         manager = await _launch([_make_spec("engine", num_workers_per_cell=2)])

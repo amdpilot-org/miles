@@ -14,6 +14,7 @@ from tests.fast.utils.workers.real_ray.conftest import (
 )
 
 from miles.ray.utils import NOSET_VISIBLE_DEVICES_ENV_VARS_LIST
+from miles.ray.wiring import shutdown_worker_manager
 from miles.utils.http_utils import wait_tcp_ready_async
 from miles.utils.workers.naming import compute_worker_name
 from miles.utils.workers.ray_worker_manager import RayWorkerManager
@@ -150,6 +151,19 @@ class TestNamedManagerActor:
 
         with pytest.raises(ray.exceptions.RayTaskError):
             ray.get(RayWorkerManager.get_handle().get_worker_addrs.remote("router-00009-00009"))
+
+
+class TestRunShutdownOnRealRay:
+    async def test_shutdown_terminates_every_owned_worker_process(self, manager_factory, worker_probe_factory):
+        """Normal driver completion must reclaim the exact subprocesses its manager launched."""
+        probe = worker_probe_factory()
+        handle = manager_factory([make_command_spec("engine", num_cells=2, launch_command=probe.launch_command)])
+        records = probe.wait_for_records(2)
+
+        await shutdown_worker_manager(handle)
+
+        probe.wait_until_gone([record["pid"] for record in records.values()])
+        wait_until_named_manager_is_gone()
 
 
 class TestScaleOnRealRay:
