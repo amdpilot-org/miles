@@ -27,7 +27,7 @@ def _backend():
 def commands(monkeypatch):
     recorded = record_commands(monkeypatch)
     patch_helper(monkeypatch, "_check_has_nvlink", lambda self: False, backend_class=RayCommandBackend)
-    for name in ("MILES_SCRIPT_EXTERNAL_RAY", "RAY_ADDRESS", "NCCL_NVLS_ENABLE", "WANDB_API_KEY"):
+    for name in ("RAY_ADDRESS", "NCCL_NVLS_ENABLE", "WANDB_API_KEY"):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setenv("MILES_SCRIPT_ENABLE_RAY_SUBMIT", "1")
     monkeypatch.setenv("MASTER_ADDR", "127.0.0.1")
@@ -296,7 +296,6 @@ class TestExecuteTrain:
     def test_exports_unbuffered_python_to_ray(self, monkeypatch):
         """Ray start and job submit must export the correctly spelled PYTHONUNBUFFERED."""
         commands = []
-        monkeypatch.delenv("MILES_SCRIPT_EXTERNAL_RAY", raising=False)
         monkeypatch.setenv("MILES_SCRIPT_ENABLE_RAY_SUBMIT", "1")
         patch_helper(monkeypatch, "exec_command_cpu", commands.append)
         patch_helper(monkeypatch, "_check_has_nvlink", lambda self: False, backend_class=RayCommandBackend)
