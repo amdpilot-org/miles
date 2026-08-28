@@ -2,18 +2,20 @@ import dataclasses
 import json
 import shlex
 from pathlib import Path
+from typing import Any
 
 import pytest
 import tests.e2e.deploy
 from tests.e2e.deploy.conftest_deploy.hot_restart import scenario_hot_restart_deterministic as scenario
 from tests.e2e.deploy.conftest_deploy.hot_restart.driver import ScheduledFreeze
-from tests.e2e.deploy.conftest_deploy.hot_restart.evidence import HotRestartEvidence
+from tests.e2e.deploy.conftest_deploy.hot_restart.evidence import HotRestartEvidence, HotRestartRecord
 from tests.e2e.deploy.conftest_deploy.hot_restart.freeze_plan import compute_freeze_plan_path
 from tests.e2e.deploy.conftest_deploy.hot_restart.scenario_hot_restart_deterministic import (
     HotRestartMode,
     compute_checkpoint_dir,
     read_installed_args,
 )
+from tests.e2e.ft.conftest_ft.app import BASELINE_SIDE, TARGET_SIDE
 
 from miles.utils.external_utils.command_utils.common import ArgvManipulator
 from miles.utils.misc import should_run_periodic_action
@@ -121,6 +123,47 @@ class TestTiming:
 
         with pytest.raises(AssertionError, match="never reasoned about"):
             scenario.assert_the_freeze_schedule_leaves_a_window_the_run_can_redo(wrong)
+
+
+class TestWeightVersionExclusion:
+    def test_the_comparison_drops_the_weight_version_statistics_and_nothing_else(self, tmp_path, monkeypatch):
+        """A surviving engine keeps a monotonic publication counter, but every other metric still compares exactly."""
+        calls: list[dict[str, Any]] = []
+        dump_dir = _dump_dir_with_evidence(tmp_path)
+        monkeypatch.setattr(scenario, "assert_the_take_overs_replaced_only_the_script", lambda *_args, **_kwargs: None)
+        monkeypatch.setattr(scenario, "compare_deterministic_sides", lambda **kwargs: calls.append(kwargs))
+        restart_mode = dataclasses.replace(scenario.CHECKPOINTED, assert_redone=lambda **_kwargs: None)
+
+        scenario._compare(restart_mode, dump_dir, scenario._MODE)
+
+        assert calls == [
+            dict(
+                baseline_dir=f"{dump_dir}/{BASELINE_SIDE}",
+                target_dir=f"{dump_dir}/{TARGET_SIDE}",
+                expected_engine_count=scenario._MODE.rollout_num_engines,
+                min_trained_rollouts=scenario.MIN_TRAINED_ROLLOUTS,
+                exclude_keys=[
+                    "rollout/weight_version/mean",
+                    "rollout/weight_version/median",
+                    "rollout/weight_version/max",
+                    "rollout/weight_version/min",
+                ],
+            )
+        ]
+
+
+def _dump_dir_with_evidence(tmp_path: Path) -> str:
+    dump_dir = tmp_path / "hot_restart_checkpointed"
+    evidence = HotRestartEvidence(
+        records=(
+            HotRestartRecord(index=0, saved_iteration_at_trigger=1, frozen_rollout_id=2),
+            HotRestartRecord(index=1, saved_iteration_at_trigger=3, frozen_rollout_id=4),
+        ),
+        snapshots=(),
+        release="demo",
+    )
+    evidence.write(dump_dir=str(dump_dir / TARGET_SIDE))
+    return str(dump_dir)
 
 
 class TestBuildArgs:

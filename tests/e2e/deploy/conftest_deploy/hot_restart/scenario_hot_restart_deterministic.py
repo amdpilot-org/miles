@@ -62,6 +62,9 @@ GLOBAL_BATCH_SIZE_FLAG: str = "--global-batch-size"
 ROLLOUT_BATCH_SIZE_FLAG: str = "--rollout-batch-size"
 SAMPLES_PER_PROMPT_FLAG: str = "--n-samples-per-prompt"
 ASYNC_SAVE_FLAG: str = "--async-save"
+_WEIGHT_VERSION_METRIC_KEYS: tuple[str, ...] = tuple(
+    f"rollout/weight_version/{statistic}" for statistic in ("mean", "median", "max", "min")
+)
 
 _MODE: FTTestMode = FTTestMode(
     model_name=DENSE_MODEL_NAME,
@@ -330,6 +333,7 @@ def _compare(restart_mode: HotRestartMode, dump_dir: str, mode: FTTestMode) -> N
         target_dir=target_dir,
         expected_engine_count=mode.rollout_num_engines,
         min_trained_rollouts=MIN_TRAINED_ROLLOUTS,
+        exclude_keys=list(_WEIGHT_VERSION_METRIC_KEYS),
     )
 
     print(f"Hot restart {restart_mode.name} comparison test PASSED")

@@ -23,7 +23,13 @@ COMPARED_METRIC_PREFIXES: tuple[str, ...] = ("train/", "rollout/")
 UNCOMPARED_METRIC_PREFIXES: tuple[str, ...] = ("perf/",)
 
 
-def compare_deterministic_sides(*, baseline_dir: str, target_dir: str, min_trained_rollouts: int) -> None:
+def compare_deterministic_sides(
+    *,
+    baseline_dir: str,
+    target_dir: str,
+    min_trained_rollouts: int,
+    exclude_keys: list[str] | None = None,
+) -> None:
     for side_dir in (baseline_dir, target_dir):
         assert_reconfigure_events(Path(side_dir) / EVENTS_DIRNAME, expected=[])
 
@@ -37,7 +43,7 @@ def compare_deterministic_sides(*, baseline_dir: str, target_dir: str, min_train
         rtol=0.0,
         atol=0.0,
         key_prefixes=list(COMPARED_METRIC_PREFIXES),
-        exclude_keys=[],
+        exclude_keys=list(exclude_keys or []),
     )
 
     compare_dumps(

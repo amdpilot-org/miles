@@ -39,9 +39,12 @@ def recorded_calls(monkeypatch: pytest.MonkeyPatch) -> dict[str, list[dict[str, 
     return calls
 
 
-def _compare() -> None:
+def _compare(*, exclude_keys: list[str] | None = None) -> None:
     comparisons.compare_deterministic_sides(
-        baseline_dir=_BASELINE_DIR, target_dir=_TARGET_DIR, min_trained_rollouts=_MIN_TRAINED_ROLLOUTS
+        baseline_dir=_BASELINE_DIR,
+        target_dir=_TARGET_DIR,
+        min_trained_rollouts=_MIN_TRAINED_ROLLOUTS,
+        exclude_keys=exclude_keys,
     )
 
 
@@ -60,6 +63,25 @@ class TestCompareDeterministicSides:
                 atol=0.0,
                 key_prefixes=list(comparisons.COMPARED_METRIC_PREFIXES),
                 exclude_keys=[],
+            )
+        ]
+
+    def test_a_scenario_may_exclude_named_keys_without_loosening_anything_else(
+        self, recorded_calls: dict[str, list[dict[str, Any]]]
+    ) -> None:
+        """Only the keys a scenario names are dropped; every remaining key keeps the zero-tolerance comparison."""
+        excluded = ["rollout/weight_version/max"]
+
+        _compare(exclude_keys=excluded)
+
+        assert [call["kwargs"] for call in recorded_calls["compare_metrics"]] == [
+            dict(
+                baseline_dir=_BASELINE_DIR,
+                target_dir=_TARGET_DIR,
+                rtol=0.0,
+                atol=0.0,
+                key_prefixes=list(comparisons.COMPARED_METRIC_PREFIXES),
+                exclude_keys=excluded,
             )
         ]
 
