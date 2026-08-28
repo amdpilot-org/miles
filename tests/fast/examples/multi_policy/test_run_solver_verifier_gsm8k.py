@@ -62,7 +62,7 @@ class TestBuildTrainArgs:
             "--dynamic-sampling-filter-path": "miles.rollout.filter_hub.dynamic_sampling_filters.check_reward_nonzero_std",
             "--reward-key": "reward_value",
             "--log-reward-category": "outcome",
-            "--pause-generation-mode": "in_place",
+            "--pause-generation-mode": "retract",
             "--optimizer": "adam",
             "--lr": "1e-6",
             "--eval-interval": "20",
