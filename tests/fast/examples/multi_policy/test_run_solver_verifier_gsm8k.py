@@ -37,7 +37,7 @@ def flags(args: ScriptArgs) -> dict[str, str | None]:
 
 class TestBuildTrainArgs:
     def test_the_recipe_is_exactly_these_flags_and_values(self, flags, args):
-        """A flag silently dropped from an 80-line recipe surfaces as an 8-gpu run that hangs, not as a red test."""
+        """A flag silently dropped from an 80-line recipe surfaces as a 4-gpu run that hangs, not as a red test."""
         solver_path = args.model_path_of_model_id[LEADER_MODEL_ID]
 
         assert {flag: value for flag, value in flags.items() if flag not in CONFIG_FLAGS} == {
@@ -50,16 +50,23 @@ class TestBuildTrainArgs:
             "--label-key": "label",
             "--rollout-shuffle": None,
             "--num-rollout": str(args.num_rollout),
-            "--rollout-batch-size": "8",
-            "--n-samples-per-prompt": "4",
-            "--rollout-max-response-len": "250",
-            "--rollout-temperature": "0.8",
-            "--global-batch-size": "32",
+            "--rollout-batch-size": "32",
+            "--n-samples-per-prompt": "8",
+            "--rollout-max-response-len": "1024",
+            "--rollout-temperature": "1",
+            "--global-batch-size": "256",
+            "--dynamic-sampling-filter-path": "miles.rollout.filter_hub.dynamic_sampling_filters.check_reward_nonzero_std",
             "--reward-key": "reward_value",
             "--log-reward-category": "outcome",
             "--pause-generation-mode": "in_place",
             "--optimizer": "adam",
             "--lr": "1e-6",
+            "--eval-interval": "20",
+            "--eval-prompt-data": "gsm8k",
+            "--n-samples-per-eval-prompt": "1",
+            "--eval-max-response-len": "1024",
+            "--eval-top-k": "1",
+            "--custom-eval-rollout-log-function-path": "examples.multi_policy.solver_verifier.split_eval_data_by_policy",
             "--advantage-estimator": "grpo",
             "--use-kl-loss": None,
             "--tensor-model-parallel-size": "1",
