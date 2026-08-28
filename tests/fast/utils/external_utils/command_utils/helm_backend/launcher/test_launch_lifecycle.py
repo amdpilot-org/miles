@@ -123,10 +123,10 @@ class TestBackgroundLogOrdering:
         monkeypatch.setattr(cluster_info, "pod_events", lambda *, namespace, pods: [])
         monkeypatch.setattr(entrypoint, "pod_phase", lambda namespace, workload: "Running")
         monkeypatch.setattr(entrypoint, "_active_state_file", lambda *, release, namespace: state_file)
-        with pytest.raises(SystemExit) as raised:
+        with pytest.raises(entrypoint.RunExitedError) as raised:
             entrypoint._follow_until_finished(release="myrun", namespace="myns", state_file=state_file)
 
-        assert raised.value.code == 3
+        assert raised.value.exit_code == 3
         assert started and set(started) == {"kubectl"}
 
 

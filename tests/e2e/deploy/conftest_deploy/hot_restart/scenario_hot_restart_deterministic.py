@@ -1,3 +1,4 @@
+import dataclasses
 import hashlib
 import shlex
 from collections.abc import Callable, Iterator
@@ -47,6 +48,7 @@ from tests.e2e.ft.conftest_ft.modes import DENSE_MODEL_HF_REPO, DENSE_MODEL_NAME
 from miles.utils.audit_utils.event_logger.logger import EVENTS_DIRNAME
 from miles.utils.external_utils import command_utils
 from miles.utils.external_utils.command_utils.common import ArgvManipulator, get_mooncake_object_store_args
+from miles.utils.external_utils.command_utils.helm_backend.naming import RUN_ID_MAX_LENGTH
 
 # ========================== constants and mode table ==========================
 
@@ -131,6 +133,7 @@ def create_app_and_run_ci(restart_mode: HotRestartMode) -> tuple[typer.Typer, Ca
         build_target_args=partial(_build_frozen_args, restart_mode),
         compare_fn=partial(_compare, restart_mode),
         target_side_context=partial(_driving_the_take_overs_of, restart_mode),
+        config_for_side=_config_for_comparison_side,
         resolve_mode_fn=lambda _name: _MODE,
     )
     return app, run_on_a_cluster(run_ci)
@@ -146,6 +149,15 @@ def read_installed_args(dump_dir: str) -> str:
         f"of repeating the installed ones renders a pod template of its own"
     )
     return args
+
+
+def _config_for_comparison_side(
+    side: str, config: command_utils.ExecuteTrainConfig
+) -> command_utils.ExecuteTrainConfig:
+    assert side in (BASELINE_SIDE, TARGET_SIDE), f"unknown comparison side {side!r}"
+    suffix = f"-{side}"
+    parent_run_id = config.run_id[: RUN_ID_MAX_LENGTH - len(suffix)]
+    return dataclasses.replace(config, run_id=f"{parent_run_id}{suffix}")
 
 
 # ========================== train argument building ===========================
