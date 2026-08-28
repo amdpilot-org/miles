@@ -79,6 +79,48 @@ Notes:
 - FP8 is ~2.3× BF16 at 16384³, consistent with FP8 offering ~2× the matrix
   throughput plus better amortization of overhead at the larger size.
 
+## Cross-check against the repo's own code
+
+`reports/j-ce2409d963cf/verify_against_repo.py` imports the repo's **real**
+`miles.utils.flops_utils` (`calculate_fwd_flops`, `flops_args_from_hf_config`)
+and `miles.utils.device_flops` (`local_peak_bf16_tflops`) -- no build needed,
+both are pure Python -- and combines the repo's forward-FLOPs model with the
+measured GEMM rate. For a representative dense transformer (h=4096, L=32,
+GQA 32/8 heads, FFN=14336, vocab=152064) at seqlen 4096:
+
+- repo predicted forward FLOPs: **66.68 TFLOP** (the sum of GEMM FLOPs
+  `flops_utils.py` models for every QKV/attn/out/MLP/LM-head projection);
+- estimated forward wall-clock at the measured sustained BF16 GEMM rate
+  (1392 TFLOP/s): **~47.9 ms**;
+- `device_flops.local_peak_bf16_tflops()` on this MI355X -> **`None`**.
+
+So the repo's own code confirms the gap: it can predict the FLOP count but
+cannot convert it (or any achieved TFLOP/s) into a utilization % on this GPU,
+because `device_flops.py` carries no AMD peak entry. This is read off the
+machine via the repo's own function, not assumed.
+
+## Verification
+
+- Repo's own tests for this code (run here, bypassing the `ray` conftest with
+  `--noconftest`): **43 passed** -- the 38 pre-existing
+  `test_device_flops.py` / `test_flops_from_hf_config.py` tests plus 5 new ones.
+- New file `tests/fast/utils/test_device_flops_amd.py` is a characterization
+  test that pins the gap: it asserts the README's supported AMD parts
+  (MI300X/MI325/MI350/MI355X) currently resolve to `None`. It passes now and
+  becomes a forcing function -- the moment AMD entries are added to
+  `device_flops.py`, it fails and prompts the author to fill in real peaks.
+- Measurement reproducibility: re-running `bench_gemm.py` reproduced the
+  16384^3 headline within ~0.1% (BF16 median 1392.2 -> 1392.4 TFLOP/s;
+  FP8 3207.3 -> 3206.8).
+
+```sh
+python3 -m pytest tests/fast/utils/test_device_flops.py \
+    tests/fast/utils/test_flops_from_hf_config.py \
+    tests/fast/utils/test_device_flops_amd.py --noconftest -q
+# -> 43 passed
+python3 reports/j-ce2409d963cf/verify_against_repo.py
+```
+
 ## Reproduce
 
 ```sh
