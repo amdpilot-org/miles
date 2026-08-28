@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
-from miles.utils import device_flops
+from miles.utils import device_flops, train_metric_utils
 from miles.utils.device_flops import local_peak_bf16_tflops, peak_bf16_tflops
+from miles.utils.misc import SingletonMeta
+from miles.utils.timer import Timer
+from miles.utils.train_metric_utils import log_perf_data_raw
 
 # These are the AMD Instinct parts the README lists as supported via ROCm
 # ("AMD MI300X, MI325, MI350, and MI355X via ROCm"). ``device_flops`` ships no
@@ -30,14 +35,6 @@ def test_local_lookup_returns_none_for_mi355x(monkeypatch):
     assert local_peak_bf16_tflops() is None
 
 
-from types import SimpleNamespace
-
-from miles.utils import train_metric_utils
-from miles.utils.misc import SingletonMeta
-from miles.utils.timer import Timer
-from miles.utils.train_metric_utils import log_perf_data_raw
-
-
 def test_mi355x_silently_omits_mfu_through_the_real_table(monkeypatch):
     """The gap has a user-facing consequence: on an unmapped AMD GPU the peak
     resolves to ``None``, so ``log_perf_data_raw`` omits the MFU metric
@@ -47,12 +44,6 @@ def test_mi355x_silently_omits_mfu_through_the_real_table(monkeypatch):
     monkeypatch.setattr(train_metric_utils.tracking, "log", lambda args, payload, **kw: calls.append(payload))
 
     # Point the real table lookup at the MI355X (which is unmapped -> None).
-    # local_peak_bf16_tflops() is the function the production code calls.
-    monkeypatch.setattr(
-        train_metric_utils,
-        "local_peak_bf16_tflops",
-        local_peak_bf16_tflops,  # the real, unpatched function
-    )
     monkeypatch.setattr(device_flops, "_current_device_name", lambda: "AMD Instinct MI355X")
 
     SingletonMeta._instances.pop(Timer, None)
