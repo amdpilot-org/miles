@@ -28,6 +28,16 @@ class TestRoundTrip:
             assert got.index == orig.index
             assert got.response_length == orig.response_length
 
+    def test_a_policy_keyed_dump_does_not_collide_with_another_policy(self, tmp_path: Path):
+        """Multi-policy runs count rollouts per policy, so unkeyed dumps would overwrite each other."""
+        args = make_args(save_debug_rollout_data=str(tmp_path / "rollout_{rollout_id}.pt"))
+
+        save_debug_rollout_data(args, [make_sample()], rollout_id=7, evaluation=False, trainer_model_id="solver")
+        save_debug_rollout_data(args, [make_sample()], rollout_id=7, evaluation=False, trainer_model_id="verifier")
+
+        assert (tmp_path / "rollout_solver_7.pt").exists()
+        assert (tmp_path / "rollout_verifier_7.pt").exists()
+
     def test_metadata_round_trip(self, tmp_path: Path):
         """Metadata passed to save comes back verbatim from load."""
         path_template = str(tmp_path / "rollout_{rollout_id}.pt")
