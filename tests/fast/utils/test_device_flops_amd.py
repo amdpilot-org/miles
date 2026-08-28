@@ -28,3 +28,54 @@ def test_supported_amd_devices_are_currently_unmapped(device_name):
 def test_local_lookup_returns_none_for_mi355x(monkeypatch):
     monkeypatch.setattr(device_flops, "_current_device_name", lambda: "AMD Instinct MI355X")
     assert local_peak_bf16_tflops() is None
+
+
+from types import SimpleNamespace
+
+from miles.utils import train_metric_utils
+from miles.utils.misc import SingletonMeta
+from miles.utils.timer import Timer
+from miles.utils.train_metric_utils import log_perf_data_raw
+
+
+def test_mi355x_silently_omits_mfu_through_the_real_table(monkeypatch):
+    """The gap has a user-facing consequence: on an unmapped AMD GPU the peak
+    resolves to ``None``, so ``log_perf_data_raw`` omits the MFU metric
+    entirely. This wires the characterization to the real code path a Miles
+    run hits, not just the lookup function in isolation."""
+    calls: list[dict] = []
+    monkeypatch.setattr(train_metric_utils.tracking, "log", lambda args, payload, **kw: calls.append(payload))
+
+    # Point the real table lookup at the MI355X (which is unmapped -> None).
+    # local_peak_bf16_tflops() is the function the production code calls.
+    monkeypatch.setattr(
+        train_metric_utils,
+        "local_peak_bf16_tflops",
+        local_peak_bf16_tflops,  # the real, unpatched function
+    )
+    monkeypatch.setattr(device_flops, "_current_device_name", lambda: "AMD Instinct MI355X")
+
+    SingletonMeta._instances.pop(Timer, None)
+    timer = Timer()
+    timer.seq_lens = [1024, 2048]
+    timer.timers = {"actor_train": 2.0}
+    try:
+        args = SimpleNamespace(
+            wandb_always_use_train_step=False,
+            mfu_peak_tflops=None,  # no manual override -> falls back to local_peak_bf16_tflops
+        )
+        log_perf_data_raw(
+            rollout_id=0,
+            args=args,
+            is_primary_rank=True,
+            compute_total_fwd_flops=lambda seq_lens: 60.0,
+        )
+    finally:
+        SingletonMeta._instances.pop(Timer, None)
+
+    [payload] = calls
+    # Throughput is still logged...
+    assert "perf/actor_train_tflops" in payload
+    # ...but MFU and its denominator are absent because the peak is None.
+    assert "perf/actor_train_mfu" not in payload
+    assert "perf/mfu_peak_tflops" not in payload
