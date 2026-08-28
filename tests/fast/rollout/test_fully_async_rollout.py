@@ -52,6 +52,7 @@ def make_group(
     group_index: int,
     status: Sample.Status = Sample.Status.COMPLETED,
     weight_versions: list[str] | None = None,
+    reward: float = 1,
 ) -> list[Sample]:
     versions = [
         WeightVersionsPerCall(spans=[WeightVersionSpan(version=version, abs_start=0, abs_end=1)])
@@ -65,7 +66,7 @@ def make_group(
             response="ok",
             response_length=1,
             label="ok",
-            reward=1,
+            reward=reward,
             status=status,
             weight_versions=list(versions),
         )
@@ -79,6 +80,7 @@ def make_args(**overrides) -> Namespace:
         rollout_batch_size=2,
         n_samples_per_prompt=N_SAMPLES_PER_PROMPT,
         max_weight_staleness=None,
+        reward_key=None,
         async_max_concurrent_samples=None,
         async_data_buffer_capacity_factor=1000.0,
         async_unused_samples_handler="drop",
@@ -402,6 +404,22 @@ def make_buffer(max_groups=None, max_staleness=None):
 async def put_group(buffer, group):
     """These tests reuse one group as both the prompt group and the finished group."""
     await buffer.put(data_buffer.DataBufferInput(prompt_group=group, group=group))
+
+
+async def test_buffer_reports_unfiltered_raw_reward_across_kept_and_dropped():
+    """The accepted-only raw_reward is conditioned by the filter, so this mean must still see dropped groups."""
+    args = make_args(rollout_batch_size=1, dynamic_sampling_filter_path=f"{__name__}.reject_group_1")
+    buffer = data_buffer.DefaultDataBuffer(
+        data_buffer.DataBufferConstructorInput(args=args, unused_handler_fn=lambda group: None)
+    )
+
+    await put_group(buffer, make_group(1, reward=0))
+    await put_group(buffer, make_group(2, reward=1))
+
+    metrics = buffer.get_metrics()
+    assert metrics["rollout/raw_reward_unfiltered"] == 0.5
+    assert metrics["rollout/dynamic_filter/drop_rejected"] == 1
+    assert "rollout/raw_reward_unfiltered" not in buffer.get_metrics()
 
 
 async def test_buffer_blocks_producer_when_full():
