@@ -3,12 +3,16 @@ from collections import defaultdict
 from collections.abc import Callable
 from typing import Any
 
+from miles.utils.data import RolloutDataPack
+
+TAKE_OVER_GATE_EVENTS = ["rollout_components", "training_models", "inference_take_over"]
+
 
 class FakeRemoteMethod:
     def __init__(self, fn: Callable[..., Any]) -> None:
         self._fn = fn
 
-    def remote(self, *args: Any, **kwargs: Any) -> Any:
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self._fn(*args, **kwargs)
 
 
@@ -17,21 +21,25 @@ class FakeRolloutExecutor:
         self.events = events
         self.generation_gates: dict[int, asyncio.Event] = {}
         self.generation_errors: list[BaseException | None] = []
+        self.generation_packs: list[RolloutDataPack] = []
         self.get = FakeRemoteMethod(self._get)
         self.eval = FakeRemoteMethod(self._eval)
         self.save = FakeRemoteMethod(self._save)
         self.dispose = FakeRemoteMethod(self._dispose)
         self.report_eval_skip = FakeRemoteMethod(self._report_eval_skip)
 
-    async def _get(self, rollout_id: int) -> dict[str, Any]:
+    async def _get(self, rollout_id: int) -> RolloutDataPack:
         self.events.append(f"generate_start:{rollout_id}")
         if (gate := self.generation_gates.get(rollout_id)) is not None:
             await gate.wait()
         if self.generation_errors and (error := self.generation_errors.pop(0)) is not None:
             self.events.append(f"generate_failed:{rollout_id}")
             raise error
-        self.events.append(f"generate_done:{rollout_id}")
-        return {"data_ref": f"rollout-data-{rollout_id}"}
+        pack = self.generation_packs.pop(0) if self.generation_packs else RolloutDataPack()
+        self.events.append(
+            f"generate_empty:{rollout_id}" if pack.empty_batch_timeout else f"generate_done:{rollout_id}"
+        )
+        return pack
 
     async def _eval(self, rollout_id: int, **_kwargs: Any) -> None:
         self.events.append(f"eval:{rollout_id}")
