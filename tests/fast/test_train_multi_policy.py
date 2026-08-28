@@ -120,6 +120,17 @@ class TestInitialWeightPublication:
         compared = [call.kwargs["model_id"] for call in context["inference_controller"].check_weights.await_args_list]
         assert sorted(compared) == ["a", "b"]
 
+    async def test_each_policy_stamps_its_startup_sync_with_its_own_restore_point(self):
+        """The policies resume at their own rollouts, so one global start id would misattribute their weights."""
+        await _run(_make_args(num_rollout=0), start_rollout_ids=dict(a=3, b=7))
+
+        stamped = {
+            call.kwargs["trainer_model_id"]: call.args[0].start_rollout_id
+            for call in multi_policy_driver.update_weights.await_args_list
+            if "rollout_id" not in call.kwargs
+        }
+        assert stamped == dict(a=3, b=7)
+
     async def test_a_run_that_does_not_ask_for_the_comparison_does_not_pay_for_it(self):
         """The comparison walks every parameter, so it stays off unless the run turns it on."""
         context = await _run(_make_args(num_rollout=0))
