@@ -44,11 +44,13 @@ run:
     size: 2
     poolId: inference-engine-0-0
   objectNames:
-    colocatePairing: miles-run-260101-000000-000-all-colocate-pairing
-    mooncakeMaster: miles-run-260101-000000-000-all-mooncake-master
-    orchestrator: miles-run-260101-000000-000-all-orchestrator
-    uninstall: miles-run-260101-000000-000-all-uninstall
-    uninstallManifest: miles-run-260101-000000-000-all-uninstall-manifest
+    colocatePairing: 'miles-run-260101-000000-000-all-colocate-pairing'
+    mooncakeMaster: 'miles-run-260101-000000-000-all-mooncake-master'
+    orchestrator: 'miles-run-260101-000000-000-all-orchestrator'
+    platformRead: 'miles-run-260101-000000-000-all-platform-read'
+    platformReadDelete: 'miles-run-2601-98cf6da492ec-platform-read-delete'
+    uninstall: 'miles-run-260101-000000-000-all-uninstall'
+    uninstallManifest: 'miles-run-260101-98cf6da492ec-uninstall-manifest'
   orchestrator:
     command:
     - python

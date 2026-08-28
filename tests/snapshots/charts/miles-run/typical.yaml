@@ -13,17 +13,31 @@ metadata:
     app.kubernetes.io/version: "0.1.0"
     app.kubernetes.io/managed-by: "Helm"
 ---
-# Source: miles-run/templates/orchestrator-rbac.yaml
+# Source: miles-run/templates/platform-rbac.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: "myrun-miles-run-orchestrator"
+  name: "myrun-miles-run-platform-read"
   namespace: "myns"
   labels:
     helm.sh/chart: "miles-run-0.1.0"
     app.kubernetes.io/name: "miles-run"
     app.kubernetes.io/instance: "myrun"
-    app.kubernetes.io/component: "orchestrator"
+    app.kubernetes.io/component: "platform-read"
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: "Helm"
+---
+# Source: miles-run/templates/platform-rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "myrun-miles-run-platform-read-delete"
+  namespace: "myns"
+  labels:
+    helm.sh/chart: "miles-run-0.1.0"
+    app.kubernetes.io/name: "miles-run"
+    app.kubernetes.io/instance: "myrun"
+    app.kubernetes.io/component: "platform-read-delete"
     app.kubernetes.io/version: "0.1.0"
     app.kubernetes.io/managed-by: "Helm"
 ---
@@ -97,17 +111,35 @@ rules:
     resources: ["pods"]
     verbs: ["get", "list", "watch", "patch", "update"]
 ---
-# Source: miles-run/templates/orchestrator-rbac.yaml
+# Source: miles-run/templates/platform-rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: "myrun-miles-run-orchestrator"
+  name: "myrun-miles-run-platform-read"
   namespace: "myns"
   labels:
     helm.sh/chart: "miles-run-0.1.0"
     app.kubernetes.io/name: "miles-run"
     app.kubernetes.io/instance: "myrun"
-    app.kubernetes.io/component: "orchestrator"
+    app.kubernetes.io/component: "platform-read"
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: "Helm"
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+# Source: miles-run/templates/platform-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: "myrun-miles-run-platform-read-delete"
+  namespace: "myns"
+  labels:
+    helm.sh/chart: "miles-run-0.1.0"
+    app.kubernetes.io/name: "miles-run"
+    app.kubernetes.io/instance: "myrun"
+    app.kubernetes.io/component: "platform-read-delete"
     app.kubernetes.io/version: "0.1.0"
     app.kubernetes.io/managed-by: "Helm"
 rules:
@@ -140,26 +172,48 @@ subjects:
     name: "myrun-miles-run-colocate-pairing"
     namespace: "myns"
 ---
-# Source: miles-run/templates/orchestrator-rbac.yaml
+# Source: miles-run/templates/platform-rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: "myrun-miles-run-orchestrator"
+  name: "myrun-miles-run-platform-read"
   namespace: "myns"
   labels:
     helm.sh/chart: "miles-run-0.1.0"
     app.kubernetes.io/name: "miles-run"
     app.kubernetes.io/instance: "myrun"
-    app.kubernetes.io/component: "orchestrator"
+    app.kubernetes.io/component: "platform-read"
     app.kubernetes.io/version: "0.1.0"
     app.kubernetes.io/managed-by: "Helm"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: "myrun-miles-run-orchestrator"
+  name: "myrun-miles-run-platform-read"
 subjects:
   - kind: ServiceAccount
-    name: "myrun-miles-run-orchestrator"
+    name: "myrun-miles-run-platform-read"
+    namespace: "myns"
+---
+# Source: miles-run/templates/platform-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: "myrun-miles-run-platform-read-delete"
+  namespace: "myns"
+  labels:
+    helm.sh/chart: "miles-run-0.1.0"
+    app.kubernetes.io/name: "miles-run"
+    app.kubernetes.io/instance: "myrun"
+    app.kubernetes.io/component: "platform-read-delete"
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: "Helm"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "myrun-miles-run-platform-read-delete"
+subjects:
+  - kind: ServiceAccount
+    name: "myrun-miles-run-platform-read-delete"
     namespace: "myns"
 
 ---
@@ -442,7 +496,7 @@ spec:
         - effect: NoSchedule
           key: nvidia.com/gpu
           operator: Exists
-      serviceAccountName: "myrun-miles-run-orchestrator"
+      serviceAccountName: "myrun-miles-run-platform-read-delete"
       restartPolicy: Always
       containers:
         - name: orchestrator
@@ -669,7 +723,7 @@ spec:
         - effect: NoSchedule
           key: nvidia.com/gpu
           operator: Exists
-      serviceAccountName: "myrun-miles-run-orchestrator"
+      serviceAccountName: "myrun-miles-run-platform-read"
       restartPolicy: Always
       containers:
         - name: worker
@@ -1002,7 +1056,7 @@ spec:
         - effect: NoSchedule
           key: nvidia.com/gpu
           operator: Exists
-      serviceAccountName: "myrun-miles-run-orchestrator"
+      serviceAccountName: "myrun-miles-run-platform-read-delete"
       restartPolicy: Always
       containers:
         - name: worker
