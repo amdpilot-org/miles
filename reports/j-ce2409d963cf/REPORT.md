@@ -84,6 +84,37 @@ Notes:
 - FP8 is ~2.3× BF16 at 16384³, consistent with FP8 offering ~2× the matrix
   throughput plus better amortization of overhead at the larger size.
 
+## Per-projection GEMM throughput (actual transformer shapes)
+
+`reports/j-ce2409d963cf/bench_layer_gemms.py` goes beyond square GEMMs: it uses
+the repo's own `flops_args_from_hf_config` to derive the **actual rectangular
+M/N/K** each projection issues for a representative dense model (h=4096, L=32,
+GQA 32/8, FFN=14336, vocab=152064) at seqlen 4096, then times each BF16 GEMM.
+
+| projection | M | K | N | x/layer | median TFLOP/s | p5-p95 |
+|---|---:|---:|---:|---:|---:|---|
+| Q_proj | 4096 | 4096 | 4096 | 1 | 1130.8 | 1066-1225 |
+| KV_proj | 4096 | 4096 | 2048 | 1 | 789.9 | 748-799 |
+| Out_proj | 4096 | 4096 | 4096 | 1 | 1237.1 | 1201-1250 |
+| MLP_up_gate | 4096 | 4096 | 14336 | 2 | 1305.9 | 1283-1320 |
+| MLP_down | 4096 | 14336 | 4096 | 1 | 1385.1 | 1375-1392 |
+| LM_head | 4096 | 4096 | 152064 | 1 (total) | 1306.0 | 1293-1320 |
+
+Key finding: throughput varies strongly with shape. The narrow KV projection
+(N=2048) achieves only ~790 TFLOP/s — 57% of the large MLP_down (~1385) —
+because it does too little work per kernel launch to saturate the 256 CUs.
+The square-GEMM headline (~1393) overstates the small projections and
+understates nothing; the per-projection view is what a real layer sees.
+
+- Total forward GEMM FLOPs (projections only): **62.3 TFLOP**.
+- Repo's `calculate_fwd_flops` for the same model: **66.7 TFLOP**.
+- Ratio 0.934 — the 6.6% gap is exactly the attention score/softmax FLOPs
+  (QK^T and A·V) that `flops_utils.py` counts but are not dense GEMMs.
+- Estimated forward wall-clock at measured per-projection rates: **~48.8 ms**.
+
+This measurement corresponds directly to the repo's own FLOPs accounting
+(same shapes, same model geometry), not just to an abstract square proxy.
+
 ## Cross-check against the repo's own code
 
 `reports/j-ce2409d963cf/verify_against_repo.py` imports the repo's **real**
