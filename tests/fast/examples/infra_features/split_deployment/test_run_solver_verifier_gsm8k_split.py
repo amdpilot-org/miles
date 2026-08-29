@@ -34,6 +34,7 @@ RUN_ID: str = "demo"
 RUN_UUID: str = "0123456789abcdef"
 NUM_POLICIES: int = 2
 NUM_DEPLOYMENTS_OF_THE_RUN: int = 5
+ROLLOUT_NUM_GPUS_PER_MODEL: int = 2
 MEGATRON_CONFIG_FLAG: str = "--megatron-config"
 SGLANG_CONFIG_FLAG: str = "--sglang-config"
 
@@ -46,7 +47,13 @@ _FLAGS_A_COMPONENT_MAY_DIFFER_ON: tuple[str, ...] = (
 
 @pytest.fixture
 def args() -> ScriptArgs:
-    return ScriptArgs(cluster_backend=ClusterBackend.KUBERNETES, namespace=NAMESPACE, run_id=RUN_ID, run_uuid=RUN_UUID)
+    return ScriptArgs(
+        cluster_backend=ClusterBackend.KUBERNETES,
+        namespace=NAMESPACE,
+        run_id=RUN_ID,
+        run_uuid=RUN_UUID,
+        rollout_num_gpus_per_model=ROLLOUT_NUM_GPUS_PER_MODEL,
+    )
 
 
 @pytest.fixture
