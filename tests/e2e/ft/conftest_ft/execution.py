@@ -200,6 +200,7 @@ _DETERMINISTIC_ENV_VARS: dict[str, str] = {
     # The default 4096 split overflows FlashInfer's fixed 2 GiB deterministic workspace
     # while capturing the 8192-token prefill graph for the 5-layer Qwen3 MoE model.
     "SGLANG_FLASHINFER_PREFILL_SPLIT_TILE_SIZE": "8192",
+    "SGLANG_BATCH_INVARIANT_OPS_ENABLE_MM_FALLBACK_VARIANT": "false",
 }
 
 
