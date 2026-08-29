@@ -130,7 +130,7 @@ class RolloutExecutor:
     # -------------------------- lifecycle -----------------------------
 
     async def dispose(self) -> None:
-        if not self.use_legacy_rollout_v1:
+        if not self.use_legacy_rollout_v1 and self.generate_rollout is not None:
             await self.generate_rollout.dispose()
         if (close := getattr(self.data_source, "close", None)) is not None:
             close()
