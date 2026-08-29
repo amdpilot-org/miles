@@ -48,12 +48,16 @@ class TestResourceVersionParsing:
             {},
             dict(metadata=None),
             dict(metadata={}),
-            "a payload that is not an object at all",
         ],
     )
     def test_a_frame_without_a_readable_version_parses_to_none(self, obj: Any) -> None:
         """A missing or malformed metadata block must parse to None, never raise: the caller keeps its cursor."""
         assert PodWatchEvent.from_frame(event_type="BOOKMARK", obj=obj).resource_version is None
+
+    def test_a_payload_that_is_not_an_object_at_all_raises(self) -> None:
+        """An unreadable envelope carries no cursor to keep, so it must raise and let the reflector relist."""
+        with pytest.raises(ValidationError):
+            PodWatchEvent.from_frame(event_type="BOOKMARK", obj="a payload that is not an object at all")
 
 
 class TestPodParsing:
