@@ -144,17 +144,17 @@ class TestPublicCellInventory:
 
         statuses = await group.get_cell_statuses()
         assert sorted(statuses) == group.cell_ids
-        assert [status.phase for status in statuses.values()] == ["Pending", "Pending", "Running"]
-        assert [condition.type for condition in statuses[_cell_id(0)].conditions] == ["Allocated"]
+        assert [status.phase for status in statuses.values()] == ["Running", "Running", "Running"]
+        assert _healthy_condition(statuses[_cell_id(0)]) == (TriState.TRUE, None)
         assert _healthy_condition(statuses[_cell_id(1)]) == (TriState.FALSE, "ExecutionErrored")
-        assert [condition.type for condition in statuses[_cell_id(2)].conditions] == ["Allocated"]
+        assert _healthy_condition(statuses[_cell_id(2)]) == (TriState.TRUE, None)
 
     async def test_each_status_carries_the_generation_it_describes(self):
         """The api server joins this with a separately polled cell listing, so an unstamped status can mislead."""
         group = _make_controller(num_cells=1, indep_dp=True)
         await group._reconcile(_cell_id(0), _make_cell_info(0, workers_hash="hash-9"))
 
-        statuses = group.get_cell_statuses()
+        statuses = await group.get_cell_statuses()
 
         assert statuses[_cell_id(0)].workers_hash == "hash-9"
 
@@ -164,7 +164,7 @@ class TestPublicCellInventory:
         await group._reconcile(_cell_id(0), _make_cell_info(0, workers_hash="hash-9"))
         await group._reconcile(_cell_id(1), _make_cell_info(1, workers_hash="hash-10"))
 
-        statuses = group.get_cell_statuses()
+        statuses = await group.get_cell_statuses()
 
         assert (statuses[_cell_id(0)].workers_hash, statuses[_cell_id(1)].workers_hash) == (
             "hash-9",
@@ -178,7 +178,7 @@ class TestPublicCellInventory:
 
         await group._reconcile(_cell_id(0), _make_cell_info(0, workers_hash="hash-10"))
 
-        assert group.get_cell_statuses()[_cell_id(0)].workers_hash == "hash-10"
+        assert (await group.get_cell_statuses())[_cell_id(0)].workers_hash == "hash-10"
 
 
 class _AutoAdvancingClock:
