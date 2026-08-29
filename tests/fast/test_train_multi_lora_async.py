@@ -122,7 +122,7 @@ class TestAdapterLifecycle:
             "controller_start",
             "snapshot",
             "actor_reconcile_adapters",
-            "update_weights:None",
+            "update_weights:0",
             "snapshot",
             "prepare_rollout:0",
             "generate_start:0",
