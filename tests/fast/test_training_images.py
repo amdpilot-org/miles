@@ -1,5 +1,6 @@
 import importlib.util
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -14,7 +15,14 @@ INSTALL_STEP = "install-kube-tools.sh"
 def build_module():
     spec = importlib.util.spec_from_file_location("miles_docker_build", BUILD_SCRIPT)
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+
+    script_dir = str(BUILD_SCRIPT.parent)
+    sys.path.insert(0, script_dir)
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        sys.path.remove(script_dir)
+
     return module
 
 
