@@ -288,7 +288,7 @@ run:
     ports:
     - name: primary
       port: 8000
-    replicas: 1
+    replicas: 32
   - command:
     - <PYTHON>
     - -m
