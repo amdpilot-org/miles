@@ -142,7 +142,14 @@ def _stub_launch_inputs(monkeypatch, *, specs, colocate: bool = False) -> None:
     monkeypatch.setattr(
         entrypoint,
         "parse_args",
-        lambda: SimpleNamespace(colocate=colocate, deploy_component="all", deploy_instance_id=None, argv=[]),
+        lambda: SimpleNamespace(
+            colocate=colocate,
+            deploy_component="all",
+            deploy_instance_id=None,
+            argv=[],
+            use_wandb=False,
+            wandb_run_id=None,
+        ),
     )
     monkeypatch.setattr(MooncakeInfo, "plan_of_args", staticmethod(lambda args: None))
     monkeypatch.setattr(entrypoint, "_follow_until_finished", lambda **kwargs: None)

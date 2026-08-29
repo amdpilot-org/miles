@@ -65,6 +65,7 @@ logger = logging.getLogger(__name__)
 
 _RUN_UUID_FLAG = "--run-uuid"
 _ENV_REPORT_FLAG = "--env-report"
+_WANDB_RUN_ID_FLAG = "--wandb-run-id"
 _RUN_ID_PATTERN = re.compile(r"[a-z0-9]([-a-z0-9]*[a-z0-9])?")
 
 
@@ -305,10 +306,20 @@ def _compute_train_argv(
     with override_argv(argv), override_env(env):
         args = parse_args()
 
+    if args.use_wandb and args.wandb_run_id is None:
+        args.wandb_run_id = _generate_wandb_run_id()
+        argv = ArgvManipulator.set(argv, _WANDB_RUN_ID_FLAG, args.wandb_run_id)
+
     pod_argv = MooncakeInfo.with_cluster_master(
         argv, plan=_compute_mooncake_plan(args), host=MooncakeInfo.master_service_host(release, namespace)
     )
     return pod_argv, args
+
+
+def _generate_wandb_run_id() -> str:
+    from wandb.sdk.lib.runid import generate_id
+
+    return generate_id()
 
 
 def _compute_mooncake_plan(args) -> MooncakePlan | None:

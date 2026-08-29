@@ -115,6 +115,8 @@ def launch_argv(
             deploy_component=declared[-1] if declared else DeployComponent.ALL.value,
             deploy_instance_id=None,
             argv=argv,
+            use_wandb=False,
+            wandb_run_id=None,
         )
 
     def fake_upgrade(**kwargs: Any) -> None:

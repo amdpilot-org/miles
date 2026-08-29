@@ -23,7 +23,14 @@ def _stub_launch_inputs(monkeypatch, *, specs, colocate: bool = False) -> None:
     monkeypatch.setattr(
         entrypoint,
         "parse_args",
-        lambda: SimpleNamespace(colocate=colocate, deploy_component="all", deploy_instance_id=None, argv=[]),
+        lambda: SimpleNamespace(
+            colocate=colocate,
+            deploy_component="all",
+            deploy_instance_id=None,
+            argv=[],
+            use_wandb=False,
+            wandb_run_id=None,
+        ),
     )
     monkeypatch.setattr(MooncakeInfo, "plan_of_args", staticmethod(lambda args: None))
     monkeypatch.setattr(entrypoint, "_follow_until_finished", lambda **kwargs: None)
@@ -78,6 +85,52 @@ def _request(namespace: str, run_id: str) -> ExecuteTrainRequest:
         prepare_cmd={},
         extra_manifests=[],
     )
+
+
+class TestWandbRunIdReachesEveryPod:
+    def test_a_wandb_run_gets_one_preallocated_id_every_pod_is_told(self, monkeypatch):
+        """A pod that parses no run id joins no run, and the first metric it reports kills it mid-run."""
+        monkeypatch.setattr(entrypoint, "_generate_wandb_run_id", lambda: "preallocated0")
+
+        pod_argv, args = _compute_train_argv(monkeypatch, "--use-wandb")
+
+        assert args.wandb_run_id == "preallocated0"
+        assert pod_argv[pod_argv.index("--wandb-run-id") + 1] == "preallocated0"
+
+    def test_a_run_that_names_its_own_id_keeps_it(self, monkeypatch):
+        """Resuming a run means joining the id the operator named, not the one this launch would mint."""
+        monkeypatch.setattr(entrypoint, "_generate_wandb_run_id", lambda: "preallocated0")
+
+        pod_argv, args = _compute_train_argv(monkeypatch, "--use-wandb --wandb-run-id chosen0")
+
+        assert args.wandb_run_id == "chosen0"
+        assert pod_argv.count("--wandb-run-id") == 1
+
+    def test_a_run_without_wandb_is_told_no_run_id(self, monkeypatch):
+        """Minting an id for a run that tracks nothing would make every pod resume a run nobody created."""
+        monkeypatch.setattr(entrypoint, "_generate_wandb_run_id", lambda: "preallocated0")
+
+        pod_argv, args = _compute_train_argv(monkeypatch, "")
+
+        assert args.wandb_run_id is None
+        assert "--wandb-run-id" not in pod_argv
+
+
+def _compute_train_argv(monkeypatch: pytest.MonkeyPatch, train_args: str) -> tuple[list[str], Any]:
+    monkeypatch.setattr(entrypoint, "_compute_mooncake_plan", lambda args: None)
+    request = ExecuteTrainRequest(
+        train_args=f"--train-backend fsdp --rollout-batch-size 8 --num-rollout 1 --rollout-num-gpus 8 {train_args}",
+        num_gpus_per_node=8,
+        megatron_model_type=None,
+        train_script="/repo/train.py",
+        train_backend_fsdp=False,
+        extra_env_vars={},
+        megatron_path="/root/Megatron-LM",
+        before_ray_job_submit=None,
+        prepare_cmd={},
+        extra_manifests=[],
+    )
+    return entrypoint._compute_train_argv(request, run_uuid="0123456789abcdef", release="r", namespace="rl", env={})
 
 
 def _record_launch(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, ci_run: bool) -> list[list[str]]:

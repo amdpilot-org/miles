@@ -45,7 +45,12 @@ def _stub_launch_inputs(monkeypatch, *, specs, colocate: bool = False, deploy_co
         entrypoint,
         "parse_args",
         lambda: SimpleNamespace(
-            colocate=colocate, deploy_component=deploy_component, deploy_instance_id=None, argv=[]
+            colocate=colocate,
+            deploy_component=deploy_component,
+            deploy_instance_id=None,
+            argv=[],
+            use_wandb=False,
+            wandb_run_id=None,
         ),
     )
     monkeypatch.setattr(MooncakeInfo, "plan_of_args", staticmethod(lambda args: None))
