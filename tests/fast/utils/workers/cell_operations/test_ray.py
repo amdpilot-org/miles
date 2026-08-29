@@ -9,6 +9,7 @@ from miles.ray.rollout.inference_controller import InferenceController
 from miles.utils.context_lock import ContextLock
 from miles.utils.ft_utils.health_checker import ActivenessTracker
 from miles.utils.test_utils.fault_injector import FailureMode
+from miles.utils.workers.cell_operations.base import ACTOR_CELL_TYPE, ROLLOUT_CELL_TYPE
 from miles.utils.workers.cell_operations.ray import RayCellOperations
 
 
@@ -106,7 +107,9 @@ async def test_inject_fault_waits_for_the_controller_lock() -> None:
     await acquired.wait()
 
     injecting = asyncio.create_task(
-        fixture.operations.inject_fault(cell_id="engine-0-2", mode=FailureMode.SIGKILL, sub_index=0)
+        fixture.operations.inject_fault(
+            cell_id="engine-0-2", cell_type=ROLLOUT_CELL_TYPE, mode=FailureMode.SIGKILL, sub_index=0
+        )
     )
     await _settle()
     assert not injecting.done()
@@ -132,6 +135,28 @@ async def test_non_disruptive_operations_go_straight_through() -> None:
 
     assert [name for name, _, _ in fixture.worker_manager.calls] == ["get_cell_infos", "start_cells"]
     assert fixture.provider.stopped == []
+
+    release.set()
+    await holding
+
+
+async def test_an_actor_fault_reaches_the_worker_manager_without_the_rollout_controller() -> None:
+    """The rollout controller knows no actor cells, so routing one through it would only raise KeyError."""
+    fixture = _make_fixture()
+    acquired, release = asyncio.Event(), asyncio.Event()
+    holding = asyncio.create_task(_hold_lock(lock=fixture.controller.context_lock, acquired=acquired, release=release))
+    await acquired.wait()
+
+    await asyncio.wait_for(
+        fixture.operations.inject_fault(
+            cell_id="trainer-engine-actor-00000", cell_type=ACTOR_CELL_TYPE, mode=FailureMode.SIGKILL, sub_index=1
+        ),
+        timeout=5.0,
+    )
+
+    assert fixture.worker_manager.calls == [
+        ("inject_fault", ("trainer-engine-actor-00000",), {"mode": "sigkill", "worker_in_cell_index": 1})
+    ]
 
     release.set()
     await holding
