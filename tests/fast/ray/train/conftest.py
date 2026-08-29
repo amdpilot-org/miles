@@ -101,7 +101,11 @@ class RecordingHealthChecker(BaseHealthChecker):
 
 
 def make_provider(trainer_id: str = "actor") -> BaseWorkerProvider:
-    return RayWorkerProvider(worker_manager_handle=fake_worker_manager, pool_ids=[compute_trainer_pool_id(trainer_id)])
+    return RayWorkerProvider(
+        worker_manager_handle=fake_worker_manager,
+        pool_ids=[compute_trainer_pool_id(trainer_id)],
+        poll_interval_seconds=0.05,
+    )
 
 
 def get_raw_actor_handles(cell: TrainerCell) -> list[ray.actor.ActorHandle]:

@@ -1224,16 +1224,24 @@ class TestInitForwardsModelFlags:
 
 
 class TestTrainRunsFTTestActions:
+    @staticmethod
+    def _suspend_for_real(group: TrainerController) -> None:
+        group._cell_operations.suspend.side_effect = lambda *, cell_id: (
+            train_conftest.fake_worker_manager.stop_cells.remote([cell_id])
+        )
+
     async def test_train_applies_the_action_armed_for_that_rollout_before_returning(self):
         """The FT scenario's stop must have landed by the time the driver starts the next rollout."""
         actions = json.dumps(
             [{"at_rollout": 4, "action": "stop_cell_at_end", "cell_id": "trainer-engine-actor-00002"}]
         )
         group = await _make_alive_controller(num_cells=3, ci_ft_test_actions=actions)
+        self._suspend_for_real(group)
 
         await group.train(rollout_id=4, rollout_data_pack=_DUMMY_DATA_PACK)
 
         group._cell_operations.suspend.assert_awaited_once_with(cell_id="trainer-engine-actor-00002")
+        assert "trainer-engine-actor-00002" not in group.cell_ids, "the stop had not landed when train returned"
 
     async def test_train_leaves_the_pool_alone_on_a_rollout_no_action_names(self):
         """An action that fires on every rollout would tear the pool down for the whole run."""
