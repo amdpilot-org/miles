@@ -201,6 +201,7 @@ _DETERMINISTIC_ENV_VARS: dict[str, str] = {
     # while capturing the 8192-token prefill graph for the 5-layer Qwen3 MoE model.
     "SGLANG_FLASHINFER_PREFILL_SPLIT_TILE_SIZE": "8192",
     "SGLANG_BATCH_INVARIANT_OPS_ENABLE_MM_FALLBACK_VARIANT": "false",
+    "SGLANG_BATCH_INVARIANT_OPS_ENABLE_MM_DEEPGEMM": "false",
 }
 
 
