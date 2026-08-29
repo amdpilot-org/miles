@@ -28,14 +28,13 @@ class FakeWorkerManager:
         self.started_cell_ids: list[list[str]] = []
         self.stopped_cell_ids: list[list[str]] = []
         self._handles: dict[str, list] = {}
-        self._stopped_cell_ids: set[str] = set()
         self._cell_indices_failing_init: set[int] = set()
         self.master_addr_per_worker: list[HostAndPort] | None = None
 
         self.get_cell_infos = _FakeRemoteMethod(self._get_cell_infos)
         self.get_worker_infos = _FakeRemoteMethod(self._get_worker_infos)
         self.get_actor_handle = _FakeRemoteMethod(self._get_actor_handle)
-        self.start_cells = _FakeRemoteMethod(self._start_cells)
+        self.start_cells = _FakeRemoteMethod(self.started_cell_ids.append)
         self.stop_cells = _FakeRemoteMethod(self._stop_cells)
 
     def fail_init_for_cell(self, cell_index: int) -> None:
@@ -46,8 +45,6 @@ class FakeWorkerManager:
         for pool_id in pool_ids:
             for cell_index in range(self.num_cells):
                 cell_id = compute_cell_id(pool_id=pool_id, cell_index=cell_index)
-                if cell_id in self._stopped_cell_ids:
-                    continue
                 infos[cell_id] = CellInfo(
                     cell_id=cell_id,
                     pool_id=pool_id,
@@ -93,13 +90,8 @@ class FakeWorkerManager:
             return HostAndPort(host="10.0.0.1", port=20000)
         return self.master_addr_per_worker[worker_index]
 
-    def _start_cells(self, cell_ids: list[str]) -> None:
-        self.started_cell_ids.append(cell_ids)
-        self._stopped_cell_ids.difference_update(cell_ids)
-
     def _stop_cells(self, cell_ids: list[str]) -> None:
         self.stopped_cell_ids.append(cell_ids)
-        self._stopped_cell_ids.update(cell_ids)
         for cell_id in cell_ids:
             self._kill(self._handles.pop(cell_id, []))
 
