@@ -56,7 +56,7 @@ from miles.utils.external_utils.command_utils.helm_backend.orchestrator.observer
 from miles.utils.external_utils.model_args_utils import shell_safe_model_args
 from miles.utils.object_store import ObjectStoreBackend
 from miles.utils.run_uuid import generate_run_uuid, validate_run_uuid
-from miles.utils.workers.serving.utils import override_argv
+from miles.utils.workers.serving.utils import override_argv, override_env
 from miles.utils.workers.types import ClusterBackend, DeployComponent
 from miles.utils.workers.worker_provider.kubernetes.helm.naming import static_cell_addrs
 from miles.utils.workers.worker_spec import RPC_PORT_NAME
@@ -88,7 +88,10 @@ def execute_train(*, request: ExecuteTrainRequest, config: ExecuteTrainConfig) -
     ).serialize()
     installed_manifest = Helm.get_manifest(release, namespace)
     run_uuid = _resolve_run_uuid(config, installed_manifest=installed_manifest, release=release)
-    pod_argv, args = _compute_train_argv(request, run_uuid=run_uuid, release=release, namespace=namespace)
+    env = train_env_vars(request, {}, config=config)
+    pod_argv, args = _compute_train_argv(
+        request, run_uuid=run_uuid, release=release, namespace=namespace, env=env
+    )
     deploy_component = DeployComponent(args.deploy_component)
     assert (deploy_component, args.deploy_instance_id) == (config.deploy_component, config.deploy_instance_id), (
         f"the run's pods are told {deploy_component.value}/{args.deploy_instance_id!r}, the release is named "
@@ -129,7 +132,7 @@ def execute_train(*, request: ExecuteTrainRequest, config: ExecuteTrainConfig) -
             state_file=str(state_file) if state_file is not None else "",
             orchestrator_command=orchestrator_command,
             worker_argv=pod_argv,
-            env=train_env_vars(request, {}, config=config),
+            env=env,
             colocate=bool(args.colocate),
             mooncake_plan=_compute_mooncake_plan(args),
             prepare_cmd=request.prepare_cmd,
@@ -289,7 +292,7 @@ def _resolve_run_uuid(config: ExecuteTrainConfig, *, installed_manifest: Manifes
 
 
 def _compute_train_argv(
-    request: ExecuteTrainRequest, *, run_uuid: str, release: str, namespace: str
+    request: ExecuteTrainRequest, *, run_uuid: str, release: str, namespace: str, env: dict[str, str]
 ) -> tuple[list[str], Any]:
     argv = [*shlex.split(shell_safe_model_args(request.megatron_model_type)), *shlex.split(request.train_args)]
     assert not ArgvManipulator.is_defined(argv, _ENV_REPORT_FLAG), (
@@ -301,7 +304,7 @@ def _compute_train_argv(
     if not ArgvManipulator.is_defined(argv, _RUN_UUID_FLAG):
         argv = ArgvManipulator.set(argv, _RUN_UUID_FLAG, run_uuid)
 
-    with override_argv(argv):
+    with override_argv(argv), override_env(env):
         args = parse_args()
 
     pod_argv = MooncakeInfo.with_cluster_master(
