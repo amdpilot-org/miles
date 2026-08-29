@@ -19,7 +19,7 @@ def prepare():
     U = command_utils.default_config().create_backend()
     U.exec_command_cpu(f"mkdir -p {MODEL_DIR} {DATA_DIR}")
     U.exec_command_cpu(f"hf download Qwen/{MODEL_NAME} --local-dir {MODEL_DIR}/{MODEL_NAME}")
-    U.hf_download_dataset("zhuzilin/gsm8k")
+    U.hf_download_dataset("zhuzilin/gsm8k", data_dir=DATA_DIR)
 
 
 def execute():
