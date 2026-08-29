@@ -89,9 +89,7 @@ def execute_train(*, request: ExecuteTrainRequest, config: ExecuteTrainConfig) -
     installed_manifest = Helm.get_manifest(release, namespace)
     run_uuid = _resolve_run_uuid(config, installed_manifest=installed_manifest, release=release)
     env = train_env_vars(request, {}, config=config)
-    pod_argv, args = _compute_train_argv(
-        request, run_uuid=run_uuid, release=release, namespace=namespace, env=env
-    )
+    pod_argv, args = _compute_train_argv(request, run_uuid=run_uuid, release=release, namespace=namespace, env=env)
     deploy_component = DeployComponent(args.deploy_component)
     assert (deploy_component, args.deploy_instance_id) == (config.deploy_component, config.deploy_instance_id), (
         f"the run's pods are told {deploy_component.value}/{args.deploy_instance_id!r}, the release is named "
