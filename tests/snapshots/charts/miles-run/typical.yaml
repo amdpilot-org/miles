@@ -436,6 +436,8 @@ spec:
               value: "mlx5_0,mlx5_1"
             - name: "NCCL_SOCKET_IFNAME"
               value: "bond0"
+            - name: "PYTHONPATH"
+              value: "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"
             - name: "PYTHONUNBUFFERED"
               value: "1"
           resources:

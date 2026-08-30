@@ -151,7 +151,11 @@ class TestInfra:
         values.write_text(yaml.safe_dump({"infra": {"env": {"on": "1", "HTTP_PROXY": "http://p:1"}}}))
         container = render(consumer, RELEASE_NAME, "-f", str(values))["spec"]["containers"][0]
 
-        assert container["env"] == [{"name": "HTTP_PROXY", "value": "http://p:1"}, {"name": "on", "value": "1"}]
+        assert container["env"] == [
+            {"name": "HTTP_PROXY", "value": "http://p:1"},
+            {"name": "PYTHONPATH", "value": "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"},
+            {"name": "on", "value": "1"},
+        ]
 
     def test_a_host_path_volume_renders_a_matched_volume_and_mount(self, consumer):
         """A mount naming a volume that is not there is a pod that never starts."""
@@ -252,7 +256,9 @@ class TestInfra:
         """An empty env: list is not the same shape as no env at all, and pods differ on which they accept."""
         spec = render(consumer, RELEASE_NAME, *volumes_args(host_path_volume()))["spec"]
 
-        assert "env" not in spec["containers"][0]
+        assert spec["containers"][0]["env"] == [
+            {"name": "PYTHONPATH", "value": "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"}
+        ]
 
     def test_a_section_the_user_blanked_out_does_not_crash_the_render(self, consumer):
         """A values file with a bare `scheduling:` header deletes the chart default; helm keeps the null."""

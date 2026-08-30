@@ -14,7 +14,12 @@ from tests.fast.charts.utils import (
 )
 
 ORCHESTRATOR = "myrun-miles-run-orchestrator"
-ORCHESTRATOR_IDENTITY = {"MILES_K8S_NAMESPACE": "myns", "MILES_K8S_RELEASE": "myrun"}
+CODE_PYTHONPATH = "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"
+ORCHESTRATOR_IDENTITY = {
+    "MILES_K8S_NAMESPACE": "myns",
+    "MILES_K8S_RELEASE": "myrun",
+    "PYTHONPATH": CODE_PYTHONPATH,
+}
 
 ALL_REPOS = volumes_args(
     host_path_volume(
@@ -166,8 +171,15 @@ class TestClusterEnvironment:
 
 @requires_helm
 class TestPythonPathIsNotAnEnvironmentVariable:
+    def test_the_platform_puts_every_checkout_before_the_stale_editable_install(self):
+        """Mounted checkouts must expose packages added after the image's editable metadata was built."""
+        containers = containers_of(render_run(*WHOLE_TOPOLOGY))
+
+        assert containers
+        assert all(environment(container)["PYTHONPATH"] == CODE_PYTHONPATH for container in containers)
+
     def test_the_schema_refuses_a_pythonpath_in_the_cluster_environment(self):
-        """The image installs its three source trees as editable, and a hand-set PYTHONPATH can only shadow them."""
+        """The platform owns checkout precedence, so a hand-set PYTHONPATH cannot shadow it."""
         error = render_run_error("--set", "infra.env.PYTHONPATH=/somewhere")
 
         assert "PYTHONPATH" in error

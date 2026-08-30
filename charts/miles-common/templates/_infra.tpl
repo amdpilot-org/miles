@@ -28,7 +28,12 @@ affinity:
 {{- end }}
 
 {{- define "miles-common.envBase" -}}
-{{- toYaml (.Values.infra.env | default dict) }}
+{{- $platform := dict "PYTHONPATH" (include "miles-common.codePythonPath" .) -}}
+{{- toYaml (merge (deepCopy (.Values.infra.env | default dict)) $platform) }}
+{{- end }}
+
+{{- define "miles-common.codePythonPath" -}}
+/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python
 {{- end }}
 
 {{- define "miles-common.env" -}}
