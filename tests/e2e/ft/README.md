@@ -351,8 +351,8 @@ Assertions:
 ```
 Type: soak (no baseline, no compare); passes if training completes without hanging and the
       witnesses hold
-Steps: 50 (default), the last 6 of which are fault-free
-CLI: --mode, --seed (42), --num-steps (50), --trainer-crash-interval-seconds (120),
+Steps: 100 (default), the last 6 of which are fault-free
+CLI: --mode, --seed (42), --num-steps (100), --trainer-crash-interval-seconds (120),
      --rollout-crash-interval-seconds (240), --fully-async (off)
 
 Targeting and assertions follow the mode's ft_components:
@@ -405,7 +405,7 @@ membership is asserted.
 - **Why quiescence requires `Serving`, not just `Healthy`**: `Healthy` and even `Running` include a replacement that got weights but cannot answer requests yet, so a kind counting such a replica as recovered would be injected into mid-relaunch.
 - **Why quiescence counts replicas against the most ever seen**: a deleted pod vanishes from the listing instead of reading unhealthy, and the survivors all serve; only the missing replica says the kind is still recovering.
 - **Why the per-cell pairing**: a floor of ">= 2 healings" passes whenever the last crash never recovered.
-- **Why 50 steps and a fault-free tail**: the cadence that decides how many injections a soak lands is the quiescence gate, not `--trainer-crash-interval-seconds` — a trainer cell only rejoins the quiescent set once it is back and has been alive for the 60-poll streak, so accepted trainer injections arrive about ten minutes apart however short the drawn interval is. At 30 steps that yielded one or two of them, and the second landed so late that training ended before its healing, so the witnesses failed on a run in which nothing was actually broken. 50 steps buys three injections at that cadence and the 6-step tail keeps the last one clear of the end, so the floors are cleared by margin rather than by luck. Both numbers are witness headroom, not assertion strength: no floor was lowered to reach them.
+- **Why 100 steps and a fault-free tail**: the cadence that decides how many injections a soak lands is the quiescence gate, not the `--*-crash-interval-seconds` means — a kind only rejoins the quiescent set once every replica is back and has held the 60-poll (~120s) streak, so accepted injections arrive minutes apart however short the drawn interval is. At 30 steps that yielded one or two trainer injections, and the second landed so late that training ended before its healing. The rollout kind is slower still: its streak has to survive the weight-update pause of three consecutive rollouts, and a 50-step soak measured 27 attempts peaking at 54 of the 60 polls without once clearing it, so only the first, pristine-fleet injection landed. 100 steps buys the rollout kind roughly three times the post-first-injection window, and the 6-step tail keeps the last accepted injection clear of the end. Both numbers are witness headroom, not assertion strength: no floor was lowered to reach them.
 - **Why the rollout witness is one-sided**: the trainer witness reads the run's own CellReconfigureEvents, which miss nothing; the rollout witness reads sampled polls, which miss windows by construction. It therefore never demands seeing the down half of a recovery - it demands a Serving reading fresh enough (>= 120s after the cell's last injection, past the ~95s staleness) to prove the survivor really serves. Undercounting an intermediate recovery cannot fail the run; claiming one that never happened cannot pass it.
 - **Stopping the injector**: `stop_and_join` asserts the thread actually stopped, since a thread still mid-injection could crash a cell nothing will heal, and would race the witness being read.
 
