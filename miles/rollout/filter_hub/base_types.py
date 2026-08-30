@@ -35,6 +35,8 @@ class MetricGatherer:
         for sample in _iter_group_samples(group):
             if sample.reward is None:
                 continue
+            if not args.reward_key and isinstance(sample.reward, dict):
+                continue
             self._unfiltered_reward_sum += float(sample.get_reward_value(args))
             self._unfiltered_reward_count += 1
 

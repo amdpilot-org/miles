@@ -35,6 +35,16 @@ class TestMetricGathererUnfilteredRawReward:
 
         assert gatherer.collect()["rollout/raw_reward_unfiltered"] == 0.25
 
+    def test_an_unkeyed_structured_reward_does_not_report_a_raw_reward(self):
+        """Structured custom-RM payloads have no unambiguous scalar value to average."""
+        gatherer = MetricGatherer()
+
+        gatherer.on_group_before_dynamic_filter(
+            _args(), [_sample(reward={"teacher": {"reward": 0.25}, "student": {"reward": 0.5}})]
+        )
+
+        assert "rollout/raw_reward_unfiltered" not in gatherer.collect()
+
     def test_no_offered_group_reports_no_metric(self):
         """A window without generation must yield no point rather than a fabricated zero."""
         gatherer = MetricGatherer()
