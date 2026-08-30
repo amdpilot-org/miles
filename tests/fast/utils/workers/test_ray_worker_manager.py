@@ -1869,9 +1869,7 @@ class TestInjectFault:
         """After the target acknowledges its kill, the whole multi-worker cell becomes terminal."""
         manager = await _launch([_make_spec("engine", num_workers_per_cell=2)])
 
-        await manager.inject_fault(
-            "engine-00000", mode="sigkill", worker_in_cell_index=1, wait_until_applied=True
-        )
+        await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=1, wait_until_applied=True)
 
         assert not manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
 
@@ -1881,9 +1879,7 @@ class TestInjectFault:
         fake_ray_cluster.handles[0].failing_methods["inject_fault"] = ray.exceptions.ActorDiedError()
 
         with pytest.raises(ray.exceptions.ActorDiedError):
-            await manager.inject_fault(
-                "engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True
-            )
+            await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True)
 
         assert manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
 
@@ -1893,9 +1889,7 @@ class TestInjectFault:
         fake_ray_cluster.handles[0].failing_methods["inject_fault"] = RuntimeError("injection refused")
 
         with pytest.raises(RuntimeError, match="injection refused"):
-            await manager.inject_fault(
-                "engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True
-            )
+            await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True)
 
         assert manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
 

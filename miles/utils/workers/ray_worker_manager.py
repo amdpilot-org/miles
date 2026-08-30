@@ -126,9 +126,7 @@ class RayWorkerManager:
 
         async with self._membership_lock:
             if cell.generation != generation or not cell.alive:
-                raise RuntimeError(
-                    f"Cell {cell_id} changed generation before its applied fault could be finalized"
-                )
+                raise RuntimeError(f"Cell {cell_id} changed generation before its applied fault could be finalized")
             await cell.stop()
 
     def get_worker_addrs(self, worker_name: str) -> NamedHostAndPorts:
