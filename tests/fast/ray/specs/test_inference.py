@@ -432,7 +432,7 @@ class TestInferenceEngineEnvVars:
         fake_dumper_utils = SimpleNamespace(get_sglang_env=get_sglang_env)
         import miles.utils as miles_utils
 
-        monkeypatch.setattr(miles_utils, "dumper_utils", fake_dumper_utils)
+        monkeypatch.setattr(miles_utils, "dumper_utils", fake_dumper_utils, raising=False)
         monkeypatch.setitem(
             sys.modules,
             "miles.utils.dumper_utils",
