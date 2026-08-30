@@ -159,16 +159,21 @@ def _compare(dump_dir: str, mode: FTTestMode) -> None:
     )
 
     for rollout_id in phase_b_rollout_ids:
-        is_post_fault = mode.has_real_rollout and rollout_id >= FIRST_POST_FAULT_ROLLOUT_ID
         compare_dumps(
             baseline_dir=f"{dump_dir}/{BASELINE_SIDE}/phase_b",
             target_dir=f"{dump_dir}/{TARGET_SIDE}/phase_b",
-            diff_thresholds=_POST_FAULT_DIFF_THRESHOLDS if is_post_fault else _DIFF_THRESHOLDS,
+            diff_thresholds=_diff_thresholds_for_rollout(mode, rollout_id),
             allow_skipped_pattern=INPUT_TENSORS_SKIP_PATTERN,
             allow_failed_pattern=INPUT_TENSORS_ALLOW_FAILED_PATTERN,
             phase_subdir=f"fwd_bwd/rollout_{rollout_id}",
         )
     print("With-failure comparison test PASSED")
+
+
+def _diff_thresholds_for_rollout(mode: FTTestMode, rollout_id: int) -> list[tuple[str, str]]:
+    if mode.has_real_rollout and rollout_id >= FIRST_POST_FAULT_ROLLOUT_ID:
+        return _POST_FAULT_DIFF_THRESHOLDS
+    return _DIFF_THRESHOLDS
 
 
 TEST_NAME: str = "trainer_with_failure"

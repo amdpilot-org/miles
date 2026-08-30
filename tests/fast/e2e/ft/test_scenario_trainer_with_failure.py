@@ -6,7 +6,10 @@ from tests.e2e.ft.conftest_ft.scenario_trainer_with_failure import (
     FAULT_ROLLOUT_ID,
     FIRST_INJECTED_ROLLOUT_ID,
     FIRST_POST_FAULT_ROLLOUT_ID,
+    _DIFF_THRESHOLDS,
+    _POST_FAULT_DIFF_THRESHOLDS,
     _build_target_args,
+    _diff_thresholds_for_rollout,
 )
 
 
@@ -28,6 +31,14 @@ def test_real_rollout_injection_starts_at_fault_rollout() -> None:
     assert FIRST_POST_FAULT_ROLLOUT_ID == FAULT_ROLLOUT_ID + 1
     assert int(_option_value(args, "--ci-inject-rollout-data-start-rollout-id")) == FAULT_ROLLOUT_ID
     assert {action["at_rollout"] for action in actions} == {FAULT_ROLLOUT_ID}
+
+
+def test_fault_rollout_keeps_strict_tensor_thresholds() -> None:
+    """The fault rollout must stay strict while measured post-fault floors start later."""
+    mode = MODES["kill_train__dp2_cp2"]
+
+    assert _diff_thresholds_for_rollout(mode, FAULT_ROLLOUT_ID) is _DIFF_THRESHOLDS
+    assert _diff_thresholds_for_rollout(mode, FIRST_POST_FAULT_ROLLOUT_ID) is _POST_FAULT_DIFF_THRESHOLDS
 
 
 def test_fake_rollout_does_not_inject_recorded_data() -> None:
