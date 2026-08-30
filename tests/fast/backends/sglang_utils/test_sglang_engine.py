@@ -39,9 +39,7 @@ def _cmd(
         node_rank=0,
         worker_type=worker_type,
         base_gpu_id=base_gpu_id,
-        # ServerArgs probes the local accelerator when no device is given, which a CPU-only
-        # CI runner cannot answer. Production resolves it to the engine's own device the same way.
-        sglang_overrides={"device": "cuda"},
+        sglang_overrides={},
         num_gpus_per_engine=1,
         dist_init_addr=addr_and_ports["dist_init_addr"],
         nccl_port=addr_and_ports["nccl_port"],
@@ -56,6 +54,12 @@ def _cmd(
 
 
 class TestComputeEngineLaunchCmd:
+    def test_a_cpu_only_controller_renders_the_worker_device(self):
+        """A controller without an accelerator still renders a CUDA worker command."""
+        parsed = parse_server_args_argv(shlex.split(_cmd())[3:])
+
+        assert parsed.device == "cuda"
+
     def test_the_command_launches_sglang_with_the_allocated_addressing(self):
         """The rendered launch_server command carries the addr map."""
         tokens = shlex.split(_cmd())

@@ -197,6 +197,9 @@ def _compute_server_args(
         for key in unused_keys:
             kwargs.pop(key)
 
+    if kwargs.get("device") is None:
+        kwargs["device"] = "cuda"
+
     return kwargs
 
 
