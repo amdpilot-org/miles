@@ -185,7 +185,7 @@ def get_train_script(*, fully_async: bool) -> str:
 def get_fully_async_args(*, fully_async: bool) -> str:
     if not fully_async:
         return ""
-    return "--fully-async --pause-generation-mode in_place "
+    return "--fully-async "
 
 
 DETERMINISTIC_ROLLOUT_ARGS: str = (

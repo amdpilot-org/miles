@@ -444,12 +444,11 @@ Type: shells - each calls its sync twin with fully_async=True and pins nothing e
 Entries: test_random_crash_fully_async__kill_train_rollout__dp2_cp2.py,
          test_realistic_gsm8k_fully_async__kill_train_rollout.py (no mode)
 Differs from the twin: train_async.py instead of train.py, plus --fully-async
-                       --pause-generation-mode in_place; test name gains a _fully_async suffix,
-                       which separates the dump dirs and wandb runs
+                       test name gains a _fully_async suffix, which separates the dump dirs and wandb runs
 Same as the twin: model, parallelism, batch sizes, CLI and every assertion, by construction
 ```
 
 - **Why it matters**: production fully-async keeps the engines generating across weight updates, so a crash lands the system in states no strictly-alternating soak reaches.
-- **Why `--pause-generation-mode in_place`**: the default retract mode can deadlock `flush_cache` under load, and a soak whose verdict is "training finished without hanging" cannot tell that deadlock from the failure it exists to catch.
+- **Why the default retract mode matters**: each weight update retracts active requests, flushes their old KV cache state, and re-prefills them under the new weights. The rollout engine now permits this flush while paused requests wait to resume.
 - **Asserted before the cluster comes up**: the mode has real engines and is not colocated. Recorded rollout data would prove nothing about generating while training, and `train_async.py` rejects colocation outright.
 - **Deliberately uncovered**: `train_async.py` without `--fully-async`, the strictly easier case, at tens of minutes to hours of 8-GPU time per soak.
