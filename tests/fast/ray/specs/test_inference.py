@@ -4,6 +4,7 @@ import asyncio
 import shlex
 import sys
 from argparse import Namespace
+from types import SimpleNamespace
 
 import pytest
 from tests.fast.fixtures.capability_fixtures import FakeBackendCapability
@@ -419,6 +420,27 @@ class TestSessionServerRouterPoolLookup:
 
 
 class TestInferenceEngineEnvVars:
+    def test_an_enabled_dumper_resolves_the_sglang_environment(self, monkeypatch) -> None:
+        """Enabling inference dumping must load the dumper integration and render its startup environment."""
+        args = make_args(dumper_inference=["enable=true", "non_intrusive_mode=all"])
+        get_sglang_env_calls: list[Namespace] = []
+
+        def get_sglang_env(call_args: Namespace) -> dict[str, str]:
+            get_sglang_env_calls.append(call_args)
+            return {"DUMPER_SERVER_PORT": "reuse", "DUMPER_NON_INTRUSIVE_MODE": "all"}
+
+        monkeypatch.setitem(
+            sys.modules,
+            "miles.utils.dumper_utils",
+            SimpleNamespace(get_sglang_env=get_sglang_env),
+        )
+
+        envs = compute_inference_engine_env_vars(args)
+
+        assert get_sglang_env_calls == [args]
+        assert envs["DUMPER_SERVER_PORT"] == "reuse"
+        assert envs["DUMPER_NON_INTRUSIVE_MODE"] == "all"
+
     def test_a_process_level_override_wins_over_the_built_in_default(self, monkeypatch):
         """The launcher's environment is how operators retune sglang per cluster, so defaults must not overwrite it."""
         monkeypatch.setenv("SGLANG_JIT_DEEPGEMM_PRECOMPILE", "true")
