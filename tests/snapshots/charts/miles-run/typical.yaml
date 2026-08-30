@@ -549,6 +549,8 @@ spec:
               value: "mlx5_0,mlx5_1"
             - name: "NCCL_SOCKET_IFNAME"
               value: "bond0"
+            - name: "PYTHONPATH"
+              value: "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"
             - name: "PYTHONUNBUFFERED"
               value: "1"
           resources:
@@ -664,6 +666,8 @@ spec:
               value: "mlx5_0,mlx5_1"
             - name: "NCCL_SOCKET_IFNAME"
               value: "bond0"
+            - name: "PYTHONPATH"
+              value: "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"
             - name: "PYTHONUNBUFFERED"
               value: "1"
           ports:
@@ -776,6 +780,8 @@ spec:
               value: "mlx5_0,mlx5_1"
             - name: "NCCL_SOCKET_IFNAME"
               value: "bond0"
+            - name: "PYTHONPATH"
+              value: "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"
             - name: "PYTHONUNBUFFERED"
               value: "1"
           ports:
@@ -891,6 +897,8 @@ spec:
               value: "mlx5_0,mlx5_1"
             - name: "NCCL_SOCKET_IFNAME"
               value: "bond0"
+            - name: "PYTHONPATH"
+              value: "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"
             - name: "PYTHONUNBUFFERED"
               value: "1"
           ports:
@@ -997,6 +1005,8 @@ spec:
               value: "mlx5_0,mlx5_1"
             - name: "NCCL_SOCKET_IFNAME"
               value: "bond0"
+            - name: "PYTHONPATH"
+              value: "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"
             - name: "PYTHONUNBUFFERED"
               value: "1"
           ports:
@@ -1109,6 +1119,8 @@ spec:
               value: "mlx5_0,mlx5_1"
             - name: "NCCL_SOCKET_IFNAME"
               value: "bond0"
+            - name: "PYTHONPATH"
+              value: "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"
             - name: "PYTHONUNBUFFERED"
               value: "1"
           ports:
@@ -1270,6 +1282,8 @@ spec:
                 value: "all"
               - name: "NVSHMEM_DISABLE_NCCL"
                 value: "1"
+              - name: "PYTHONPATH"
+                value: "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"
               - name: "PYTHONUNBUFFERED"
                 value: "1"
               - name: "RAY_EXPERIMENTAL_NOSET_ASCEND_RT_VISIBLE_DEVICES"
@@ -1303,7 +1317,7 @@ spec:
               - name: "SGLANG_MEMORY_SAVER_CUDA_GRAPH"
                 value: "true"
               - name: "SGLANG_OPT_USE_CUSTOM_ALL_REDUCE_V2"
-                value: "0"
+                value: "1"
             ports:
               - name: "primary"
                 containerPort: 8000
@@ -1471,6 +1485,8 @@ spec:
                 value: "all"
               - name: "NVSHMEM_DISABLE_NCCL"
                 value: "1"
+              - name: "PYTHONPATH"
+                value: "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"
               - name: "PYTHONUNBUFFERED"
                 value: "1"
               - name: "RAY_EXPERIMENTAL_NOSET_ASCEND_RT_VISIBLE_DEVICES"
@@ -1504,7 +1520,7 @@ spec:
               - name: "SGLANG_MEMORY_SAVER_CUDA_GRAPH"
                 value: "true"
               - name: "SGLANG_OPT_USE_CUSTOM_ALL_REDUCE_V2"
-                value: "0"
+                value: "1"
             ports:
               - name: "primary"
                 containerPort: 8000
@@ -1625,6 +1641,8 @@ spec:
                 value: "mlx5_0,mlx5_1"
               - name: "NCCL_SOCKET_IFNAME"
                 value: "bond0"
+              - name: "PYTHONPATH"
+                value: "/root/miles:/root/Megatron-LM:/sgl-workspace/sglang/python"
               - name: "PYTHONUNBUFFERED"
                 value: "1"
             ports:
