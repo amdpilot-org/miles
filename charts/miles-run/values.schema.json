@@ -283,8 +283,8 @@
           "propertyNames": {
             "not": {
               "enum": [
-                "PYTHONPATH",
                 "MILES_SCRIPT_ENV_REPORT",
+                "PYTHONPATH",
                 "MILES_CELL_INDEX",
                 "MILES_POD_INDEX",
                 "MILES_BASE_GPU_ID",
@@ -540,8 +540,8 @@
           "propertyNames": {
             "not": {
               "enum": [
-                "PYTHONPATH",
                 "MILES_SCRIPT_ENV_REPORT",
+                "PYTHONPATH",
                 "MILES_CELL_INDEX",
                 "MILES_POD_INDEX",
                 "MILES_BASE_GPU_ID",
@@ -658,8 +658,8 @@
           "propertyNames": {
             "not": {
               "enum": [
-                "PYTHONPATH",
                 "MILES_SCRIPT_ENV_REPORT",
+                "PYTHONPATH",
                 "MILES_CELL_INDEX",
                 "MILES_POD_INDEX",
                 "MILES_BASE_GPU_ID",

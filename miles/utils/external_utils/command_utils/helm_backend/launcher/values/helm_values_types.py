@@ -25,6 +25,7 @@ _OPTIONAL_DNS_SUBDOMAIN = r"^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]
 
 _NO_PARENT_TRAVERSAL = {"not": {"pattern": r"(^|/)\.\.(/|$)"}}
 _PLATFORM_OWNED_ENV_VARS = [
+    "PYTHONPATH",
     CELL_INDEX_ENV_VAR,
     POD_INDEX_ENV_VAR,
     BASE_GPU_ID_ENV_VAR,
@@ -34,7 +35,7 @@ _PLATFORM_OWNED_ENV_VARS = [
 _ENV_KEYS = {
     "propertyNames": {
         "pattern": "^[ -<>-~]+$",
-        "not": {"enum": ["PYTHONPATH", LAUNCHER_REPORT_ENV_VAR, *_PLATFORM_OWNED_ENV_VARS]},
+        "not": {"enum": [LAUNCHER_REPORT_ENV_VAR, *_PLATFORM_OWNED_ENV_VARS]},
     }
 }
 
