@@ -104,9 +104,10 @@ class TestServerArgsToArgv:
             assert argv.count(flag) == 1
 
     def test_an_unspecified_device_renders_the_auto_detected_accelerator(self, monkeypatch):
-        """An unset device renders the accelerator chosen by ServerArgs instead of the text None."""
+        """An unset low-level device renders the accelerator chosen by ServerArgs instead of the text None."""
         monkeypatch.setattr("sglang.srt.server_args.get_device", lambda: "cuda")
-        server_args = _server_args(sglang_overrides={"device": None})
+        server_args = _server_args()
+        server_args["device"] = None
         argv = server_args_to_argv(server_args)
 
         assert server_args["device"] is None
