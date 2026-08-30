@@ -3,11 +3,11 @@ import shlex
 
 from tests.e2e.ft.conftest_ft.modes import MODES
 from tests.e2e.ft.conftest_ft.scenario_trainer_with_failure import (
+    _DIFF_THRESHOLDS,
+    _POST_FAULT_DIFF_THRESHOLDS,
     FAULT_ROLLOUT_ID,
     FIRST_INJECTED_ROLLOUT_ID,
     FIRST_POST_FAULT_ROLLOUT_ID,
-    _DIFF_THRESHOLDS,
-    _POST_FAULT_DIFF_THRESHOLDS,
     _build_target_args,
     _diff_thresholds_for_rollout,
 )
