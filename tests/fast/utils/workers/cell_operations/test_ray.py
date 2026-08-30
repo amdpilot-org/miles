@@ -119,7 +119,11 @@ async def test_inject_fault_waits_for_the_controller_lock() -> None:
     await holding
     await injecting
     assert fixture.worker_manager.calls == [
-        ("inject_fault", ("engine-0-2",), {"mode": "sigkill", "worker_in_cell_index": 0})
+        (
+            "inject_fault",
+            ("engine-0-2",),
+            {"mode": "sigkill", "worker_in_cell_index": 0, "wait_until_applied": True},
+        )
     ]
 
 

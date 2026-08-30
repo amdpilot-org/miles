@@ -303,7 +303,29 @@ async def update_weights(
         )
 
     info: UpdatableEngines = await inference_controller.start_update_weights(model_id=trainer_model_id)
-    weight_version = await actor_model.update_weights(info=info, rollout_id=rollout_id)
+    update_task = asyncio.create_task(actor_model.update_weights(info=info, rollout_id=rollout_id))
+    cancelled = False
+    while not update_task.done():
+        try:
+            await asyncio.shield(update_task)
+        except asyncio.CancelledError:
+            cancelled = True
+        except Exception:
+            break
+
+    try:
+        weight_version = update_task.result()
+    except asyncio.CancelledError:
+        await inference_controller.end_update_weights(snapshot_cell_id_to_hashes={})
+        raise
+    except Exception:
+        await inference_controller.end_update_weights(snapshot_cell_id_to_hashes={})
+        raise
+
+    if cancelled:
+        await inference_controller.end_update_weights(snapshot_cell_id_to_hashes={})
+        raise asyncio.CancelledError()
+
     await inference_controller.end_update_weights(snapshot_cell_id_to_hashes=info.snapshot_cell_id_to_hashes)
 
     await _maybe_log_inference_engine_weight_checksums(

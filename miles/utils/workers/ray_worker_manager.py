@@ -102,7 +102,9 @@ class RayWorkerManager:
         async with self._membership_lock:
             await asyncio.gather(*[cell.stop() for cell in self._all_cells()])
 
-    def inject_fault(self, cell_id: str, *, mode: str, worker_in_cell_index: int) -> None:
+    async def inject_fault(
+        self, cell_id: str, *, mode: str, worker_in_cell_index: int, wait_until_applied: bool = False
+    ) -> None:
         cell = self._find_cell(cell_id)
         if not cell.alive:
             raise RuntimeError(f"Cell {cell_id} is not alive, cannot inject fault")
@@ -111,7 +113,9 @@ class RayWorkerManager:
                 f"worker_in_cell_index {worker_in_cell_index} out of range for cell {cell_id} "
                 f"(has {len(cell.actors)} workers)"
             )
-        cell.actors[worker_in_cell_index].actor_handle.inject_fault.remote(mode)
+        fault = cell.actors[worker_in_cell_index].actor_handle.inject_fault.remote(mode)
+        if wait_until_applied:
+            await fault
 
     def get_worker_addrs(self, worker_name: str) -> NamedHostAndPorts:
         addrs = self._find_actor(worker_name).self_addrs

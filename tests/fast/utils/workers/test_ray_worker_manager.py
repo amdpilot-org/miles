@@ -1841,18 +1841,33 @@ class TestInjectFault:
         """A multi-node engine is crashed by crashing one of its node ranks."""
         manager = await _launch([_make_spec("engine", num_workers_per_cell=2)])
 
-        manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=1)
+        await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=1)
 
         calls = fake_ray_cluster.calls_of("inject_fault")
         assert [call.args for call in calls] == [("sigkill",)]
         assert calls[0].handle is fake_ray_cluster.handles[1]
 
-    async def test_injection_does_not_wait_for_the_worker_to_answer(self, fake_ray_cluster: FakeRayCluster):
-        """The worker is about to die, so waiting for its reply would hang the caller."""
+    async def test_injection_waits_until_the_worker_has_applied_the_fault(self, fake_ray_cluster: FakeRayCluster):
+        """Returning before the worker applies its fault lets a later weight-update window race with the kill."""
+        manager = await _launch([_make_spec("engine")])
+        fake_ray_cluster.handles[0].hanging_methods["inject_fault"] = 0.05
+
+        injection = asyncio.create_task(
+            manager.inject_fault(
+                "engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True
+            )
+        )
+        await asyncio.sleep(0)
+
+        assert not injection.done()
+        await injection
+
+    async def test_injection_can_return_before_a_self_killing_worker_answers(self, fake_ray_cluster: FakeRayCluster):
+        """A worker that kills its own process cannot acknowledge the fault it successfully applied."""
         manager = await _launch([_make_spec("engine")])
         fake_ray_cluster.handles[0].failing_methods["inject_fault"] = RuntimeError("actor died")
 
-        manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0)
+        await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0)
 
     async def test_injecting_into_a_suspended_cell_is_rejected(self, fake_ray_cluster: FakeRayCluster):
         """A suspended cell has no worker to crash."""
@@ -1860,25 +1875,25 @@ class TestInjectFault:
         await manager.stop_cells(["engine-00000"])
 
         with pytest.raises(RuntimeError, match="not alive"):
-            manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0)
+            await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0)
 
     async def test_a_worker_index_beyond_the_cell_is_rejected(self, fake_ray_cluster: FakeRayCluster):
         """Injecting into a neighbouring cell by accident would corrupt the test's premise."""
         manager = await _launch([_make_spec("engine", num_cells=2, num_workers_per_cell=1)])
 
         with pytest.raises(IndexError, match="out of range"):
-            manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=1)
+            await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=1)
 
     async def test_a_negative_worker_index_is_rejected(self, fake_ray_cluster: FakeRayCluster):
         """Negative indexing would silently select the last worker instead of failing."""
         manager = await _launch([_make_spec("engine", num_workers_per_cell=2)])
 
         with pytest.raises(IndexError, match="out of range"):
-            manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=-1)
+            await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=-1)
 
     async def test_an_unknown_cell_is_rejected(self, fake_ray_cluster: FakeRayCluster):
         """A typo must not silently inject nothing."""
         manager = await _launch([_make_spec("engine")])
 
         with pytest.raises(AssertionError):
-            manager.inject_fault("engine-00007", mode="sigkill", worker_in_cell_index=0)
+            await manager.inject_fault("engine-00007", mode="sigkill", worker_in_cell_index=0)

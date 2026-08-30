@@ -1,3 +1,4 @@
+import asyncio
 from argparse import Namespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -167,6 +168,66 @@ async def test_the_script_hands_end_update_weights_the_snapshot_start_returned()
     )
 
     _assert_the_snapshot_is_handed_back_unchanged(inference_controller)
+
+
+@pytest.mark.asyncio
+async def test_a_failed_broadcast_closes_the_update_window_without_readying_cells():
+    """A failed trainer broadcast releases its controller window without accepting partial weights."""
+    from miles.ray.placement_group import update_weights
+
+    order: list[str] = []
+    inference_controller = _OrderRecordingInferenceController(order)
+    actor_model = MagicMock(update_weights=AsyncMock(side_effect=RuntimeError("rollout engine died")))
+
+    with pytest.raises(RuntimeError, match="rollout engine died"):
+        await update_weights(
+            _orchestration_args(),
+            actor_model,
+            MagicMock(set_weight_version=AsyncMock()),
+            inference_controller,
+        )
+
+    assert order == ["start_update_weights", "end_update_weights"]
+    [end_kwargs] = [kwargs for name, _args, kwargs in inference_controller.calls if name == "end_update_weights"]
+    assert end_kwargs == {"snapshot_cell_id_to_hashes": {}}
+
+
+@pytest.mark.asyncio
+async def test_a_cancelled_broadcast_waits_for_the_rpc_to_finish_before_closing_the_window():
+    """Cancellation keeps the update window locked until the trainer broadcast is terminal."""
+    from miles.ray.placement_group import update_weights
+
+    order: list[str] = []
+    started, finish = asyncio.Event(), asyncio.Event()
+    inference_controller = _OrderRecordingInferenceController(order)
+
+    async def _update_weights(*, info: object, rollout_id: int | None = None) -> int:
+        started.set()
+        await finish.wait()
+        order.append("trainer_update_weights_finished")
+        return 11
+
+    updating = asyncio.create_task(
+        update_weights(
+            _orchestration_args(),
+            MagicMock(update_weights=AsyncMock(side_effect=_update_weights)),
+            MagicMock(set_weight_version=AsyncMock()),
+            inference_controller,
+        )
+    )
+    await started.wait()
+
+    updating.cancel()
+    await asyncio.sleep(0)
+    assert order == ["start_update_weights"]
+
+    finish.set()
+    with pytest.raises(asyncio.CancelledError):
+        await updating
+
+    assert order == ["start_update_weights", "trainer_update_weights_finished", "end_update_weights"]
+    [end_kwargs] = [kwargs for name, _args, kwargs in inference_controller.calls if name == "end_update_weights"]
+    assert end_kwargs == {"snapshot_cell_id_to_hashes": {}}
 
 
 @pytest.mark.asyncio

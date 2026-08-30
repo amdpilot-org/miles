@@ -310,7 +310,7 @@ class TestRolloutFaultInjectionWindow:
         )
 
         assert provider._worker_manager_handle.inject_fault.calls == [
-            ((cell_id,), {"mode": "sigkill", "worker_in_cell_index": 0})
+            ((cell_id,), {"mode": "sigkill", "worker_in_cell_index": 0, "wait_until_applied": True})
         ]
 
     @pytest.mark.asyncio
@@ -1223,7 +1223,7 @@ class TestCellOperations:
         await injecting
 
         assert provider._worker_manager_handle.inject_fault.calls == [
-            ((_ROLLOUT_CELL_ID,), {"mode": "sigkill", "worker_in_cell_index": 0})
+            ((_ROLLOUT_CELL_ID,), {"mode": "sigkill", "worker_in_cell_index": 0, "wait_until_applied": True})
         ]
 
     @pytest.mark.asyncio

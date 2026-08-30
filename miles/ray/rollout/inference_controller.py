@@ -107,6 +107,7 @@ class InferenceController:
             cell_id,
             mode=mode.value,
             worker_in_cell_index=sub_index,
+            wait_until_applied=True,
         )
 
     # -------------------------- take over -----------------------------
