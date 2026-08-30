@@ -1853,9 +1853,7 @@ class TestInjectFault:
         fake_ray_cluster.handles[0].hanging_methods["inject_fault"] = 0.05
 
         injection = asyncio.create_task(
-            manager.inject_fault(
-                "engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True
-            )
+            manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True)
         )
         await asyncio.sleep(0)
 

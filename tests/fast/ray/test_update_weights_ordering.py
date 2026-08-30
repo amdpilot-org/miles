@@ -231,6 +231,69 @@ async def test_a_cancelled_broadcast_waits_for_the_rpc_to_finish_before_closing_
 
 
 @pytest.mark.asyncio
+async def test_repeated_cancellation_waits_for_window_cleanup_to_finish():
+    """Repeated cancellation cannot interrupt the end transition after the broadcast is terminal."""
+    from miles.ray.placement_group import update_weights
+
+    order: list[str] = []
+    update_started, finish_update = asyncio.Event(), asyncio.Event()
+    end_started, finish_end = asyncio.Event(), asyncio.Event()
+    inference_controller = _OrderRecordingInferenceController(order)
+
+    async def _update_weights(*, info: object, rollout_id: int | None = None) -> int:
+        update_started.set()
+        await finish_update.wait()
+        return 11
+
+    async def _end_update_weights(*, snapshot_cell_id_to_hashes: dict[str, str]) -> None:
+        order.append("end_update_weights")
+        end_started.set()
+        await finish_end.wait()
+        order.append("end_update_weights_finished")
+
+    inference_controller.end_update_weights = AsyncMock(side_effect=_end_update_weights)
+    updating = asyncio.create_task(
+        update_weights(
+            _orchestration_args(),
+            MagicMock(update_weights=AsyncMock(side_effect=_update_weights)),
+            MagicMock(set_weight_version=AsyncMock()),
+            inference_controller,
+        )
+    )
+    await update_started.wait()
+
+    updating.cancel()
+    finish_update.set()
+    await end_started.wait()
+    updating.cancel()
+    await asyncio.sleep(0)
+    assert order == ["start_update_weights", "end_update_weights"]
+
+    finish_end.set()
+    with pytest.raises(asyncio.CancelledError):
+        await updating
+
+    assert order == ["start_update_weights", "end_update_weights", "end_update_weights_finished"]
+
+
+@pytest.mark.asyncio
+async def test_cleanup_failure_does_not_mask_the_broadcast_failure():
+    """The trainer broadcast error remains the primary failure when lock cleanup also fails."""
+    from miles.ray.placement_group import update_weights
+
+    inference_controller = _OrderRecordingInferenceController([])
+    inference_controller.end_update_weights = AsyncMock(side_effect=RuntimeError("cleanup failed"))
+
+    with pytest.raises(ValueError, match="broadcast failed"):
+        await update_weights(
+            _orchestration_args(),
+            MagicMock(update_weights=AsyncMock(side_effect=ValueError("broadcast failed"))),
+            MagicMock(set_weight_version=AsyncMock()),
+            inference_controller,
+        )
+
+
+@pytest.mark.asyncio
 async def test_the_window_is_scoped_to_the_policy_the_script_is_publishing():
     """Without the scope, one policy's trainer broadcasts its weights into another policy's engines."""
     from miles.ray.placement_group import update_weights

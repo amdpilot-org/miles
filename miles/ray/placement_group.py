@@ -304,29 +304,32 @@ async def update_weights(
 
     info: UpdatableEngines = await inference_controller.start_update_weights(model_id=trainer_model_id)
     update_task = asyncio.create_task(actor_model.update_weights(info=info, rollout_id=rollout_id))
-    cancelled = False
-    while not update_task.done():
-        try:
-            await asyncio.shield(update_task)
-        except asyncio.CancelledError:
-            cancelled = True
-        except Exception:
-            break
+    cancelled = await _wait_for_task_completion(update_task)
 
     try:
         weight_version = update_task.result()
     except asyncio.CancelledError:
-        await inference_controller.end_update_weights(snapshot_cell_id_to_hashes={})
+        await _end_update_weights(inference_controller, snapshot_cell_id_to_hashes={})
         raise
     except Exception:
-        await inference_controller.end_update_weights(snapshot_cell_id_to_hashes={})
+        try:
+            await _end_update_weights(inference_controller, snapshot_cell_id_to_hashes={})
+        except Exception:
+            logger.exception("Failed to close the inference weight update window after the trainer broadcast failed")
         raise
 
     if cancelled:
-        await inference_controller.end_update_weights(snapshot_cell_id_to_hashes={})
+        try:
+            await _end_update_weights(inference_controller, snapshot_cell_id_to_hashes={})
+        except Exception:
+            logger.exception("Failed to close the inference weight update window after the trainer broadcast was cancelled")
         raise asyncio.CancelledError()
 
-    await inference_controller.end_update_weights(snapshot_cell_id_to_hashes=info.snapshot_cell_id_to_hashes)
+    cancelled = await _end_update_weights(
+        inference_controller, snapshot_cell_id_to_hashes=info.snapshot_cell_id_to_hashes
+    )
+    if cancelled:
+        raise asyncio.CancelledError()
 
     await _maybe_log_inference_engine_weight_checksums(
         args, inference_controller=inference_controller, rollout_id=rollout_id, trainer_model_id=trainer_model_id
@@ -334,6 +337,29 @@ async def update_weights(
 
     if weight_version is not None:
         await rollout_executor.set_weight_version(weight_version, trainer_model_id=trainer_model_id)
+
+
+async def _end_update_weights(
+    inference_controller: BaseWorkerHandle, *, snapshot_cell_id_to_hashes: dict[str, str]
+) -> bool:
+    task = asyncio.create_task(
+        inference_controller.end_update_weights(snapshot_cell_id_to_hashes=snapshot_cell_id_to_hashes)
+    )
+    cancelled = await _wait_for_task_completion(task)
+    task.result()
+    return cancelled
+
+
+async def _wait_for_task_completion(task: asyncio.Task) -> bool:
+    cancelled = False
+    while not task.done():
+        try:
+            await asyncio.shield(task)
+        except asyncio.CancelledError:
+            cancelled = True
+        except Exception:
+            break
+    return cancelled
 
 
 async def _maybe_log_inference_engine_weight_checksums(
