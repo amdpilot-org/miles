@@ -176,7 +176,10 @@ class TestPythonPathIsNotAnEnvironmentVariable:
         containers = containers_of(render_run(*WHOLE_TOPOLOGY))
 
         assert containers
-        assert all(environment(container)["PYTHONPATH"] == CODE_PYTHONPATH for container in containers)
+        assert all(
+            [entry["value"] for entry in container["env"] if entry["name"] == "PYTHONPATH"] == [CODE_PYTHONPATH]
+            for container in containers
+        )
 
     def test_the_schema_refuses_a_pythonpath_in_the_cluster_environment(self):
         """The platform owns checkout precedence, so a hand-set PYTHONPATH cannot shadow it."""
