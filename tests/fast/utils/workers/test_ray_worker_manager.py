@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from unittest.mock import patch
 
 import pytest
+import ray
 from tests.fast.utils.workers.conftest import worker_manager_args
 from tests.fast.utils.workers.fake_ray import EVENT_CREATE, EVENT_KILL, FakeRayCluster
 
@@ -1859,6 +1860,59 @@ class TestInjectFault:
 
         assert not injection.done()
         await injection
+
+        calls = fake_ray_cluster.calls_of("inject_fault")
+        assert calls[0].kwargs == {"keep_actor_alive_until_ack": True}
+        assert not manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
+
+    async def test_an_acknowledged_fault_cleans_up_every_worker_in_the_cell(self, fake_ray_cluster: FakeRayCluster):
+        """After the target acknowledges its kill, the whole multi-worker cell becomes terminal."""
+        manager = await _launch([_make_spec("engine", num_workers_per_cell=2)])
+
+        await manager.inject_fault(
+            "engine-00000", mode="sigkill", worker_in_cell_index=1, wait_until_applied=True
+        )
+
+        assert not manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
+
+    async def test_actor_death_before_ack_is_propagated(self, fake_ray_cluster: FakeRayCluster):
+        """Actor death before the acknowledgement cannot prove that the fault was applied."""
+        manager = await _launch([_make_spec("engine")])
+        fake_ray_cluster.handles[0].failing_methods["inject_fault"] = ray.exceptions.ActorDiedError()
+
+        with pytest.raises(ray.exceptions.ActorDiedError):
+            await manager.inject_fault(
+                "engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True
+            )
+
+        assert manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
+
+    async def test_non_ray_failure_before_ack_is_propagated(self, fake_ray_cluster: FakeRayCluster):
+        """A command error before acknowledgement remains a failed injection."""
+        manager = await _launch([_make_spec("engine")])
+        fake_ray_cluster.handles[0].failing_methods["inject_fault"] = RuntimeError("injection refused")
+
+        with pytest.raises(RuntimeError, match="injection refused"):
+            await manager.inject_fault(
+                "engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True
+            )
+
+        assert manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
+
+    async def test_generation_change_after_ack_is_rejected(self, fake_ray_cluster: FakeRayCluster):
+        """An acknowledgement from an obsolete cell generation cannot finalize its replacement."""
+        manager = await _launch([_make_spec("engine")])
+        fake_ray_cluster.handles[0].hanging_methods["inject_fault"] = 0.05
+        injection = asyncio.create_task(
+            manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True)
+        )
+        await asyncio.sleep(0)
+        manager._find_cell("engine-00000").generation += 1
+
+        with pytest.raises(RuntimeError, match="changed generation"):
+            await injection
+
+        assert manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
 
     async def test_injection_can_return_before_a_self_killing_worker_answers(self, fake_ray_cluster: FakeRayCluster):
         """A worker that kills its own process cannot acknowledge the fault it successfully applied."""

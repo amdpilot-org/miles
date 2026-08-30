@@ -105,17 +105,31 @@ class RayWorkerManager:
     async def inject_fault(
         self, cell_id: str, *, mode: str, worker_in_cell_index: int, wait_until_applied: bool = False
     ) -> None:
-        cell = self._find_cell(cell_id)
-        if not cell.alive:
-            raise RuntimeError(f"Cell {cell_id} is not alive, cannot inject fault")
-        if not 0 <= worker_in_cell_index < len(cell.actors):
-            raise IndexError(
-                f"worker_in_cell_index {worker_in_cell_index} out of range for cell {cell_id} "
-                f"(has {len(cell.actors)} workers)"
+        async with self._membership_lock:
+            cell = self._find_cell(cell_id)
+            if not cell.alive:
+                raise RuntimeError(f"Cell {cell_id} is not alive, cannot inject fault")
+            if not 0 <= worker_in_cell_index < len(cell.actors):
+                raise IndexError(
+                    f"worker_in_cell_index {worker_in_cell_index} out of range for cell {cell_id} "
+                    f"(has {len(cell.actors)} workers)"
+                )
+            generation = cell.generation
+            fault = cell.actors[worker_in_cell_index].actor_handle.inject_fault.remote(
+                mode,
+                **({"keep_actor_alive_until_ack": True} if wait_until_applied else {}),
             )
-        fault = cell.actors[worker_in_cell_index].actor_handle.inject_fault.remote(mode)
-        if wait_until_applied:
-            await fault
+        if not wait_until_applied:
+            return
+
+        await fault
+
+        async with self._membership_lock:
+            if cell.generation != generation or not cell.alive:
+                raise RuntimeError(
+                    f"Cell {cell_id} changed generation before its applied fault could be finalized"
+                )
+            await cell.stop()
 
     def get_worker_addrs(self, worker_name: str) -> NamedHostAndPorts:
         addrs = self._find_actor(worker_name).self_addrs
