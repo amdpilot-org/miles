@@ -322,7 +322,9 @@ async def update_weights(
         try:
             await _end_update_weights(inference_controller, snapshot_cell_id_to_hashes={})
         except Exception:
-            logger.exception("Failed to close the inference weight update window after the trainer broadcast was cancelled")
+            logger.exception(
+                "Failed to close the inference weight update window after the trainer broadcast was cancelled"
+            )
         raise asyncio.CancelledError()
 
     cancelled = await _end_update_weights(
