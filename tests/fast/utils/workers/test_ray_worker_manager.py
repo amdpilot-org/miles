@@ -1847,6 +1847,7 @@ class TestInjectFault:
         calls = fake_ray_cluster.calls_of("inject_fault")
         assert [call.args for call in calls] == [("sigkill",)]
         assert calls[0].handle is fake_ray_cluster.handles[1]
+        assert calls[0].kwargs == {}
 
     async def test_injection_waits_until_the_worker_has_applied_the_fault(self, fake_ray_cluster: FakeRayCluster):
         """Returning before the worker applies its fault lets a later weight-update window race with the kill."""
@@ -1872,6 +1873,90 @@ class TestInjectFault:
         await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=1, wait_until_applied=True)
 
         assert not manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
+
+    async def test_cancellation_after_dispatch_waits_for_terminal_membership(self, fake_ray_cluster: FakeRayCluster):
+        """Caller cancellation cannot interrupt the acknowledged fault's terminal membership transition."""
+        manager = await _launch([_make_spec("engine")])
+        fake_ray_cluster.handles[0].hanging_methods["inject_fault"] = 0.05
+        injection = asyncio.create_task(
+            manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True)
+        )
+        await asyncio.sleep(0)
+
+        injection.cancel()
+
+        with pytest.raises(asyncio.CancelledError):
+            await injection
+        assert not manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
+
+    async def test_repeated_cancellation_still_waits_for_terminal_membership(self, fake_ray_cluster: FakeRayCluster):
+        """Repeated cancellation cannot pierce the shield around fault finalization."""
+        manager = await _launch([_make_spec("engine")])
+        fake_ray_cluster.handles[0].hanging_methods["inject_fault"] = 0.05
+        injection = asyncio.create_task(
+            manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True)
+        )
+        await asyncio.sleep(0)
+
+        injection.cancel()
+        await asyncio.sleep(0.01)
+        injection.cancel()
+
+        with pytest.raises(asyncio.CancelledError):
+            await injection
+        assert not manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
+
+    async def test_pre_ack_failure_takes_priority_over_pending_cancellation(self, fake_ray_cluster: FakeRayCluster):
+        """A known application failure is reported even when the caller cancelled while waiting for it."""
+        manager = await _launch([_make_spec("engine")])
+        fake_ray_cluster.handles[0].hanging_methods["inject_fault"] = 0.05
+        fake_ray_cluster.handles[0].failing_methods["inject_fault"] = RuntimeError("injection refused")
+        injection = asyncio.create_task(
+            manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True)
+        )
+        await asyncio.sleep(0)
+
+        injection.cancel()
+
+        with pytest.raises(RuntimeError, match="injection refused"):
+            await injection
+        assert manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
+
+    async def test_an_acknowledged_fault_tears_the_cell_down_through_its_own_stop(
+        self, fake_ray_cluster: FakeRayCluster
+    ) -> None:
+        """A crashed cell is disposed by the same teardown every other stopped cell gets, siblings included."""
+        manager = await _launch([_make_spec("engine", num_workers_per_cell=2)])
+
+        await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True)
+
+        assert len(fake_ray_cluster.calls_of("shutdown")) == 2
+        assert all(handle.killed for handle in fake_ray_cluster.handles)
+
+    async def test_kill_request_failures_still_leave_acknowledged_cell_terminal(
+        self, fake_ray_cluster: FakeRayCluster
+    ) -> None:
+        """Control-plane kill errors cannot restore membership after the subprocess kill was acknowledged."""
+        manager = await _launch([_make_spec("engine", num_workers_per_cell=2)])
+        fake_ray_cluster.kill_error = RuntimeError("control plane unavailable")
+
+        await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True)
+
+        assert fake_ray_cluster.events.count(EVENT_KILL) == 2
+        assert not manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
+
+    async def test_restart_after_acknowledged_fault_does_not_kill_the_new_generation(
+        self, fake_ray_cluster: FakeRayCluster
+    ) -> None:
+        """Finalizing the old generation cannot race with or kill its replacement actors."""
+        manager = await _launch([_make_spec("engine")])
+
+        await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True)
+        await manager.start_cells(["engine-00000"])
+
+        assert fake_ray_cluster.handles[0].killed
+        assert not fake_ray_cluster.handles[1].killed
+        assert manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
 
     async def test_actor_death_before_ack_is_propagated(self, fake_ray_cluster: FakeRayCluster):
         """Actor death before the acknowledgement cannot prove that the fault was applied."""

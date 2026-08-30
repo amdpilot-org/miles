@@ -122,6 +122,24 @@ class RayWorkerManager:
         if not wait_until_applied:
             return
 
+        finalization = asyncio.create_task(
+            self._finalize_applied_fault(cell=cell, cell_id=cell_id, generation=generation, fault=fault)
+        )
+        cancelled = False
+        while not finalization.done():
+            try:
+                await asyncio.shield(finalization)
+            except asyncio.CancelledError:
+                cancelled = True
+            except Exception:
+                break
+        finalization.result()
+        if cancelled:
+            raise asyncio.CancelledError()
+
+    async def _finalize_applied_fault(
+        self, *, cell: _CellManager, cell_id: str, generation: int, fault: ray.ObjectRef
+    ) -> None:
         await fault
 
         async with self._membership_lock:
