@@ -227,7 +227,7 @@ Grad families with a `max_abs` floor (cancellation-dominated near-zero grads; re
 | Rollouts | Families | Floor |
 | --- | --- | --- |
 | all | MoE expert grads, QK-norm (`q_layernorm` / `k_layernorm`) grads | `max_abs <= 1e-3` |
-| injected ones, real-rollout mode only | QK-norms, folded `layer_norm_weight`s, `linear_qkv` / `linear_proj` / `mlp.linear_fc[12]` weights | `max_abs <= 3e-3` |
+| post-fault ones, real-rollout mode only | QK-norms, folded `layer_norm_weight`s, `linear_qkv` / `linear_proj` / `mlp.linear_fc[12]` weights | `max_abs <= 3e-3` |
 
 - **Where `3e-3` comes from**: the degraded commit's ulp drift lands as <= 2.8e-3 absolute noise in those near-zero grads (40 tensors, 2026-06-12), against real grads around `1e-2`. Embedding, output, final-norm grads, every activation and every pre-fault rollout keep the strict set.
 
@@ -235,11 +235,11 @@ Grad families with a `max_abs` floor (cancellation-dominated near-zero grads; re
 
 `scenario_trainer_with_failure` against live generation: real sglang engines, deterministic inference, temperature 0.8.
 
-- **Post-fault rollouts are injected**: `--ci-inject-rollout-data-path` replays the baseline's `--save-debug-rollout-data` recording from rollout 3 on (crash rollout + 1).
+- **The fault and later rollouts are injected**: `--ci-inject-rollout-data-path` replays the baseline's `--save-debug-rollout-data` recording from rollout 2 on (the crash rollout).
 - **Why inject**: the degraded-quorum commit brackets microbatch accumulation differently, and under live sampling that ulp diff flips tokens until the two runs' rollout data diverges wholesale. It is fault-inherent -- no collective ordering removes it. Injecting makes training inputs identical by construction, keeping the comparison strict.
 - **The target stays real**: engines and generation still run (samples discarded), `update_weights` fires after the degraded commit and after healing, the health monitor pauses and resumes — the whole crash → retry → heal → weight-sync path. Engine checksums are not compared here; only `scenario_trainer_deterministic` does that.
-- **Generation is still asserted**: `RolloutDataInjectionUtil.assert_matches_generated` requires bitwise-identical prompt tokens per sample, plus a mean response-token match ratio above `--ci-inject-rollout-data-min-match-ratio`, set to 0.5 here (the flag's own default is 0.9). A broken `update_weights` drops that ratio by ~2 orders.
-- **Not asserted**: exact post-fault sampled content beyond the ratio; pre-fault rollouts are compared for real.
+- **Generation is still asserted**: target generation runs before its training data is replaced. `RolloutDataInjectionUtil.assert_matches_generated` requires bitwise-identical prompt tokens per sample, plus a mean response-token match ratio above `--ci-inject-rollout-data-min-match-ratio`, set to 0.5 here (the flag's own default is 0.9). A broken `update_weights` drops that ratio by ~2 orders.
+- **Not asserted**: exact fault-and-later sampled content beyond the ratio; only rollout 1 is pre-fault and compared for real.
 
 Guard calibration (2026-06-12, first post-fault rollout, 256 samples, correct weights; a response counts as mismatched from its first flipped token on):
 
