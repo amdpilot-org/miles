@@ -297,9 +297,19 @@ class TestTheClosingContract:
         with pytest.raises(AssertionError, match="take-over 0"):
             form.assert_every_take_over_installed_cleanly()
 
-    def test_a_replaced_launch_exit_before_the_next_take_over_lands_is_accepted_after_it_lands(self):
-        """A later landed take-over explains an earlier launch's replacement exit even when the exit wins the race."""
+    def test_a_replaced_launch_exit_before_the_next_take_over_starts_is_reported_even_if_one_lands_later(self):
+        """A later take-over cannot explain an exit captured before that replacement started."""
         form = _form(_raise_replaced_launch_exit)
+        form._relaunch(0)
+        form._records.append(_record(1))
+
+        with pytest.raises(AssertionError, match="take-over 0"):
+            form.assert_every_take_over_installed_cleanly()
+
+    def test_a_replaced_launch_exit_after_the_next_take_over_starts_is_accepted_after_it_lands(self):
+        """A started and later landed take-over explains a replacement exit captured between those events."""
+        form = _form(_raise_replaced_launch_exit)
+        form._threads = _started_take_over_threads(2)
         form._relaunch(0)
 
         form._records.append(_record(1))
@@ -309,6 +319,7 @@ class TestTheClosingContract:
     def test_a_replaced_launch_exit_after_the_next_take_over_lands_is_accepted(self):
         """A later landed take-over explains an earlier launch's replacement exit when landing wins the race."""
         form = _form(_raise_replaced_launch_exit)
+        form._threads = _started_take_over_threads(2)
         form._records.append(_record(1))
 
         form._relaunch(0)
@@ -346,6 +357,10 @@ def _raise_replaced_launch_exit(_config: ExecuteTrainConfig) -> None:
 
 def _raise_another_launch_exit(_config: ExecuteTrainConfig) -> None:
     raise RunExitedError(REPLACED_LAUNCH_EXIT_CODE - 1)
+
+
+def _started_take_over_threads(count: int) -> list[threading.Thread]:
+    return [threading.Thread(target=lambda: None, name=f"take-over-{index}") for index in range(count)]
 
 
 def _record(index: int) -> HotRestartRecord:
