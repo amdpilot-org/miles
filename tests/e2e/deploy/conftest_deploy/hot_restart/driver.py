@@ -336,14 +336,14 @@ class HotRestartDriver:
         try:
             self.relaunch(frozen_rollout_id)
         except BaseException as e:
-            if frozen_rollout_id is not None and _is_replaced_launch_exit(e):
+            if frozen_rollout_id is not None and is_replaced_launch_exit(e):
                 logger.info(f"The launch replaced by the next take-over exited {REPLACED_LAUNCH_EXIT_CODE}")
                 return
             logger.warning("A hot restart relaunch failed", exc_info=True)
             self._failures.append(e)
 
 
-def _is_replaced_launch_exit(error: BaseException) -> bool:
+def is_replaced_launch_exit(error: BaseException) -> bool:
     return isinstance(error, RunExitedError) and error.exit_code == REPLACED_LAUNCH_EXIT_CODE
 
 
@@ -354,7 +354,7 @@ def driving_hot_restarts(driver: HotRestartDriver, *, dump_dir: str) -> Iterator
         try:
             yield driver
         except RunExitedError as e:
-            if not _is_replaced_launch_exit(e) or not driver.records:
+            if not is_replaced_launch_exit(e) or not driver.records:
                 raise
             driver.wait_until_every_restart_was_triggered()
     finally:
