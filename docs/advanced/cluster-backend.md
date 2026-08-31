@@ -69,9 +69,10 @@ A path that is on none of them is the most common way a run fails.
 - Every path your script names — `/root/models`, `/root/datasets` — has to be under one of the
   mounts, and so does `infra.paths.runsRoot`, where the launcher keeps each run's directory.
 - Copying a file into a pod is pointless: pods come and go, the mount survives.
-- To run your own branch instead of the image's copy, mount it over the path the image imports
-  from — `/root/miles`, `/root/Megatron-LM`, `/sgl-workspace/sglang`. All three are editable
-  installs, so a copy mounted anywhere else is silently never imported.
+- To run your own branch instead of the image's copy, mount it at the platform-owned source root:
+  `/root/miles`, `/root/Megatron-LM`, or `/sgl-workspace/sglang`. The chart injects these canonical
+  roots into `PYTHONPATH`; `infra.env.PYTHONPATH` cannot override them, and a copy mounted anywhere
+  else is not imported.
 
 ## For cluster administrator
 
