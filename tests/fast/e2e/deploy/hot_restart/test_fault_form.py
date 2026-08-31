@@ -336,6 +336,17 @@ class TestTheClosingContract:
         with pytest.raises(AssertionError, match="take-over 0"):
             form.assert_every_take_over_installed_cleanly()
 
+    def test_a_replaced_launch_exit_without_the_exact_next_landing_is_reported(self):
+        """A started replacement needs its exact landing record to explain exit 143."""
+        form = _form(_raise_replaced_launch_exit)
+        form._threads = _started_take_over_threads(2)
+        form._records.append(_record(2))
+
+        form._relaunch(0)
+
+        with pytest.raises(AssertionError, match="take-over 0"):
+            form.assert_every_take_over_installed_cleanly()
+
     def test_another_exit_is_reported_despite_a_later_take_over(self):
         """A later take-over only explains the replacement exit code, not an unrelated launcher failure."""
         form = _form(_raise_another_launch_exit)
