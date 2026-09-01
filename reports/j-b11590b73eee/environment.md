@@ -1,10 +1,12 @@
 ## Environment variables
 
-- `PYTORCH_ROCM_ARCH` is set to `gfx950`.
-- `MILES_HARDWARE_PLATFORM` is set to `rocm`.
-- `GPU_ARCH` is set to `gfx950`.
-- `SGLANG_USE_AITER` is set to `1`.
-- `HIP_FORCE_DEV_KERNARG` is set to `1`.
+| Variable | Value |
+| --- | --- |
+| `PYTORCH_ROCM_ARCH` | `gfx950` |
+| `MILES_HARDWARE_PLATFORM` | `rocm` |
+| `GPU_ARCH` | `gfx950` |
+| `SGLANG_USE_AITER` | `1` |
+| `HIP_FORCE_DEV_KERNARG` | `1` |
 
 ## Source trees
 
