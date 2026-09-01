@@ -51,6 +51,7 @@ if TYPE_CHECKING:
 _ACTOR_NAME = "ray_worker_manager"
 
 _LIVENESS_SCAN_INTERVAL_SECONDS = 10.0
+_FAULT_FINALIZATION_TIMEOUT_SECONDS = 4.0
 
 
 class RayWorkerManager:
@@ -140,12 +141,30 @@ class RayWorkerManager:
     async def _finalize_applied_fault(
         self, *, cell: _CellManager, cell_id: str, generation: int, fault: ray.ObjectRef
     ) -> None:
-        await fault
+        fault_task = asyncio.ensure_future(fault)
+        done, _ = await asyncio.wait({fault_task}, timeout=_FAULT_FINALIZATION_TIMEOUT_SECONDS)
+        if done:
+            fault_task.result()
+        else:
+            logger.warning(f"Timed out waiting for {cell_id} to acknowledge its injected fault")
+            fault_task.cancel()
 
         async with self._membership_lock:
             if cell.generation != generation or not cell.alive:
                 raise RuntimeError(f"Cell {cell_id} changed generation before its applied fault could be finalized")
-            await cell.stop()
+            actors = cell.actors
+            assert actors is not None
+            try:
+                await asyncio.wait_for(cell.stop(), timeout=_FAULT_FINALIZATION_TIMEOUT_SECONDS)
+            except asyncio.TimeoutError:
+                logger.warning(f"Stopping {cell_id} after its applied fault timed out; killing its actors")
+                for actor in actors:
+                    try:
+                        ray.kill(actor.actor_handle)
+                    except Exception:
+                        logger.exception(f"Failed to kill {actor.name} while finalizing applied fault in {cell_id}")
+            finally:
+                cell.actors = None
 
     def get_worker_addrs(self, worker_name: str) -> NamedHostAndPorts:
         addrs = self._find_actor(worker_name).self_addrs

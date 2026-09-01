@@ -1945,6 +1945,59 @@ class TestInjectFault:
         assert fake_ray_cluster.events.count(EVENT_KILL) == 2
         assert not manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
 
+    async def test_a_stop_that_hangs_is_bounded_and_still_kills_every_actor(
+        self, fake_ray_cluster: FakeRayCluster, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The graceful half of a stop waits 30s per actor and never reaches ray.kill, so the deadline has to."""
+        manager = await _launch([_make_spec("engine", num_workers_per_cell=2)])
+        for handle in fake_ray_cluster.handles:
+            handle.hanging_methods["shutdown"] = 10
+        monkeypatch.setattr(ray_worker_manager, "_FAULT_FINALIZATION_TIMEOUT_SECONDS", 0.01)
+
+        await asyncio.wait_for(
+            manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True),
+            timeout=0.2,
+        )
+
+        assert all(handle.killed for handle in fake_ray_cluster.handles)
+        assert not manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
+
+    async def test_an_acknowledgement_that_never_arrives_still_finalizes_the_cell(
+        self, fake_ray_cluster: FakeRayCluster, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The caller of an unbounded wait is holding the weight-update window while it waits."""
+        manager = await _launch([_make_spec("engine")])
+        fake_ray_cluster.handles[0].hanging_methods["inject_fault"] = 10
+        monkeypatch.setattr(ray_worker_manager, "_FAULT_FINALIZATION_TIMEOUT_SECONDS", 0.01)
+
+        await asyncio.wait_for(
+            manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True),
+            timeout=0.2,
+        )
+
+        assert not manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
+
+    async def test_a_worker_reported_timeout_is_not_the_manager_deadline(self, fake_ray_cluster: FakeRayCluster):
+        """A worker-reported TimeoutError is a failed injection, not this manager's bounded teardown expiring."""
+        manager = await _launch([_make_spec("engine")])
+        fake_ray_cluster.handles[0].failing_methods["inject_fault"] = TimeoutError("worker timed out")
+
+        with pytest.raises(TimeoutError, match="worker timed out"):
+            await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True)
+
+        assert manager.get_cell_infos(pool_ids=["engine"])["engine-00000"].alive
+
+    async def test_only_the_named_worker_is_told_to_crash(self, fake_ray_cluster: FakeRayCluster) -> None:
+        """The siblings are torn down, not crashed: a second injected kill would race the cell's own stop."""
+        manager = await _launch([_make_spec("engine", num_workers_per_cell=3)])
+
+        await manager.inject_fault("engine-00000", mode="sigkill", worker_in_cell_index=0, wait_until_applied=True)
+
+        calls = fake_ray_cluster.calls_of("inject_fault")
+        assert [call.handle for call in calls] == [fake_ray_cluster.handles[0]]
+        assert calls[0].kwargs == {"keep_actor_alive_until_ack": True}
+        assert all(handle.killed for handle in fake_ray_cluster.handles)
+
     async def test_restart_after_acknowledged_fault_does_not_kill_the_new_generation(
         self, fake_ray_cluster: FakeRayCluster
     ) -> None:
