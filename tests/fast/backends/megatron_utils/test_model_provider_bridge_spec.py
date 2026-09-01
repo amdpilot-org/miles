@@ -7,21 +7,25 @@ def test_custom_bridge_layer_spec_replaces_default(monkeypatch):
     from miles.backends.megatron_utils import model_provider
 
     def custom_spec(args, config, vp_stage):
+        assert config.experimental_attention_variant is None
         return args, config, vp_stage
 
     monkeypatch.setattr(model_provider, "import_module", lambda _path: custom_spec)
 
     args = Namespace(spec=["custom.module", "custom_spec"])
-    provider = SimpleNamespace(transformer_layer_spec="default-layer-spec")
+    provider = SimpleNamespace(
+        transformer_layer_spec="default-layer-spec",
+        experimental_attention_variant="gated_delta_net",
+    )
 
     model_provider._apply_custom_bridge_layer_spec(provider, args)
 
-    bridge_config = SimpleNamespace()
-    assert provider.transformer_layer_spec(bridge_config, vp_stage=3) == (
+    assert provider.transformer_layer_spec(provider, vp_stage=3) == (
         args,
-        bridge_config,
+        provider,
         3,
     )
+    assert provider.experimental_attention_variant == "gated_delta_net"
 
 
 def test_static_bridge_layer_spec_replaces_default(monkeypatch):
