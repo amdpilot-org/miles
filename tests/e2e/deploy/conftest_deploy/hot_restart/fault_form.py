@@ -171,7 +171,11 @@ class HotRestartFaultForm(BaseFaultForm):
         ]
 
     def _is_replacement_exit_explained(self, *, index: int, failure: BaseException) -> bool:
-        return is_replaced_launch_exit(failure) and any(record.index == index + 1 for record in self._records)
+        return (
+            is_replaced_launch_exit(failure)
+            and index + 1 < len(self._threads)
+            and any(record.index == index + 1 for record in self._records)
+        )
 
     def _read_restart_stamps_or_none(self) -> dict[str, str | None] | None:
         try:
