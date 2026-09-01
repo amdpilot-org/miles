@@ -175,6 +175,10 @@ class RolloutServer:
         )
 
     @requires_lock
+    def addressable_cell_ids(self) -> list[str]:
+        return [cell.meta.cell_id for cell in self._addressable_cells()]
+
+    @requires_lock
     def _addressable_cells(self) -> list[ServerCell]:
         return [cell for cell in self.server_cells.values() if cell.is_pending_weights_or_serving]
 

@@ -102,6 +102,11 @@ class InferenceController:
             raise KeyError(f"Unknown rollout cell {cell_id!r}")
         if not server.health_checker_activeness.get().active:
             raise RuntimeError(f"Rollout cell {cell_id!r} is offloaded; refusing fault injection")
+        if len(addressable := server.addressable_cell_ids()) <= 1:
+            raise RuntimeError(
+                f"Rollout cell {cell_id!r} is the only addressable replica of {server.model_name} "
+                f"({addressable}); refusing fault injection because nothing would serve the next rollout"
+            )
 
         await self._engine_provider._worker_manager_handle.inject_fault.remote(
             cell_id,
