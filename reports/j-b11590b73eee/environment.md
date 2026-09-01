@@ -1,12 +1,12 @@
 ## Environment variables
 
-| Variable | Value |
-| --- | --- |
-| `PYTORCH_ROCM_ARCH` | `gfx950` |
-| `MILES_HARDWARE_PLATFORM` | `rocm` |
-| `GPU_ARCH` | `gfx950` |
-| `SGLANG_USE_AITER` | `1` |
-| `HIP_FORCE_DEV_KERNARG` | `1` |
+| Variable | Status | Value |
+| --- | --- | --- |
+| `PYTORCH_ROCM_ARCH` | Set | `gfx950` |
+| `MILES_HARDWARE_PLATFORM` | Set | `rocm` |
+| `GPU_ARCH` | Set | `gfx950` |
+| `SGLANG_USE_AITER` | Set | `1` |
+| `HIP_FORCE_DEV_KERNARG` | Set | `1` |
 
 ## Source trees
 
