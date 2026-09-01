@@ -25,5 +25,6 @@
 
 ## Triton custom directory
 
-- `/sgl-workspace/triton-custom` is readable.
-- `/sgl-workspace/triton-custom` is not writable.
+| Path | Readable | Writable |
+| --- | --- | --- |
+| `/sgl-workspace/triton-custom` | Yes | No |
