@@ -20,11 +20,10 @@ def test_custom_bridge_layer_spec_replaces_default(monkeypatch):
 
     model_provider._apply_custom_bridge_layer_spec(provider, args)
 
-    assert provider.transformer_layer_spec(provider, vp_stage=3) == (
-        args,
-        provider,
-        3,
-    )
+    result = provider.transformer_layer_spec(provider, vp_stage=3)
+    assert result[0] is args
+    assert result[1].experimental_attention_variant is None
+    assert result[2] == 3
     assert provider.experimental_attention_variant == "gated_delta_net"
 
 
@@ -58,7 +57,30 @@ def test_custom_bridge_layer_spec_honors_caller_variant(monkeypatch):
     model_provider._apply_custom_bridge_layer_spec(provider, args)
 
     assert provider.transformer_layer_spec(provider, vp_stage=2) == ("caller-value", 2)
-    assert provider.experimental_attention_variant == "bridge-default"
+    assert provider.experimental_attention_variant == "caller-value"
+
+
+def test_custom_bridge_layer_spec_preserves_variant_mutation(monkeypatch):
+    from miles.backends.megatron_utils import model_provider
+
+    def custom_spec(_args, config, _vp_stage):
+        assert config.experimental_attention_variant is None
+        config.experimental_attention_variant = "dsa"
+        return "custom-layer-spec"
+
+    monkeypatch.setattr(model_provider, "import_module", lambda _path: custom_spec)
+    provider = SimpleNamespace(
+        transformer_layer_spec="default-layer-spec",
+        experimental_attention_variant="bridge-default",
+    )
+
+    model_provider._apply_custom_bridge_layer_spec(
+        provider,
+        Namespace(spec=["custom.module", "custom_spec"]),
+    )
+
+    assert provider.transformer_layer_spec(provider, vp_stage=None) == "custom-layer-spec"
+    assert provider.experimental_attention_variant == "dsa"
 
 
 def test_bridge_provider_applies_custom_layer_spec(monkeypatch):
