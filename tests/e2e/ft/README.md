@@ -104,7 +104,7 @@ PYTHONPATH=. python tests/e2e/ft/conftest_ft/scenario_trainer_no_failure.py run 
 - **`scenario_random_crash`**: only `run`, with `--mode` / `--seed` / `--num-steps` / `--trainer-crash-interval-seconds` / `--rollout-crash-interval-seconds` / `--fully-async`.
 - **`scenario_realistic_gsm8k`**: only `run`, with `--seed` / `--num-rollout` / `--trainer-crash-interval-seconds` / `--rollout-crash-interval-seconds` / `--metric-threshold` / `--fully-async`; no `--mode`.
 - **`scenario_*_fully_async`**: only `run`, with the same options minus `--fully-async`, which they pin.
-- **Dumps**: `resolve_dump_dir` in `conftest_ft/app.py` puts them under `$MILES_TEST_DUMPS_ROOT/<run_id>/<test_name>/`, falling back to `/node_public/dumps` when the cluster sets no root; deleted at the end of `run`. The run id is what stops two agents running the same test from deleting each other's dumps.
+- **Dumps**: `resolve_dump_dir` in `conftest_ft/app.py` puts them under `$MILES_TEST_DUMPS_ROOT/<run_id>/<test_name>/`, falling back to `/node_public/dumps` when the cluster sets no root; deleted at the end of `run`. The run id is what stops two agents running the same test from deleting each other's dumps. A root the caller names is trusted as given, but the `/node_public/dumps` fallback is refused when it turns out to sit on the same filesystem as `/`: nothing mounted it, so the dumps would be the container's writable layer, counted as ephemeral storage until the kubelet evicts the pod and takes the evidence with it. On a devbox, point the variable at the big disk (`/scratch/dumps`).
 
 ### Cluster Backend
 
