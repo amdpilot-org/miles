@@ -106,8 +106,15 @@ class RolloutServer:
         return [cell.meta.gpu_offset for cell in self._cells_by_gpu_offset()]
 
     @requires_lock
+    def mark_cell_faulted(self, cell_id: str) -> None:
+        self.server_cells[cell_id].mark_faulted()
+
+    @requires_lock
     def _cells_by_gpu_offset(self) -> list[ServerCell]:
-        return sorted(self.server_cells.values(), key=lambda cell: cell.meta.gpu_offset)
+        return sorted(
+            (cell for cell in self.server_cells.values() if not cell.is_faulted),
+            key=lambda cell: cell.meta.gpu_offset,
+        )
 
     @requires_lock
     async def add_cell(self, cell_meta: ServerCellMetadata):
@@ -178,7 +185,9 @@ class RolloutServer:
 
     @requires_lock
     def _addressable_cells(self) -> list[ServerCell]:
-        return [cell for cell in self.server_cells.values() if cell.is_pending_weights_or_serving]
+        return [
+            cell for cell in self.server_cells.values() if cell.is_pending_weights_or_serving and not cell.is_faulted
+        ]
 
     @requires_lock
     async def _move_memory_of_every_reachable_cell(

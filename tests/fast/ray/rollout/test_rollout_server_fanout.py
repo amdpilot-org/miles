@@ -16,7 +16,12 @@ class _RecordingCell:
     def __init__(self, *, cell_id: str, needs_offload: bool, addressable: bool = True):
         self.meta = SimpleNamespace(needs_offload=needs_offload, cell_id=cell_id, num_gpus_per_engine=1, gpu_offset=0)
         self.is_pending_weights_or_serving = addressable
+        self.is_faulted = False
+        self.api_client = f"client-{cell_id}"
         self.calls: list[tuple[str, dict]] = []
+
+    def mark_faulted(self) -> None:
+        self.is_faulted = True
 
     async def offload(self, tags):
         self.calls.append(("offload", dict(tags=tags)))
@@ -221,3 +226,31 @@ class TestMemoryFanOutBoundsAWedgedEngine:
             results = await server.offload(tags=["weights"])
 
         assert results == ["offloaded-alive"]
+
+
+class TestWeightUpdateSnapshotSkipsAFaultedCell:
+    def _server(self) -> tuple[RolloutServer, list[_RecordingCell]]:
+        cells = [_RecordingCell(cell_id=name, needs_offload=False) for name in ("a", "b", "c")]
+        for offset, cell in enumerate(cells):
+            cell.meta.gpu_offset = offset
+        return _make_server(cells), cells
+
+    async def test_a_faulted_cell_leaves_the_engine_lists_before_the_next_broadcast(self):
+        """A killed engine left in the snapshot makes the trainer open an NCCL group nobody completes."""
+        server, cells = self._server()
+
+        async with server.context_lock:
+            server.mark_cell_faulted("b")
+
+            assert server.api_clients == ["client-a", "client-c"]
+            assert server.engine_gpu_offsets == [0, 2]
+            assert server.engine_gpu_counts == [1, 1]
+
+    async def test_a_faulted_cell_is_no_longer_addressable(self):
+        """The last-replica guard and the memory fan-out read the same view, so one mark serves both."""
+        server, cells = self._server()
+
+        async with server.context_lock:
+            server.mark_cell_faulted("b")
+
+            assert server.addressable_cell_ids() == ["a", "c"]
