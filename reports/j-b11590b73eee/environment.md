@@ -8,6 +8,8 @@
 
 ## Source trees
 
+- All three requested trees are present.
+
 | Tree | Commit | Writable |
 | --- | --- | --- |
 | `/root/miles` | `b1229404c` | Yes; created and deleted a file |
