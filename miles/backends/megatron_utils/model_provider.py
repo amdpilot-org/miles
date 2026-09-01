@@ -107,14 +107,18 @@ def _apply_custom_bridge_layer_spec(provider, args: argparse.Namespace) -> None:
         return
 
     def transformer_layer_spec(provider, vp_stage=None):
-        original_variant = getattr(provider, "experimental_attention_variant", None)
-        if original_variant is not None:
-            provider.experimental_attention_variant = None
+        missing = object()
+        original_variant = getattr(provider, "experimental_attention_variant", missing)
+        caller_variant = getattr(args, "experimental_attention_variant", None)
+        if original_variant is not missing and original_variant != caller_variant:
+            provider.experimental_attention_variant = caller_variant
         try:
             return custom_layer_spec(args, provider, vp_stage)
         finally:
-            if original_variant is not None:
+            if original_variant is not missing:
                 provider.experimental_attention_variant = original_variant
+            elif caller_variant is not None:
+                del provider.experimental_attention_variant
 
     provider.transformer_layer_spec = transformer_layer_spec
 

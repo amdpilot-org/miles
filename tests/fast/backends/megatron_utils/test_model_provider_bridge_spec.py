@@ -39,6 +39,28 @@ def test_static_bridge_layer_spec_replaces_default(monkeypatch):
     assert provider.transformer_layer_spec == "static-layer-spec"
 
 
+def test_custom_bridge_layer_spec_honors_caller_variant(monkeypatch):
+    from miles.backends.megatron_utils import model_provider
+
+    def custom_spec(args, config, vp_stage):
+        return config.experimental_attention_variant, vp_stage
+
+    monkeypatch.setattr(model_provider, "import_module", lambda _path: custom_spec)
+    provider = SimpleNamespace(
+        transformer_layer_spec="default-layer-spec",
+        experimental_attention_variant="bridge-default",
+    )
+    args = Namespace(
+        spec=["custom.module", "custom_spec"],
+        experimental_attention_variant="caller-value",
+    )
+
+    model_provider._apply_custom_bridge_layer_spec(provider, args)
+
+    assert provider.transformer_layer_spec(provider, vp_stage=2) == ("caller-value", 2)
+    assert provider.experimental_attention_variant == "bridge-default"
+
+
 def test_bridge_provider_applies_custom_layer_spec(monkeypatch):
     from miles.backends.megatron_utils import model_provider
 
