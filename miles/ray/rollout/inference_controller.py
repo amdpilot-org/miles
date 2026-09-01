@@ -180,8 +180,12 @@ class InferenceController:
     @with_lock
     async def offload(self, tags: list[str] | None = None) -> None:
         await self._health_monitoring_pause(None)
-        for srv in self.servers.values():
-            await srv.offload(tags=tags)
+        try:
+            for srv in self.servers.values():
+                await srv.offload(tags=tags)
+        except BaseException:
+            await self._health_monitoring_resume(None)
+            raise
 
     @with_lock
     async def onload(self, tags: list[str] | None = None) -> None:

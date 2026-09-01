@@ -156,3 +156,46 @@ class TestAbortFanOut:
         async with srv.context_lock:
             with pytest.raises(TimeoutError):
                 await srv.abort_all()
+
+
+class _DeadCell(_RecordingCell):
+    async def offload(self, tags):
+        self.calls.append(("offload", dict(tags=tags)))
+        raise TimeoutError(f"Timeout while flushing cache of {self.meta.cell_id}")
+
+    async def onload(self, tags):
+        self.calls.append(("onload", dict(tags=tags)))
+        raise TimeoutError(f"Timeout while waking {self.meta.cell_id}")
+
+
+class TestMemoryFanOutSurvivesADeadEngine:
+    async def test_a_killed_engine_does_not_fail_the_offload_of_the_cells_that_are_still_up(self):
+        """A cell that was just killed cannot release memory, and blaming the driver for that ends the whole run."""
+        dead = _DeadCell(cell_id="dead", needs_offload=True)
+        alive = _RecordingCell(cell_id="alive", needs_offload=True)
+        server = _make_server([dead, alive])
+
+        async with server.context_lock:
+            results = await server.offload(tags=["weights"])
+
+        assert results == ["offloaded-alive"]
+        assert alive.calls == [("offload", dict(tags=["weights"]))]
+
+    async def test_a_killed_engine_does_not_fail_the_onload_of_the_cells_that_are_still_up(self):
+        """The same holds on the way back: one dead engine must not stop the survivors from waking."""
+        dead = _DeadCell(cell_id="dead", needs_offload=True)
+        alive = _RecordingCell(cell_id="alive", needs_offload=True)
+        server = _make_server([dead, alive])
+
+        async with server.context_lock:
+            results = await server.onload(tags=["weights"])
+
+        assert results == ["onloaded-alive"]
+
+    async def test_an_offload_that_reaches_no_engine_at_all_still_raises(self):
+        """Silently swallowing a fleet-wide failure would leave the trainer without the GPUs it is owed."""
+        server = _make_server([_DeadCell(cell_id="dead", needs_offload=True)])
+
+        with pytest.raises(TimeoutError):
+            async with server.context_lock:
+                await server.offload(tags=["weights"])
