@@ -103,6 +103,10 @@ class _BridgeSpecConfig:
         object.__setattr__(self, "_experimental_attention_variant", experimental_attention_variant)
         object.__setattr__(self, "_experimental_attention_variant_set", False)
 
+    @property
+    def __class__(self):
+        return type(self._provider)
+
     def __getattr__(self, name):
         if name == "experimental_attention_variant":
             return self._experimental_attention_variant

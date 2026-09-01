@@ -137,11 +137,11 @@ def test_real_bridge_provider_provide_uses_custom_layer_spec(monkeypatch):
         seq_length=8,
     )
     monkeypatch.setattr(bridge_provider_module, "MCoreGPTModel", FakeGPTModel)
-    monkeypatch.setattr(
-        model_provider,
-        "import_module",
-        lambda _path: lambda _args, _config, _vp_stage: "custom-layer-spec",
-    )
+    def custom_spec(_args, config, _vp_stage):
+        assert isinstance(config, bridge_provider_module.GPTModelProvider)
+        return "custom-layer-spec"
+
+    monkeypatch.setattr(model_provider, "import_module", lambda _path: custom_spec)
 
     model_provider._apply_custom_bridge_layer_spec(
         provider,
