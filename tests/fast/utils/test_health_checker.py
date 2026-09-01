@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import logging
 import time
 
 import pytest
@@ -1015,4 +1016,42 @@ class TestProberStarvation:
 
         assert results == [False]
         assert checker.status == TriState.FALSE
+        checker.stop()
+
+
+class TestAFailedProbeSaysWhyItFailed:
+    async def test_a_probe_that_ran_out_of_time_is_logged_as_a_deadline(self, caplog):
+        """A cell wedged in a collective and a cell that answered an error need telling apart in a run's log."""
+        started = asyncio.Event()
+
+        async def check_fn() -> None:
+            started.set()
+            await asyncio.get_running_loop().create_future()
+
+        checker, clock = _make_checker(check_fn=check_fn, timeout=0.05, interval=5.0, failure_threshold=1)
+        with caplog.at_level(logging.ERROR):
+            checker.start()
+            await asyncio.wait_for(started.wait(), timeout=1)
+            deadline = time.monotonic() + 5.0
+            while checker.status != TriState.FALSE:
+                assert time.monotonic() < deadline, "the checker never published a verdict"
+                await asyncio.sleep(0.01)
+
+        assert "reason=deadline" in caplog.text
+        assert "reason=raised" not in caplog.text
+        checker.stop()
+
+    async def test_a_probe_that_raised_is_logged_as_raised(self, caplog):
+        """An engine that answers with an error is a different fault from one that answers not at all."""
+
+        async def check_fn() -> None:
+            raise RuntimeError("engine down")
+
+        checker, clock = _make_checker(check_fn=check_fn, timeout=5.0, interval=5.0, failure_threshold=1)
+        with caplog.at_level(logging.ERROR):
+            checker.start()
+            await _settle(clock)
+
+        assert "reason=raised" in caplog.text
+        assert "reason=deadline" not in caplog.text
         checker.stop()

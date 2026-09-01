@@ -234,10 +234,28 @@ class SimpleHealthChecker(BaseHealthChecker):
                     timeout_s=self._config.timeout,
                 )
                 return ProbeOutcome.INCONCLUSIVE
-            log_structured(logger.error, tag="ft", op="health", phase="check_failed", name=self._name, exc_info=True)
+            log_structured(
+                logger.error,
+                tag="ft",
+                op="health",
+                phase="check_failed",
+                name=self._name,
+                reason="deadline",
+                timeout_s=self._config.timeout,
+                lag_s=round(lag, 2),
+                exc_info=True,
+            )
             return ProbeOutcome.FAILED
         except Exception:
-            log_structured(logger.error, tag="ft", op="health", phase="check_failed", name=self._name, exc_info=True)
+            log_structured(
+                logger.error,
+                tag="ft",
+                op="health",
+                phase="check_failed",
+                name=self._name,
+                reason="raised",
+                exc_info=True,
+            )
             return ProbeOutcome.FAILED
         finally:
             lag_meter.stop()
