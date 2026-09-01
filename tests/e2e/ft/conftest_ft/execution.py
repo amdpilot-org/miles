@@ -163,8 +163,11 @@ def get_debug_dump_args(*, dump_dir: str, enable_dumper: bool) -> str:
     return f"--save-debug-event-data {dump_dir}/{EVENTS_DIRNAME} {dumper_args}"
 
 
+DISABLED_API_SERVER_ARGS: str = "--api-server-port 0 "
+
+
 def get_ft_args(mode: FTTestMode) -> str:
-    return f"--use-fault-tolerance --ft-components {' '.join(mode.ft_components)} --api-server-port 0 "
+    return f"--use-fault-tolerance --ft-components {' '.join(mode.ft_components)} "
 
 
 def get_api_server_args(config: command_utils.ExecuteTrainConfig | None = None) -> str:
