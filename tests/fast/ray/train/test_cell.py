@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 import httpx
 import pytest
@@ -520,3 +521,21 @@ class TestCellLivenessNeedsOnlyOneAnswer:
         await asyncio.sleep(0)
 
         assert not [task for task in asyncio.all_tasks() if "get_heartbeat_status" in str(task.get_coro())]
+
+
+class TestEveryWorkerCallIsTimedOnItsOwn:
+    async def test_a_failing_worker_is_named_with_its_own_elapsed_time(self, caplog):
+        """A cell-level timing alone cannot say which worker was slow, which is what this bug cost us rounds on."""
+        cell = make_alive_cell(0, alive_cell_indices=[0])
+        cell._state.worker_handles[:] = [
+            _SlowHandle(delay=0),
+            _SlowHandle(delay=0, error=WorkerUnreachableError("gone")),
+        ]
+
+        with caplog.at_level(logging.ERROR):
+            with pytest.raises(WorkerUnreachableError):
+                await cell.execute("train", kill_on_failure=False, rollout_id=0)
+
+        assert "phase=worker_fail" in caplog.text
+        assert "worker=1" in caplog.text
+        assert "elapsed_s=" in caplog.text

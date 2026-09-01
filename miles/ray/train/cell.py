@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+from typing import Any
 
 import httpx
 
@@ -215,6 +216,34 @@ class TrainerCell:
 
     # ------------------------ API :: directly forward calls to actors ------------------------
 
+    async def _call_worker(self, handle: BaseWorkerHandle, fn_name: str, *, worker_index: int, kwargs: dict) -> Any:
+        started = time.monotonic()
+        try:
+            result = await getattr(handle, fn_name)(**kwargs)
+        except BaseException:
+            log_structured(
+                logger.error,
+                tag="ft",
+                op="execute",
+                phase="worker_fail",
+                cell=self.cell_id,
+                fn=fn_name,
+                worker=worker_index,
+                elapsed_s=round(time.monotonic() - started, 3),
+            )
+            raise
+        log_structured(
+            logger.debug,
+            tag="ft",
+            op="execute",
+            phase="worker_end",
+            cell=self.cell_id,
+            fn=fn_name,
+            worker=worker_index,
+            elapsed_s=round(time.monotonic() - started, 3),
+        )
+        return result
+
     async def probe_liveness(self) -> None:
         """Answer as soon as any worker does; raise only when none of them can."""
         handles = self._get_worker_handles()
@@ -263,7 +292,10 @@ class TrainerCell:
         start = time.monotonic()
         try:
             result = await asyncio.gather(
-                *[getattr(handle, fn_name)(**compute_kwargs(i)) for i, handle in enumerate(handles)]
+                *[
+                    self._call_worker(handle, fn_name, worker_index=i, kwargs=compute_kwargs(i))
+                    for i, handle in enumerate(handles)
+                ]
             )
             log_structured(
                 logger.info,
