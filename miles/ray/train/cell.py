@@ -216,37 +216,28 @@ class TrainerCell:
 
     # ------------------------ API :: directly forward calls to actors ------------------------
 
-    async def _call_worker(self, handle: BaseWorkerHandle, fn_name: str, *, worker_index: int, kwargs: dict) -> Any:
+    async def _call_worker(
+        self,
+        handle: BaseWorkerHandle,
+        fn_name: str,
+        *,
+        worker_index: int,
+        kwargs: dict,
+        elapsed_s_of_worker: dict[int, float | None],
+    ) -> Any:
         started = time.monotonic()
         try:
             result = await getattr(handle, fn_name)(**kwargs)
         except BaseException:
-            log_structured(
-                logger.error,
-                tag="ft",
-                op="execute",
-                phase="worker_fail",
-                cell=self.cell_id,
-                fn=fn_name,
-                worker=worker_index,
-                elapsed_s=round(time.monotonic() - started, 3),
-            )
+            elapsed_s_of_worker[worker_index] = round(time.monotonic() - started, 3)
             raise
-        log_structured(
-            logger.debug,
-            tag="ft",
-            op="execute",
-            phase="worker_end",
-            cell=self.cell_id,
-            fn=fn_name,
-            worker=worker_index,
-            elapsed_s=round(time.monotonic() - started, 3),
-        )
+        elapsed_s_of_worker[worker_index] = round(time.monotonic() - started, 3)
         return result
 
     async def probe_liveness(self) -> None:
         """Answer as soon as any worker does; raise only when none of them can."""
         handles = self._get_worker_handles()
+        started = time.monotonic()
         probes = [asyncio.ensure_future(handle.get_heartbeat_status()) for handle in handles]
         errors: list[BaseException] = []
 
@@ -269,6 +260,7 @@ class TrainerCell:
             cell=self.cell_id,
             n_actors=len(handles),
             n_errors=len(errors),
+            elapsed_s=round(time.monotonic() - started, 3),
         )
         raise errors[0]
 
@@ -290,10 +282,17 @@ class TrainerCell:
             logger.info, tag="ft", op="execute", phase="start", cell=self.cell_id, fn=fn_name, n_actors=len(handles)
         )
         start = time.monotonic()
+        elapsed_s_of_worker: dict[int, float | None] = dict.fromkeys(range(len(handles)))
         try:
             result = await asyncio.gather(
                 *[
-                    self._call_worker(handle, fn_name, worker_index=i, kwargs=compute_kwargs(i))
+                    self._call_worker(
+                        handle,
+                        fn_name,
+                        worker_index=i,
+                        kwargs=compute_kwargs(i),
+                        elapsed_s_of_worker=elapsed_s_of_worker,
+                    )
                     for i, handle in enumerate(handles)
                 ]
             )
@@ -318,6 +317,7 @@ class TrainerCell:
                 cell=self.cell_id,
                 fn=fn_name,
                 elapsed_s=round(time.monotonic() - start, 1),
+                elapsed_s_of_worker=elapsed_s_of_worker,
                 blamed_on_an_engine=blamed_on_an_engine,
                 exc_info=True,
             )

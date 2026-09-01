@@ -536,12 +536,12 @@ class TestCellLivenessNeedsOnlyOneAnswer:
         assert not [task for task in asyncio.all_tasks() if "get_heartbeat_status" in str(task.get_coro())]
 
 
-class TestEveryWorkerCallIsTimedOnItsOwn:
-    async def test_a_failing_worker_is_named_with_its_own_elapsed_time(self, caplog):
+class TestAFailedFanOutReportsEveryWorkersTime:
+    async def test_the_failure_line_names_the_worker_that_never_answered(self, caplog):
         """A cell-level timing alone cannot say which worker was slow, which is what this bug cost us rounds on."""
         cell = make_alive_cell(0, alive_cell_indices=[0])
         cell._state.worker_handles[:] = [
-            _SlowHandle(delay=0),
+            _SlowHandle(delay=3600),
             _SlowHandle(delay=0, error=WorkerUnreachableError("gone")),
         ]
 
@@ -549,6 +549,15 @@ class TestEveryWorkerCallIsTimedOnItsOwn:
             with pytest.raises(WorkerUnreachableError):
                 await cell.execute("train", kill_on_failure=False, rollout_id=0)
 
-        assert "phase=worker_fail" in caplog.text
-        assert "worker=1" in caplog.text
-        assert "elapsed_s=" in caplog.text
+        assert "elapsed_s_of_worker=" in caplog.text
+        assert "null" in caplog.text
+
+    async def test_a_healthy_fan_out_logs_no_per_worker_line(self, caplog):
+        """Every probe of every cell runs every ten seconds, so per-call records would bury the run's log."""
+        cell = make_alive_cell(0, alive_cell_indices=[0])
+        cell._state.worker_handles[:] = [_SlowHandle(delay=0), _SlowHandle(delay=0)]
+
+        with caplog.at_level(logging.INFO):
+            await cell.execute("train", kill_on_failure=False, rollout_id=0)
+
+        assert "elapsed_s_of_worker=" not in caplog.text
