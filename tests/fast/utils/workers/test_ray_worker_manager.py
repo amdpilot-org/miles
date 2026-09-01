@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
@@ -2081,3 +2083,57 @@ class TestInjectFault:
 
         with pytest.raises(AssertionError):
             await manager.inject_fault("engine-00007", mode="sigkill", worker_in_cell_index=0)
+
+
+class TestDynamicPortAllocationKeepsTheManagerResponsive:
+    class _BlockingAllocator:
+        def __init__(self, *, block_seconds: float) -> None:
+            self._block_seconds = block_seconds
+            self.node_ips: list[str] = []
+
+        def alloc(self, actor, *, node_ip: str, consecutive: int = 1) -> int:
+            del actor, consecutive
+            time.sleep(self._block_seconds)
+            self.node_ips.append(node_ip)
+            return 20000 + len(self.node_ips)
+
+    def _actor_manager(self, allocator) -> SimpleNamespace:
+        return SimpleNamespace(
+            manager=SimpleNamespace(port_allocator=allocator, port_allocator_lock=asyncio.Lock()),
+            actor_handle=object(),
+        )
+
+    async def test_probing_a_node_for_a_free_port_does_not_freeze_the_event_loop(self):
+        """A frozen manager loop cannot answer the trainer controller, whose cell probes then time out."""
+        allocator = self._BlockingAllocator(block_seconds=0.3)
+        ticks = 0
+
+        async def tick_until_the_probe_returns() -> None:
+            nonlocal ticks
+            while True:
+                await asyncio.sleep(0.01)
+                ticks += 1
+
+        ticker = asyncio.create_task(tick_until_the_probe_returns())
+        port = await _BaseActorManager._alloc_dynamic_port(
+            self._actor_manager(allocator), node_ip="10.0.0.1", consecutive=1
+        )
+        ticker.cancel()
+
+        assert port == 20001
+        assert ticks >= 5
+
+    async def test_concurrent_probes_do_not_interleave_inside_the_allocator(self):
+        """The cursor of a node is read and written without a lock of its own, so callers must be serialized."""
+        allocator = self._BlockingAllocator(block_seconds=0.05)
+        actor_manager = self._actor_manager(allocator)
+
+        ports = await asyncio.gather(
+            *[
+                _BaseActorManager._alloc_dynamic_port(actor_manager, node_ip=f"10.0.0.{index}", consecutive=1)
+                for index in range(4)
+            ]
+        )
+
+        assert sorted(ports) == [20001, 20002, 20003, 20004]
+        assert allocator.node_ips == ["10.0.0.0", "10.0.0.1", "10.0.0.2", "10.0.0.3"]

@@ -58,6 +58,7 @@ _FAULT_FINALIZATION_TIMEOUT_SECONDS = 4.0
 class RayWorkerManager:
     def __init__(self):
         self.port_allocator = PortAllocator()
+        self.port_allocator_lock = asyncio.Lock()
 
     @staticmethod
     def launch(
@@ -380,15 +381,22 @@ class _BaseActorManager(Generic[SpecT]):
             if self.worker_in_cell_index != 0 and port_info.mode == "master":
                 continue
             if port_info.allow_dynamic:
-                port = self.manager.port_allocator.alloc(
-                    self.actor_handle, node_ip=node_ip, consecutive=port_info.num_consecutive
-                )
+                port = await self._alloc_dynamic_port(node_ip=node_ip, consecutive=port_info.num_consecutive)
             else:
                 port = port_info.static_port + (self.parent.cell_index if port_info.offset_by_cell else 0)
                 await self._assert_static_port_is_free(port=port, port_name=port_info.name, node_ip=node_ip)
             allocated[port_info.name] = HostAndPort(host=wrap_ipv6(node_ip), port=port)
 
         self.self_addrs = allocated
+
+    async def _alloc_dynamic_port(self, *, node_ip: str, consecutive: int) -> int:
+        async with self.manager.port_allocator_lock:
+            return await asyncio.to_thread(
+                self.manager.port_allocator.alloc,
+                self.actor_handle,
+                node_ip=node_ip,
+                consecutive=consecutive,
+            )
 
     async def _assert_static_port_is_free(self, *, port: int, port_name: str, node_ip: str) -> None:
         free = await self.actor_handle._is_port_available.remote(port=port)
