@@ -45,6 +45,8 @@ from miles.utils.workers.worker_provider.static import wait_static_addrs_ready
 
 logger = logging.getLogger(__name__)
 
+WEIGHT_UPDATE_TIMEOUT_SECONDS = 600.0
+
 
 @ray.remote(num_gpus=1)
 class InfoActor:
@@ -305,7 +307,19 @@ async def update_weights(
 
     info: UpdatableEngines = await inference_controller.start_update_weights(model_id=trainer_model_id)
     update_task = asyncio.create_task(actor_model.update_weights(info=info, rollout_id=rollout_id))
-    cancelled = await wait_task_until_done_despite_cancel(update_task)
+    cancelled = await wait_task_until_done_despite_cancel(update_task, timeout=WEIGHT_UPDATE_TIMEOUT_SECONDS)
+
+    if not update_task.done():
+        update_task.cancel()
+        try:
+            await _end_update_weights(inference_controller, snapshot_cell_id_to_hashes={})
+        except Exception:
+            logger.exception("Failed to close the inference weight update window after the trainer broadcast hung")
+        raise TimeoutError(
+            f"The trainer weight broadcast did not finish within {WEIGHT_UPDATE_TIMEOUT_SECONDS}s. Its window holds "
+            f"a detached lock that every rollout cell suspension and fault injection waits behind, so the window is "
+            f"closed here rather than left open for a broadcast that may never return."
+        )
 
     try:
         weight_version = update_task.result()

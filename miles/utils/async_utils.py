@@ -2,6 +2,7 @@ import asyncio
 import concurrent.futures
 import logging
 import threading
+import time
 import traceback
 from collections.abc import Awaitable, Callable, Coroutine, Sequence
 from typing import Any, TypeVar
@@ -122,11 +123,15 @@ async def await_task_result_despite_cancel(task: asyncio.Task[_T]) -> _T:
     return result
 
 
-async def wait_task_until_done_despite_cancel(task: asyncio.Task[Any]) -> bool:
+async def wait_task_until_done_despite_cancel(task: asyncio.Task[Any], *, timeout: float | None = None) -> bool:
+    deadline = None if timeout is None else time.monotonic() + timeout
     cancellations = 0
     while not task.done():
+        remaining = None if deadline is None else deadline - time.monotonic()
+        if remaining is not None and remaining <= 0:
+            break
         try:
-            await asyncio.wait([task])
+            await asyncio.wait([task], timeout=remaining)
         except asyncio.CancelledError:
             cancellations += 1
 

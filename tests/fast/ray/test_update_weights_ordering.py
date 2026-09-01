@@ -430,3 +430,57 @@ class TestTheScriptLogsTheChecksumsTheEnginesNowServe:
         assert event_logger.log.call_args.args[1] == dict(
             rollout_id=0, engine_checksums=[{"rank0/w": "e0"}, {"rank0/w": "e1"}]
         )
+
+
+class TestABroadcastThatNeverReturns:
+    @pytest.mark.asyncio
+    async def test_a_hung_broadcast_closes_the_update_window_instead_of_waiting_forever(self, monkeypatch):
+        """start_update_weights detaches the lock, so a broadcast that never returns gates every cell recovery."""
+        from miles.ray import placement_group
+        from miles.ray.placement_group import update_weights
+
+        monkeypatch.setattr(placement_group, "WEIGHT_UPDATE_TIMEOUT_SECONDS", 0.05)
+        order: list[str] = []
+        inference_controller = _OrderRecordingInferenceController(order)
+
+        async def _never_returns(*, info: object, rollout_id: int | None = None) -> int:
+            await asyncio.get_running_loop().create_future()
+            return 0
+
+        never_returns = MagicMock(update_weights=AsyncMock(side_effect=_never_returns))
+
+        with pytest.raises(TimeoutError, match="did not finish within"):
+            await update_weights(
+                _orchestration_args(),
+                never_returns,
+                MagicMock(set_weight_version=AsyncMock()),
+                inference_controller,
+            )
+
+        assert order == ["start_update_weights", "end_update_weights"]
+        [end_kwargs] = [kwargs for name, _args, kwargs in inference_controller.calls if name == "end_update_weights"]
+        assert end_kwargs == {"snapshot_cell_id_to_hashes": {}}
+
+    @pytest.mark.asyncio
+    async def test_a_broadcast_that_finishes_inside_the_deadline_is_untouched(self, monkeypatch):
+        """The deadline must not shorten a legitimate broadcast that is simply slow."""
+        from miles.ray import placement_group
+        from miles.ray.placement_group import update_weights
+
+        monkeypatch.setattr(placement_group, "WEIGHT_UPDATE_TIMEOUT_SECONDS", 5.0)
+        order: list[str] = []
+        inference_controller = _OrderRecordingInferenceController(order)
+
+        async def _slow_update_weights(*, info: object, rollout_id: int | None = None) -> int:
+            await asyncio.sleep(0.05)
+            order.append("trainer_update_weights")
+            return 11
+
+        await update_weights(
+            _orchestration_args(),
+            MagicMock(update_weights=AsyncMock(side_effect=_slow_update_weights)),
+            MagicMock(set_weight_version=AsyncMock()),
+            inference_controller,
+        )
+
+        assert order[:3] == ["start_update_weights", "trainer_update_weights", "end_update_weights"]

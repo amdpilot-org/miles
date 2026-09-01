@@ -730,6 +730,44 @@ class TestWaitTaskUntilDoneDespiteCancel:
 
 
 @pytest.mark.asyncio
+class TestWaitTaskUntilDoneDespiteCancelWithADeadline:
+    async def test_the_deadline_returns_while_the_task_is_still_running(self):
+        """A caller holding a lock nothing else can release needs the wait to end even if the task never does."""
+        finish, log = asyncio.Event(), []
+        task = _blocked_task(finish, log)
+
+        assert await wait_task_until_done_despite_cancel(task, timeout=0.05) is False
+        assert not task.done()
+
+        task.cancel()
+
+    async def test_a_task_finishing_inside_the_deadline_is_untouched(self):
+        """The deadline must not shorten a broadcast that is merely slow."""
+        finish, log = asyncio.Event(), []
+        task = _blocked_task(finish, log)
+        finish.set()
+
+        assert await wait_task_until_done_despite_cancel(task, timeout=5.0) is False
+        assert task.result() == "value"
+
+    async def test_no_deadline_still_waits_out_a_cancellation(self):
+        """The default must keep the cancel-resistant behaviour every existing caller depends on."""
+        finish, log = asyncio.Event(), []
+        task = _blocked_task(finish, log)
+        waiter = asyncio.create_task(wait_task_until_done_despite_cancel(task))
+        await _pump()
+
+        waiter.cancel()
+        await _pump()
+
+        assert not waiter.done()
+
+        finish.set()
+
+        assert await waiter is True
+
+
+@pytest.mark.asyncio
 class TestAwaitTaskResultDespiteCancel:
     async def test_an_uninterrupted_wait_hands_back_the_task_result(self):
         """The three call sites read the result through this helper, so it has to be the task's own value."""
