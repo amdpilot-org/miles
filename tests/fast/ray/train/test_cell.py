@@ -512,6 +512,19 @@ class TestCellLivenessNeedsOnlyOneAnswer:
         with pytest.raises(WorkerUnreachableError):
             await asyncio.wait_for(cell.probe_liveness(), timeout=1)
 
+    async def test_a_dead_worker_alone_does_not_make_the_probe_fail(self):
+        """Reporting that death is _scan_liveness_once's job (see test_ray_worker_manager_liveness.py); if this
+        ever has to fail again, that scan is what stopped covering it."""
+        cell = make_alive_cell(0, alive_cell_indices=[0])
+        cell._state.worker_handles[:] = [
+            _SlowHandle(delay=0, error=WorkerUnreachableError("gone")),
+            _SlowHandle(delay=0),
+        ]
+
+        await asyncio.wait_for(cell.probe_liveness(), timeout=1)
+
+        assert cell.is_alive
+
     async def test_the_probe_does_not_leave_the_slow_worker_running(self):
         """A probe every ten seconds that leaks a task per blocked worker would pile them up all run."""
         cell = make_alive_cell(0, alive_cell_indices=[0])
