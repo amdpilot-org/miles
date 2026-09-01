@@ -97,6 +97,54 @@ def _apply_bridge_runtime_config(provider, args: argparse.Namespace) -> None:
         provider.dsa_attention_backend = getattr(args, "dsa_attention_backend", "megatron")
 
 
+class _BridgeSpecConfig:
+    def __init__(self, provider, experimental_attention_variant):
+        object.__setattr__(self, "_provider", provider)
+        object.__setattr__(self, "_experimental_attention_variant", experimental_attention_variant)
+        object.__setattr__(self, "_experimental_attention_variant_set", False)
+
+    @property
+    def __class__(self):
+        return type(self._provider)
+
+    def __getattr__(self, name):
+        if name == "experimental_attention_variant":
+            return self._experimental_attention_variant
+        return getattr(self._provider, name)
+
+    def __setattr__(self, name, value):
+        if name == "experimental_attention_variant":
+            object.__setattr__(self, "_experimental_attention_variant", value)
+            object.__setattr__(self, "_experimental_attention_variant_set", True)
+            return
+        setattr(self._provider, name, value)
+
+
+def _apply_custom_bridge_layer_spec(provider, args: argparse.Namespace) -> None:
+    if args.spec is None:
+        return
+
+    custom_layer_spec = import_module(args.spec)
+    if not callable(custom_layer_spec):
+        provider.transformer_layer_spec = custom_layer_spec
+        return
+
+    def transformer_layer_spec(provider, vp_stage=None):
+        caller_variant = getattr(args, "experimental_attention_variant", None)
+        config = _BridgeSpecConfig(
+            provider,
+            caller_variant,
+        )
+        result = custom_layer_spec(args, config, vp_stage)
+        if config._experimental_attention_variant_set:
+            provider.experimental_attention_variant = config._experimental_attention_variant
+        elif caller_variant is not None:
+            provider.experimental_attention_variant = caller_variant
+        return result
+
+    provider.transformer_layer_spec = transformer_layer_spec
+
+
 # Adapt from https://github.com/volcengine/verl/blob/c3b20575d2bc815fcccd84bddb4c0401fc4b632b/verl/models/llama/megatron/layers/parallel_linear.py#L82
 class LinearForLastLayer(torch.nn.Linear):
     def __init__(
@@ -167,6 +215,7 @@ def get_model_provider_func(
         bridge = AutoBridge.from_hf_pretrained(args.hf_checkpoint, trust_remote_code=True)
         provider = bridge.to_megatron_provider(load_weights=False)
         _apply_bridge_runtime_config(provider, args)
+        _apply_custom_bridge_layer_spec(provider, args)
         provider.finalize()
 
         def wrapped_bridge_provider(
