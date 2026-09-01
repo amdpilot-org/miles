@@ -13,7 +13,7 @@ from tests.fast.ray.train.conftest import (
 )
 
 from miles.ray.train.cell import _is_inference_engine_unreachable
-from miles.utils.workers.worker_handle import BaseWorkerHandle
+from miles.utils.workers.worker_handle import BaseWorkerHandle, WorkerUnreachableError
 
 pytestmark = pytest.mark.asyncio
 
@@ -464,3 +464,59 @@ class _HandleRaising(BaseWorkerHandle):
 
     async def probe_is_dead(self) -> bool:
         return False
+
+
+class _SlowHandle(BaseWorkerHandle):
+    def __init__(self, *, delay: float, error: BaseException | None = None) -> None:
+        self._delay = delay
+        self._error = error
+        self.calls = 0
+
+    def __getattr__(self, name: str):
+        async def call(**kwargs):
+            self.calls += 1
+            await asyncio.sleep(self._delay)
+            if self._error is not None:
+                raise self._error
+            return "ok"
+
+        return call
+
+    async def wait_ready(self, *, timeout: float, allow_server_uuid_change: bool = False) -> None:
+        return None
+
+    async def probe_is_dead(self) -> bool:
+        return False
+
+
+class TestCellLivenessNeedsOnlyOneAnswer:
+    async def test_a_worker_blocked_in_a_collective_does_not_time_out_the_cell_probe(self):
+        """A cell whose other worker answers instantly is reachable, however long the blocked one takes."""
+        cell = make_alive_cell(0, alive_cell_indices=[0])
+        blocked = _SlowHandle(delay=3600)
+        cell._state.worker_handles[:] = [blocked, _SlowHandle(delay=0)]
+
+        await asyncio.wait_for(cell.probe_liveness(), timeout=1)
+
+        assert cell.is_alive
+
+    async def test_the_probe_still_fails_when_no_worker_answers(self):
+        """An any-worker rule must not turn a whole dead cell into a healthy one."""
+        cell = make_alive_cell(0, alive_cell_indices=[0])
+        cell._state.worker_handles[:] = [
+            _SlowHandle(delay=0, error=WorkerUnreachableError("gone")),
+            _SlowHandle(delay=0, error=WorkerUnreachableError("gone")),
+        ]
+
+        with pytest.raises(WorkerUnreachableError):
+            await asyncio.wait_for(cell.probe_liveness(), timeout=1)
+
+    async def test_the_probe_does_not_leave_the_slow_worker_running(self):
+        """A probe every ten seconds that leaks a task per blocked worker would pile them up all run."""
+        cell = make_alive_cell(0, alive_cell_indices=[0])
+        cell._state.worker_handles[:] = [_SlowHandle(delay=3600), _SlowHandle(delay=0)]
+
+        await asyncio.wait_for(cell.probe_liveness(), timeout=1)
+        await asyncio.sleep(0)
+
+        assert not [task for task in asyncio.all_tasks() if "get_heartbeat_status" in str(task.get_coro())]

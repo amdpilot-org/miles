@@ -215,6 +215,34 @@ class TrainerCell:
 
     # ------------------------ API :: directly forward calls to actors ------------------------
 
+    async def probe_liveness(self) -> None:
+        """Answer as soon as any worker does; raise only when none of them can."""
+        handles = self._get_worker_handles()
+        probes = [asyncio.ensure_future(handle.get_heartbeat_status()) for handle in handles]
+        errors: list[BaseException] = []
+
+        try:
+            for probe in asyncio.as_completed(probes):
+                try:
+                    await probe
+                    return
+                except Exception as error:
+                    errors.append(error)
+        finally:
+            for probe in probes:
+                probe.cancel()
+
+        log_structured(
+            logger.error,
+            tag="ft",
+            op="probe",
+            phase="fail",
+            cell=self.cell_id,
+            n_actors=len(handles),
+            n_errors=len(errors),
+        )
+        raise errors[0]
+
     async def execute(self, fn_name: str, *, kill_on_failure: bool = True, **kwargs) -> list:
         return await self._execute_raw(
             fn_name,
