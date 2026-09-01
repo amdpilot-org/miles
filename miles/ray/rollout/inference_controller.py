@@ -91,7 +91,8 @@ class InferenceController:
     # TEMPORARY: exists only so a suspend can take this lock, reverted with the weight-update fault tolerance work
     @with_lock
     async def stop_cell_between_weight_updates(self, cell_id: str) -> None:
-        self._server_of_cell(cell_id).mark_cell_faulted(cell_id)
+        if (server := self._server_of_cell_or_none(cell_id)) is not None:
+            server.mark_cell_faulted(cell_id)
         await self._engine_provider.stop_cells(cell_ids=[cell_id])
 
     # TEMPORARY: exists only so fault injection can take this lock, reverted with the weight-update fault tolerance work
@@ -262,10 +263,14 @@ class InferenceController:
 
     @requires_lock
     def _server_of_cell(self, cell_id: str) -> RolloutServer:
-        server = next((srv for srv in self.servers.values() if cell_id in srv.server_cells), None)
+        server = self._server_of_cell_or_none(cell_id)
         if server is None:
             raise KeyError(f"Unknown rollout cell {cell_id!r}")
         return server
+
+    @requires_lock
+    def _server_of_cell_or_none(self, cell_id: str) -> RolloutServer | None:
+        return next((srv for srv in self.servers.values() if cell_id in srv.server_cells), None)
 
     @requires_lock
     def _get_servers_of_model_id(self, model_id: str | None) -> list[RolloutServer]:
