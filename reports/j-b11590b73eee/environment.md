@@ -8,8 +8,6 @@
 | `SGLANG_USE_AITER` | Set | `1` |
 | `HIP_FORCE_DEV_KERNARG` | Set | `1` |
 
-None of the requested variables are unset.
-
 ## Source trees
 
 | Tree | Present | Commit | Writable |
