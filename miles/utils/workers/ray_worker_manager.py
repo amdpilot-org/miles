@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 import ray
 from ray.util.scheduling_strategies import PlacementGroupSchedulingStrategy
 
+from miles.utils.async_utils import await_task_result_despite_cancel
 from miles.utils.audit_utils.process_identity import SimpleProcessIdentity
 from miles.utils.function_registry import load_function
 from miles.utils.http_utils import wrap_ipv6
@@ -126,17 +127,7 @@ class RayWorkerManager:
         finalization = asyncio.create_task(
             self._finalize_applied_fault(cell=cell, cell_id=cell_id, generation=generation, fault=fault)
         )
-        cancelled = False
-        while not finalization.done():
-            try:
-                await asyncio.shield(finalization)
-            except asyncio.CancelledError:
-                cancelled = True
-            except Exception:
-                break
-        finalization.result()
-        if cancelled:
-            raise asyncio.CancelledError()
+        await await_task_result_despite_cancel(finalization)
 
     async def _finalize_applied_fault(
         self, *, cell: _CellManager, cell_id: str, generation: int, fault: ray.ObjectRef

@@ -26,6 +26,7 @@ from miles.ray.specs.train import (
     external_trainer_controller_addrs,
 )
 from miles.ray.wiring import get_backend_capability
+from miles.utils.async_utils import await_task_result_despite_cancel, wait_task_until_done_despite_cancel
 from miles.utils.audit_utils.checksum_utils import flatten_inference_engine_checksums
 from miles.utils.audit_utils.event_logger import checkpoint as event_logger_checkpoint
 from miles.utils.audit_utils.event_logger.logger import get_event_logger, is_event_logger_initialized
@@ -304,7 +305,7 @@ async def update_weights(
 
     info: UpdatableEngines = await inference_controller.start_update_weights(model_id=trainer_model_id)
     update_task = asyncio.create_task(actor_model.update_weights(info=info, rollout_id=rollout_id))
-    cancelled = await _wait_for_task_completion(update_task)
+    cancelled = await wait_task_until_done_despite_cancel(update_task)
 
     try:
         weight_version = update_task.result()
@@ -327,11 +328,7 @@ async def update_weights(
             )
         raise asyncio.CancelledError()
 
-    cancelled = await _end_update_weights(
-        inference_controller, snapshot_cell_id_to_hashes=info.snapshot_cell_id_to_hashes
-    )
-    if cancelled:
-        raise asyncio.CancelledError()
+    await _end_update_weights(inference_controller, snapshot_cell_id_to_hashes=info.snapshot_cell_id_to_hashes)
 
     await _maybe_log_inference_engine_weight_checksums(
         args, inference_controller=inference_controller, rollout_id=rollout_id, trainer_model_id=trainer_model_id
@@ -343,25 +340,11 @@ async def update_weights(
 
 async def _end_update_weights(
     inference_controller: BaseWorkerHandle, *, snapshot_cell_id_to_hashes: dict[str, str]
-) -> bool:
+) -> None:
     task = asyncio.create_task(
         inference_controller.end_update_weights(snapshot_cell_id_to_hashes=snapshot_cell_id_to_hashes)
     )
-    cancelled = await _wait_for_task_completion(task)
-    task.result()
-    return cancelled
-
-
-async def _wait_for_task_completion(task: asyncio.Task) -> bool:
-    cancelled = False
-    while not task.done():
-        try:
-            await asyncio.shield(task)
-        except asyncio.CancelledError:
-            cancelled = True
-        except Exception:
-            break
-    return cancelled
+    await await_task_result_despite_cancel(task)
 
 
 async def _maybe_log_inference_engine_weight_checksums(
