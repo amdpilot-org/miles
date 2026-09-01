@@ -18,8 +18,10 @@
 
 ## Python imports
 
-- `miles` resolves to `/root/miles/miles/__init__.py`.
-- `sglang` resolves to `/sgl-workspace/sglang/python/sglang/__init__.py`.
+| Package | Resolved path |
+| --- | --- |
+| `miles` | `/root/miles/miles/__init__.py` |
+| `sglang` | `/sgl-workspace/sglang/python/sglang/__init__.py` |
 
 ## Triton custom directory
 
