@@ -15,6 +15,8 @@ __all__ = [
     "submit",
     "wait_futures",
     "wait_cancelling_pending_on_first_completion",
+    "wait_task_until_done_despite_cancel",
+    "await_task_result_despite_cancel",
     "eager_create_task",
     "gather_and_raise_first",
 ]
@@ -110,6 +112,34 @@ async def wait_cancelling_pending_on_first_completion(
                     "Additional task failure while cancelling peers:\n" + "".join(traceback.format_exception(error))
                 )
         raise primary_error
+
+
+async def await_task_result_despite_cancel(task: asyncio.Task[_T]) -> _T:
+    cancelled = await wait_task_until_done_despite_cancel(task)
+    result = task.result()
+    if cancelled:
+        raise asyncio.CancelledError()
+    return result
+
+
+async def wait_task_until_done_despite_cancel(task: asyncio.Task[Any]) -> bool:
+    cancellations = 0
+    while not task.done():
+        try:
+            await asyncio.wait([task])
+        except asyncio.CancelledError:
+            cancellations += 1
+
+    _uncancel_current_task(times=max(cancellations - 1, 0))
+    return cancellations > 0
+
+
+def _uncancel_current_task(*, times: int) -> None:
+    current = asyncio.current_task()
+    if current is None or not hasattr(current, "uncancel"):
+        return
+    for _ in range(times):
+        current.uncancel()
 
 
 def _compute_task_error(task: asyncio.Task) -> BaseException | None:
