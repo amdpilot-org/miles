@@ -24,6 +24,7 @@ WAIT_CELLS_INITIAL_DELAY_SECONDS = 1.0
 WAIT_CELLS_MAX_DELAY_SECONDS = 5.0
 
 ABORT_ALL_TIMEOUT_SECONDS = 60.0
+MEMORY_MOVE_TIMEOUT_SECONDS = 180.0
 
 
 async def create_rollout_servers(
@@ -187,7 +188,10 @@ class RolloutServer:
         if not cells:
             return []
 
-        outcomes = await asyncio.gather(*[compute_coroutine(cell) for cell in cells], return_exceptions=True)
+        outcomes = await asyncio.gather(
+            *[asyncio.wait_for(compute_coroutine(cell), timeout=MEMORY_MOVE_TIMEOUT_SECONDS) for cell in cells],
+            return_exceptions=True,
+        )
         failures = [
             (cell, outcome)
             for cell, outcome in zip(cells, outcomes, strict=True)

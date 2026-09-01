@@ -199,3 +199,25 @@ class TestMemoryFanOutSurvivesADeadEngine:
         with pytest.raises(TimeoutError):
             async with server.context_lock:
                 await server.offload(tags=["weights"])
+
+
+class _WedgedCell(_RecordingCell):
+    async def offload(self, tags):
+        self.calls.append(("offload", dict(tags=tags)))
+        await asyncio.get_running_loop().create_future()
+
+
+class TestMemoryFanOutBoundsAWedgedEngine:
+    async def test_an_engine_that_accepted_the_connection_and_never_answered_does_not_hold_the_fleet(
+        self, monkeypatch
+    ):
+        """The http client reads without a timeout, so a wedged engine would hold the lock and the health pause forever."""
+        monkeypatch.setattr(rollout_server_module, "MEMORY_MOVE_TIMEOUT_SECONDS", 0.05)
+        wedged = _WedgedCell(cell_id="wedged", needs_offload=True)
+        alive = _RecordingCell(cell_id="alive", needs_offload=True)
+        server = _make_server([wedged, alive])
+
+        async with server.context_lock:
+            results = await server.offload(tags=["weights"])
+
+        assert results == ["offloaded-alive"]
