@@ -17,9 +17,9 @@ def test_a_sync_soak_is_left_exactly_as_it_was() -> None:
     assert get_fully_async_args(fully_async=False) == ""
 
 
-def test_the_fully_async_soak_keeps_the_default_retract_pause() -> None:
-    """Retracting requests prevents old KV cache state from crossing a weight update."""
-    assert get_fully_async_args(fully_async=True) == "--fully-async "
+def test_the_fully_async_soak_pauses_generation_in_place() -> None:
+    """The default retract mode can deadlock flush_cache under load, which reads as the hang the soak hunts."""
+    assert "--pause-generation-mode in_place " in get_fully_async_args(fully_async=True)
 
 
 def test_the_fully_async_random_entry_generates_with_real_engines() -> None:

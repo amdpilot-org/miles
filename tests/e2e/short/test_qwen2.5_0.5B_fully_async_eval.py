@@ -39,6 +39,8 @@ def execute():
         "--rollout-max-response-len 1024 "
         "--rollout-temperature 0.8 "
         "--global-batch-size 32 "
+        # retract (default) can deadlock flush_cache in fully_async under load
+        "--pause-generation-mode in_place "
     )
 
     # Dedicated eval fleet pinned to tmpfs HF snapshots: every eval point must
