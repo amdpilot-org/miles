@@ -1,5 +1,6 @@
 import asyncio
 
+import httpx
 import pytest
 import ray
 from tests.fast.ray.train import conftest as train_conftest
@@ -11,6 +12,7 @@ from tests.fast.ray.train.conftest import (
     make_indep_dp_info,
 )
 
+from miles.ray.train.cell import _is_inference_engine_unreachable
 from miles.utils.workers.worker_handle import BaseWorkerHandle
 
 pytestmark = pytest.mark.asyncio
@@ -390,3 +392,75 @@ class TestFullLifecycle:
         cell._mark_as_alive(indep_dp_info=info_v2)
         assert cell.is_alive
         assert cell.indep_dp_info.quorum_id == 2
+
+
+class TestEngineConnectivityIsNotTheCellsFault:
+    async def test_a_connect_error_to_an_engine_leaves_the_trainer_cell_alive(self):
+        """The trainer is healthy; the engine it was told to broadcast to is the one that died."""
+        cell = make_alive_cell(0, alive_cell_indices=[0])
+        cell._state.worker_handles[:] = [_HandleRaising(httpx.ConnectError("connection refused"))]
+
+        with pytest.raises(httpx.ConnectError):
+            await cell.execute("update_weights", info=None)
+
+        assert cell.is_alive
+        assert not cell.is_errored
+
+    async def test_a_failure_of_the_cells_own_still_errors_and_kills_it(self):
+        """Narrowing the blame must not stop a genuinely broken cell from being recycled."""
+        cell = make_alive_cell(0, alive_cell_indices=[0])
+        cell._state.worker_handles[:] = [_HandleRaising(RuntimeError("optimizer step diverged"))]
+
+        with pytest.raises(RuntimeError, match="optimizer step diverged"):
+            await cell.execute("train", rollout_id=0)
+
+        assert cell.is_errored
+
+
+class TestIsInferenceEngineUnreachable:
+    def test_a_direct_connect_error_is_recognised(self):
+        """The trainer's own httpx client raises this when an engine's port stops accepting."""
+        assert _is_inference_engine_unreachable(httpx.ConnectError("refused"))
+
+    def test_a_connect_error_wrapped_by_the_rpc_boundary_is_recognised(self):
+        """Ray re-raises the remote exception with the original one chained underneath."""
+        cause = httpx.ConnectError("refused")
+        error = RuntimeError("ray task error")
+        error.__cause__ = cause
+
+        assert _is_inference_engine_unreachable(error)
+
+    def test_a_rebuilt_connect_error_class_is_recognised_by_name(self):
+        """RayTaskError.as_instanceof_cause rebuilds the class, so identity with httpx's own can be lost."""
+        rebuilt = type("ConnectError", (RuntimeError,), {})
+
+        assert _is_inference_engine_unreachable(rebuilt("refused"))
+
+    def test_an_unrelated_failure_is_not_blamed_on_an_engine(self):
+        """Everything else is still the cell's own problem and must recycle it."""
+        assert not _is_inference_engine_unreachable(RuntimeError("optimizer step diverged"))
+
+    def test_a_cyclic_exception_chain_terminates(self):
+        """__context__ can point back at an exception already seen, and a walk of it must not spin."""
+        first, second = RuntimeError("a"), RuntimeError("b")
+        first.__context__ = second
+        second.__context__ = first
+
+        assert not _is_inference_engine_unreachable(first)
+
+
+class _HandleRaising(BaseWorkerHandle):
+    def __init__(self, error: BaseException) -> None:
+        self._error = error
+
+    def __getattr__(self, name: str):
+        async def call(**kwargs):
+            raise self._error
+
+        return call
+
+    async def wait_ready(self, *, timeout: float, allow_server_uuid_change: bool = False) -> None:
+        return None
+
+    async def probe_is_dead(self) -> bool:
+        return False

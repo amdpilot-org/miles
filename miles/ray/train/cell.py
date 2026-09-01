@@ -2,6 +2,8 @@ import asyncio
 import logging
 import time
 
+import httpx
+
 from miles.ray.train.cell_monitor import compute_cell_status
 from miles.ray.train.cell_state import (
     CellState,
@@ -246,7 +248,8 @@ class TrainerCell:
                 elapsed_s=round(time.monotonic() - start, 1),
             )
             return result
-        except Exception:
+        except Exception as error:
+            blamed_on_an_engine = _is_inference_engine_unreachable(error)
             log_structured(
                 logger.error,
                 tag="ft",
@@ -255,9 +258,10 @@ class TrainerCell:
                 cell=self.cell_id,
                 fn=fn_name,
                 elapsed_s=round(time.monotonic() - start, 1),
+                blamed_on_an_engine=blamed_on_an_engine,
                 exc_info=True,
             )
-            if kill_on_failure:
+            if kill_on_failure and not blamed_on_an_engine:
                 self._mark_as_errored()
                 await self._kill_workers_and_confirm_dead()
             raise
@@ -297,6 +301,17 @@ class TrainerCell:
             self._state, StateAllocatedBase
         ), f"Cell {self.cell_id} is not allocated (state={type(self._state).__name__})"
         return self._state.worker_handles
+
+
+def _is_inference_engine_unreachable(error: BaseException) -> bool:
+    seen: set[int] = set()
+    layer: BaseException | None = error
+    while layer is not None and id(layer) not in seen:
+        seen.add(id(layer))
+        if isinstance(layer, httpx.ConnectError) or type(layer).__name__ == "ConnectError":
+            return True
+        layer = layer.__cause__ or layer.__context__
+    return False
 
 
 async def _kill_worker(handle: BaseWorkerHandle) -> None:
