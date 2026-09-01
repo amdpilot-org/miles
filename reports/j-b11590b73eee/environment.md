@@ -10,9 +10,9 @@
 
 | Tree | Commit | Writable |
 | --- | --- | --- |
-| `/root/miles` | `b1229404c` | Yes; write-delete test passed |
-| `/sgl-workspace/sglang` | `4e230c3d85` | Yes; write-delete test passed |
-| `/root/Megatron-LM` | `235952df6` | Yes; write-delete test passed |
+| `/root/miles` | `b1229404c` | Yes; created and deleted a file |
+| `/sgl-workspace/sglang` | `4e230c3d85` | Yes; created and deleted a file |
+| `/root/Megatron-LM` | `235952df6` | Yes; created and deleted a file |
 
 ## Python imports
 
