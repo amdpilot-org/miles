@@ -12,11 +12,11 @@ None of the requested variables are unset.
 
 ## Source trees
 
-| Tree | Commit | Writable |
-| --- | --- | --- |
-| `/root/miles` | `b1229404c` | Yes; created and deleted a file |
-| `/sgl-workspace/sglang` | `4e230c3d85` | Yes; created and deleted a file |
-| `/root/Megatron-LM` | `235952df6` | Yes; created and deleted a file |
+| Tree | Present | Commit | Writable |
+| --- | --- | --- | --- |
+| `/root/miles` | Yes | `b1229404c` | Yes; created and deleted a file |
+| `/sgl-workspace/sglang` | Yes | `4e230c3d85` | Yes; created and deleted a file |
+| `/root/Megatron-LM` | Yes | `235952df6` | Yes; created and deleted a file |
 
 ## Python imports
 
