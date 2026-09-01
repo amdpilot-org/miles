@@ -1,3 +1,4 @@
+import dataclasses
 import sys
 from argparse import Namespace
 from types import SimpleNamespace
@@ -139,6 +140,7 @@ def test_real_bridge_provider_provide_uses_custom_layer_spec(monkeypatch):
     monkeypatch.setattr(bridge_provider_module, "MCoreGPTModel", FakeGPTModel)
     def custom_spec(_args, config, _vp_stage):
         assert isinstance(config, bridge_provider_module.GPTModelProvider)
+        assert "num_layers" in {field.name for field in dataclasses.fields(config)}
         return "custom-layer-spec"
 
     monkeypatch.setattr(model_provider, "import_module", lambda _path: custom_spec)
