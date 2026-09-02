@@ -84,6 +84,17 @@ class TestConfigureLogger:
 
         assert start.call_count == 1
 
+    def test_a_later_call_renames_the_process(self) -> None:
+        """A worker configures its logger long after parse_args named the process `main`."""
+        with patch.object(logging_utils.logging, "basicConfig") as basic_config:
+            logging_utils.configure_logger_raw("main")
+            logging_utils.configure_logger_raw("multi_lora_controller")
+
+        assert [call.kwargs["format"].count("multi_lora_controller") for call in basic_config.call_args_list] == [
+            0,
+            1,
+        ]
+
     def test_a_process_that_is_not_a_run_reports_nothing(self) -> None:
         """Probing pip and git costs a process that only borrows the logging setup of a run."""
         with patch("miles.utils.logging_utils.start_env_reporting") as start:
