@@ -4,10 +4,10 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
-
 from tests.e2e.ft.conftest_ft import app as app_module
 from tests.e2e.ft.conftest_ft.app import _DUMPS_ROOT_ENV, RunSideRequest, resolve_dump_dir, run_pipeline
 from tests.e2e.ft.conftest_ft.modes import FTTestMode
+from typer.testing import CliRunner
 
 from miles.utils.external_utils import command_utils
 from miles.utils.workers.k8s_types import Pod, PodMetadata
@@ -230,6 +230,25 @@ def test_ray_side_never_calls_kubernetes_release_tools(monkeypatch: pytest.Monke
     )
 
     app_module._release_comparison_side(_request(config))
+
+
+def test_a_fixed_topology_generate_data_runs_without_a_mode(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A scenario whose topology is fixed asks its user for no --mode on any of its subcommands."""
+    mode = dataclasses.replace(_mode_fixture(), rollout_num_engines=1, rollout_gpus_per_engine=1)
+    monkeypatch.setattr(app_module, "prepare", lambda _mode: None)
+    monkeypatch.setattr(app_module, "get_common_train_args", lambda *_args, **_kwargs: "")
+    monkeypatch.setattr(app_module, "run_training", lambda **_kwargs: None)
+    app, _ = app_module.create_comparison_app_and_run_ci(
+        test_name="scenario_x",
+        build_baseline_args=lambda *_args: "",
+        build_target_args=lambda *_args: "",
+        compare_fn=lambda *_args: None,
+        resolve_mode_fn=lambda _mode: mode,
+    )
+
+    result = CliRunner().invoke(app, ["generate-data", "--num-steps", "1"])
+
+    assert result.exit_code == 0, result.output
 
 
 def _mode_fixture() -> FTTestMode:
