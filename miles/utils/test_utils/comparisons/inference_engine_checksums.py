@@ -4,7 +4,6 @@ from miles.utils.audit_utils.event_analyzer.rules import inference_engine_weight
 from miles.utils.audit_utils.event_analyzer.rules.checksum_compare import ChecksumMismatchIssue, compare_flat_dicts
 from miles.utils.audit_utils.event_logger.logger import EVENTS_DIRNAME, read_events
 from miles.utils.audit_utils.event_logger.models import InferenceEngineWeightChecksumEvent
-from miles.utils.audit_utils.process_identity import TrainerControllerProcessIdentity
 
 
 def compare_inference_engine_checksums(baseline_dir: str, target_dir: str) -> None:
@@ -82,16 +81,11 @@ def _checksums_by_model_and_rollout_id(
 ) -> dict[tuple[str | None, int], dict[str, str]]:
     by_model_and_rollout: dict[tuple[str | None, int], dict[str, str]] = {}
     for event in events:
-        key = (_compute_model_id(event), event.rollout_id)
+        key = (event.trainer_model_id, event.rollout_id)
         assert key not in by_model_and_rollout, f"Duplicate InferenceEngineWeightChecksumEvent for {key}"
         assert event.engine_checksums, f"No engine checksums for {key}"
         by_model_and_rollout[key] = event.engine_checksums[0]
     return by_model_and_rollout
-
-
-def _compute_model_id(event: InferenceEngineWeightChecksumEvent) -> str | None:
-    source = event.source
-    return source.model_id if isinstance(source, TrainerControllerProcessIdentity) else None
 
 
 def _read_inference_engine_checksum_events(dump_dir: Path) -> list[InferenceEngineWeightChecksumEvent]:
