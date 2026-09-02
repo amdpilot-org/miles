@@ -126,6 +126,12 @@ class TestTheValuesCarryAWholePairingConfig:
         with pytest.raises(AssertionError, match="nothing to pair"):
             build_values(specs, COLOCATE_LAYOUT).as_values()
 
+    def test_leaves_out_the_pairing_when_this_deployment_seats_no_engine(self):
+        """Replaying saved rollouts asks for --colocate with no local inference pool, and there is nothing to pair."""
+        specs = [trainer(num_cells=4, gpus_per_cell=8)]
+
+        assert "colocate" not in build_values(specs, COLOCATE_LAYOUT).as_values()["run"]
+
     def test_leaves_a_run_that_does_not_colocate_without_the_section(self):
         """A disaggregated run must not gain a pairing controller with pod write rights."""
         specs = [*_disaggregated_engines(decode_offset=16), trainer(num_cells=4, gpus_per_cell=8)]
