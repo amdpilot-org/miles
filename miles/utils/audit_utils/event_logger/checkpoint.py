@@ -8,6 +8,7 @@ from argparse import Namespace
 from pathlib import Path
 
 from miles.backends.megatron_utils.checkpoint_tracker import read_checkpoint_tracker_iteration
+from miles.backends.megatron_utils.megatron_config import compute_trainer_checkpoint_dir, resolve_megatron_config
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ def restore(args: Namespace) -> None:
         return
 
     requested_load = Path(args.requested_load)
-    iteration = read_checkpoint_tracker_iteration(requested_load)
+    iteration = _read_checkpoint_iteration(args)
     if iteration is None:
         return
 
@@ -62,6 +63,18 @@ def discard(args: Namespace) -> None:
     trash = _move_aside(dst)
     dst.mkdir(parents=True)
     logger.info("Moved the log of the run a hot restart takes over %s -> %s", dst, trash)
+
+
+def _read_checkpoint_iteration(args: Namespace) -> int | None:
+    if (iteration := read_checkpoint_tracker_iteration(args.requested_load)) is not None:
+        return iteration
+
+    leader = resolve_megatron_config(args).trainers[0]
+    if leader.model_id is None:
+        return None
+    return read_checkpoint_tracker_iteration(
+        compute_trainer_checkpoint_dir(base_dir=args.requested_load, trainer_id=leader.trainer_id)
+    )
 
 
 def _move_aside(dst: Path) -> Path:

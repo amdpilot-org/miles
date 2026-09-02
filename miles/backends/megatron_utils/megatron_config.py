@@ -327,9 +327,9 @@ def compute_trainer_args(args: Namespace, trainer: MegatronTrainerConfig) -> Nam
     _apply_critical_derived_overrides(ans, base=args, trainer=trainer)
 
     if trainer.model_id is not None:
-        ans.save = _compute_trainer_checkpoint_dir(base_dir=ans.save, trainer_id=trainer.trainer_id)
-        ans.load = _compute_trainer_checkpoint_dir(base_dir=ans.load, trainer_id=trainer.trainer_id)
-        ans.save_hf = _compute_trainer_checkpoint_dir(base_dir=ans.save_hf, trainer_id=trainer.trainer_id)
+        ans.save = compute_trainer_checkpoint_dir(base_dir=ans.save, trainer_id=trainer.trainer_id)
+        ans.load = compute_trainer_checkpoint_dir(base_dir=ans.load, trainer_id=trainer.trainer_id)
+        ans.save_hf = compute_trainer_checkpoint_dir(base_dir=ans.save_hf, trainer_id=trainer.trainer_id)
 
     # TODO: a --use-critic critic keeps the actor's requested_load, so a hot restart reads the actor's checkpoint.
     if args.megatron_config is not None:
@@ -352,7 +352,7 @@ def _apply_critical_derived_overrides(ans: Namespace, *, base: Namespace, traine
 # ---------------------------- checkpoint dirs -----------------------------
 
 
-def _compute_trainer_checkpoint_dir(*, base_dir: str | None, trainer_id: str) -> str | None:
+def compute_trainer_checkpoint_dir(*, base_dir: str | None, trainer_id: str) -> str | None:
     if base_dir is None:
         return None
     return str(Path(base_dir) / TRAINER_CHECKPOINT_DIRNAME / trainer_id)

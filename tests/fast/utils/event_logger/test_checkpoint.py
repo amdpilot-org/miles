@@ -20,6 +20,7 @@ def _args(
         save=str(save) if save else None,
         load=str(load) if load else None,
         requested_load=str(one) if (one := requested_load or load) else None,
+        megatron_config=None,
     )
 
 
