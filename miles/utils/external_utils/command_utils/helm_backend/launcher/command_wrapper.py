@@ -168,7 +168,10 @@ class Kubectl:
 
     @staticmethod
     def delete_job(name: str, *, namespace: str, check: bool = False) -> None:
-        Kubectl._run(["delete", "job", name, "--namespace", namespace, "--ignore-not-found"], check=check)
+        Kubectl._run(
+            ["delete", "job", name, "--namespace", namespace, "--ignore-not-found", "--cascade", "foreground"],
+            check=check,
+        )
 
     @staticmethod
     def get_json(

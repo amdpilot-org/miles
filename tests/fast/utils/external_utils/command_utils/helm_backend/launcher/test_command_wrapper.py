@@ -213,6 +213,13 @@ class TestDeleteJob:
 
         assert "--ignore-not-found" in commands[0]
 
+    def test_waits_for_the_pods_of_the_job_it_deletes(self, monkeypatch):
+        """The launcher installs over the deleted job, and a pod that outlives it uninstalls the new release."""
+        commands = _kubectl_answering(monkeypatch, returncode=0, stderr="")
+        Kubectl.delete_job("miles-run-x-uninstall", namespace="rl", check=True)
+
+        assert commands[0][commands[0].index("--cascade") + 1] == "foreground"
+
     def test_lets_a_caller_that_cannot_go_on_without_the_deletion_fail(self, monkeypatch):
         """Installing over a job that is still armed hands the new release to the old run's uninstall."""
         _kubectl_answering(monkeypatch, returncode=1, stderr="the api server refused")
