@@ -15,6 +15,7 @@ from miles.ray.placement_group import (
     create_rollout_components,
     create_training_model,
     create_training_models,
+    discard_the_event_log_of_a_take_over_that_found_no_checkpoint,
     take_over_trainers,
 )
 from miles.ray.rollout.eval_fleet import EvalFleetInfo
@@ -656,8 +657,10 @@ class TestTakeOverTrainers:
 
         handle = _make_trainer_handle(initialized=True, deployment_identity=self._identity())
 
-        assert await take_over_trainers(args, handles={"alpha-actor": handle}) is True
+        resumed = await take_over_trainers(args, handles={"alpha-actor": handle})
+        discard_the_event_log_of_a_take_over_that_found_no_checkpoint(args, resumed=resumed)
 
+        assert resumed is True
         assert discarded == [args]
 
     async def test_discards_the_log_of_a_configured_trainer_without_a_checkpoint(self, monkeypatch, tmp_path):
@@ -684,14 +687,15 @@ class TestTakeOverTrainers:
         ckpt.mkdir()
         (ckpt / "latest_checkpointed_iteration.txt").write_text("3")
 
-        assert (
-            await take_over_trainers(
-                self._args(requested_load=str(ckpt)),
-                handles={"alpha-actor": _make_trainer_handle(initialized=True, deployment_identity=self._identity())},
-            )
-            is True
-        )
+        args = self._args(requested_load=str(ckpt))
 
+        resumed = await take_over_trainers(
+            args,
+            handles={"alpha-actor": _make_trainer_handle(initialized=True, deployment_identity=self._identity())},
+        )
+        discard_the_event_log_of_a_take_over_that_found_no_checkpoint(args, resumed=resumed)
+
+        assert resumed is True
         assert discarded == []
 
     async def test_keeps_the_log_of_a_first_launch(self, monkeypatch, tmp_path):
@@ -699,14 +703,14 @@ class TestTakeOverTrainers:
         self._patched(monkeypatch, events=[])
         discarded = self._recorded_discards(monkeypatch)
 
-        assert (
-            await take_over_trainers(
-                self._args(requested_load=str(tmp_path / "ckpt")),
-                handles={"alpha-actor": _make_trainer_handle(deployment_identity=self._identity())},
-            )
-            is False
-        )
+        args = self._args(requested_load=str(tmp_path / "ckpt"))
 
+        resumed = await take_over_trainers(
+            args, handles={"alpha-actor": _make_trainer_handle(deployment_identity=self._identity())}
+        )
+        discard_the_event_log_of_a_take_over_that_found_no_checkpoint(args, resumed=resumed)
+
+        assert resumed is False
         assert discarded == []
 
 

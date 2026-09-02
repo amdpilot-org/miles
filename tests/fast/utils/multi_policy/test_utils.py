@@ -172,6 +172,11 @@ class TestCreatePolicyTrainers:
             lambda args, *, trainer_configs: {config.trainer_id: AsyncMock() for config in trainer_configs},
         )
         monkeypatch.setattr(multi_policy_utils, "take_over_trainers", AsyncMock(return_value=resumed))
+        monkeypatch.setattr(
+            multi_policy_utils,
+            "discard_the_event_log_of_a_take_over_that_found_no_checkpoint",
+            lambda args, *, resumed: None,
+        )
         return created
 
     async def test_every_policy_gets_a_trainer_keyed_by_its_model_id(self, monkeypatch):
