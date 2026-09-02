@@ -28,6 +28,12 @@ def configure_logger(args, *, source: ProcessIdentity, report_env: bool = True) 
         _ENV_REPORTER = start_env_reporting(args)
 
 
+def rebind_env_reporting(args) -> None:
+    # TODO: stop rebinding here; the args object should not be overwritten in place all over the codebase.
+    if _ENV_REPORTER is not None:
+        _ENV_REPORTER.rebind(args)
+
+
 # ref: SGLang
 def configure_logger_raw(name: str = "") -> None:
     global _STRICT_ASYNC_WARNINGS_INSTALLED

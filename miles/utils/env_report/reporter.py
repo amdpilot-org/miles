@@ -38,11 +38,14 @@ class EnvReporter:
             f"'only at startup'; pass a finite number"
         )
 
-        self._args = args
         self._interval_seconds = interval_seconds
         self._jitter = random.Random()
         self._stopped = threading.Event()
         self._thread = threading.Thread(target=self._run, name=_REPORTER_THREAD_NAME, daemon=True)
+        self.rebind(args)
+
+    def rebind(self, args: Any) -> None:
+        self._args = args
         _log_env_report(report=collect_unprobed_env_report(snapshot=collect_env_report_snapshot(args)))
 
     def start(self) -> None:

@@ -114,6 +114,23 @@ class TestEnvReporter:
         assert recorded[0] == 1.0
         assert recorded[-1] == 2.0
 
+    def test_a_rebind_moves_the_periodic_report_onto_the_final_args(
+        self, mocked_pip_inspect, event_log_dir: Path
+    ) -> None:
+        """A trainer is constructed with the launch args and only receives the final ones in init()."""
+        reporter = EnvReporter(args=make_args(lr=1.0), interval_seconds=0.01)
+        reporter.rebind(make_args(lr=2.0))
+
+        with patch("miles.utils.env_report.reporter.SETTLED_DELAY_SECONDS", 0.0):
+            reporter.start()
+            _wait_for_events(event_log_dir, count=3)
+            reporter.stop()
+
+        recorded = [event.report.process.args.values["lr"] for event in read_events(event_log_dir)]
+        assert recorded[0] == 1.0
+        assert recorded[1] == 2.0
+        assert recorded[-1] == 2.0
+
     def test_settles_before_it_falls_back_to_the_interval(self, mocked_pip_inspect, event_log_dir: Path) -> None:
         """One hour is far too long to wait for the environment a process only finishes building at startup."""
         reporter = self._reporter(interval_seconds=3600.0)
