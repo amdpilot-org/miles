@@ -10,6 +10,7 @@ from miles.ray.train.cell_state import (
     StateAllocatedErrored,
     StateAllocatedUninitialized,
 )
+from miles.utils.async_utils import gather_and_raise_first
 from miles.utils.ft_utils.api_server.models import CellStatus
 from miles.utils.ft_utils.health_checker import BaseHealthChecker
 from miles.utils.ft_utils.indep_dp import IndepDPInfo
@@ -87,7 +88,7 @@ class TrainerCell:
         return results
 
     async def load_state(self) -> list:
-        return await self.execute("load_state", kill_on_failure=False)
+        return await self.execute("load_state", kill_on_failure=False, wait_all_on_failure=True)
 
     async def train(
         self,
@@ -214,11 +215,14 @@ class TrainerCell:
 
     # ------------------------ API :: directly forward calls to actors ------------------------
 
-    async def execute(self, fn_name: str, *, kill_on_failure: bool = True, **kwargs) -> list:
+    async def execute(
+        self, fn_name: str, *, kill_on_failure: bool = True, wait_all_on_failure: bool = False, **kwargs
+    ) -> list:
         return await self._execute_raw(
             fn_name,
             compute_kwargs=lambda _: kwargs,
             kill_on_failure=kill_on_failure,
+            wait_all_on_failure=wait_all_on_failure,
         )
 
     async def _execute_raw(
@@ -226,6 +230,7 @@ class TrainerCell:
         fn_name: str,
         compute_kwargs,
         kill_on_failure: bool = True,
+        wait_all_on_failure: bool = False,
     ) -> list:
         handles = self._get_worker_handles()
         log_structured(
@@ -233,9 +238,8 @@ class TrainerCell:
         )
         start = time.monotonic()
         try:
-            result = await asyncio.gather(
-                *[getattr(handle, fn_name)(**compute_kwargs(i)) for i, handle in enumerate(handles)]
-            )
+            calls = [getattr(handle, fn_name)(**compute_kwargs(i)) for i, handle in enumerate(handles)]
+            result = await (gather_and_raise_first(calls) if wait_all_on_failure else asyncio.gather(*calls))
             log_structured(
                 logger.info,
                 tag="ft",
