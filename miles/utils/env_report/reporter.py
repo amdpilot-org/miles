@@ -46,7 +46,10 @@ class EnvReporter:
 
     def rebind(self, args: Any) -> None:
         self._args = args
-        _log_env_report(report=collect_unprobed_env_report(snapshot=collect_env_report_snapshot(args)))
+        try:
+            _log_env_report(report=collect_unprobed_env_report(snapshot=collect_env_report_snapshot(args)))
+        except Exception:
+            logger.warning("Failed to log the startup env report", exc_info=True)
 
     def start(self) -> None:
         self._thread.start()
