@@ -14,6 +14,7 @@ from tests.fast.fixtures.args_fixtures import parser_defaults
 from tests.fast.fixtures.megatron_config_fixtures import encode_megatron_config
 from train_multi_policy import train_multi_policy
 
+from miles.utils.async_utils import with_disposer
 from miles.utils.multi_policy.checkpoint_state import MultiPolicyCheckpointState
 from miles.utils.multi_policy.parker import Parker
 from miles.utils.multi_policy.utils import TrainerInfo
@@ -69,7 +70,7 @@ async def _run(
         context["rollout_executor"],
         None,
     )
-    await asyncio.wait_for(train_multi_policy(args), timeout=30)
+    await asyncio.wait_for(with_disposer(train_multi_policy, args), timeout=30)
     return context
 
 

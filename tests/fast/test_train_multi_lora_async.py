@@ -11,6 +11,7 @@ from tests.fast.fixtures.driver_fakes import (
     FakeTrainingModel,
 )
 
+from miles.utils.async_utils import with_disposer
 from miles.utils.data import RolloutDataPack
 
 _ACTIVE_SNAPSHOT = {"pending": [], "active": ["alpha"], "retiring": [], "cleanup": []}
@@ -86,7 +87,7 @@ def _install_driver_fakes(
     ) -> None:
         events.append(f"update_weights:{rollout_id}")
 
-    monkeypatch.setattr(multi_lora_driver, "init_orchestration_script", lambda _args: None)
+    monkeypatch.setattr(multi_lora_driver, "init_orchestration_script", lambda _args, *, disposer: None)
     monkeypatch.setattr(multi_lora_driver, "create_rollout_components", create_rollout_components)
     monkeypatch.setattr(multi_lora_driver, "get_multi_lora_controller", lambda: components.controller)
     monkeypatch.setattr(multi_lora_driver, "create_training_models", create_training_models)
@@ -116,7 +117,7 @@ class TestAdapterLifecycle:
         args = _make_args()
         _install_driver_fakes(monkeypatch, events, snapshots=[_ACTIVE_SNAPSHOT, _ACTIVE_SNAPSHOT, _EMPTY_SNAPSHOT])
 
-        await multi_lora_driver.main(args)
+        await with_disposer(multi_lora_driver.main, args)
 
         assert events == [
             "controller_start",
@@ -151,7 +152,7 @@ class TestEmptyBatchTimeout:
         )
         components.rollout_executor.generation_packs = [RolloutDataPack(empty_batch_timeout=True)]
 
-        await multi_lora_driver.main(args)
+        await with_disposer(multi_lora_driver.main, args)
 
         assert [event for event in events if event.startswith(("generate_", "actor_train", "actor_save"))] == [
             "generate_start:0",
@@ -172,6 +173,6 @@ class TestEmptyBatchTimeout:
         components.rollout_executor.generation_errors = [_task_error(ValueError("rollout worker died"))]
 
         with pytest.raises(ray.exceptions.RayTaskError, match="rollout worker died"):
-            await multi_lora_driver.main(args)
+            await with_disposer(multi_lora_driver.main, args)
 
         assert components.actor_model.trained == []
