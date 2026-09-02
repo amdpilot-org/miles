@@ -176,10 +176,12 @@ def finalize_load(actor: Any, checkpoint_payload: dict[str, Any] | None) -> None
     if metadata:
         actor.global_step = int(metadata.get("global_step", actor.global_step))
         actor.micro_step = int(metadata.get("micro_step", actor.micro_step))
-        next_rollout = metadata.get("next_rollout_id")
-        if next_rollout is not None:
-            actor.args.start_rollout_id = next_rollout
+
+    if (next_rollout := metadata.get("next_rollout_id")) is not None:
+        actor.restored_rollout_id = int(next_rollout)
+        actor.args.start_rollout_id = next_rollout
     elif iteration is not None:
+        actor.restored_rollout_id = int(iteration)
         if getattr(actor.args, "start_rollout_id", None) is None:
             actor.args.start_rollout_id = iteration
 

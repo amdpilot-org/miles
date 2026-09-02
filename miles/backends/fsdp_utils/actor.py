@@ -102,6 +102,7 @@ class FSDPTrainRayActor(TrainRayActor):
 
         if getattr(self.args, "start_rollout_id", None) is None:
             self.args.start_rollout_id = 0
+        self.restored_rollout_id: int = 0
 
         self.prof = TrainProfiler(args)
 
@@ -212,7 +213,7 @@ class FSDPTrainRayActor(TrainRayActor):
 
         self.prof.on_init_end()
 
-        return int(getattr(self.args, "start_rollout_id", 0))
+        return self.restored_rollout_id
 
     def _get_model_cls(self):
         if hasattr(self.hf_config, "vision_config"):
