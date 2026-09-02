@@ -257,7 +257,9 @@ def _checksum_response(engine_checksums: list[dict[str, str]]) -> list:
 
 class TestTheScriptLogsTheChecksumsTheEnginesNowServe:
     @staticmethod
-    async def _log(args: Namespace, *, response=None, initialized: bool = True) -> tuple[MagicMock, MagicMock]:
+    async def _log(
+        args: Namespace, *, response=None, initialized: bool = True, trainer_model_id: str | None = None
+    ) -> tuple[MagicMock, MagicMock]:
         from miles.ray.placement_group import _maybe_log_inference_engine_weight_checksums
 
         inference_controller = MagicMock()
@@ -267,7 +269,7 @@ class TestTheScriptLogsTheChecksumsTheEnginesNowServe:
             "miles.ray.placement_group.get_event_logger", return_value=event_logger
         ):
             await _maybe_log_inference_engine_weight_checksums(
-                args, inference_controller=inference_controller, rollout_id=0, trainer_model_id=None
+                args, inference_controller=inference_controller, rollout_id=0, trainer_model_id=trainer_model_id
             )
         return inference_controller, event_logger
 
@@ -304,5 +306,18 @@ class TestTheScriptLogsTheChecksumsTheEnginesNowServe:
         inference_controller.check_weights.assert_awaited_once_with(action="checksum", model_id=None)
         event_logger.log.assert_called_once()
         assert event_logger.log.call_args.args[1] == dict(
-            rollout_id=0, engine_checksums=[{"rank0/w": "e0"}, {"rank0/w": "e1"}]
+            rollout_id=0, trainer_model_id=None, engine_checksums=[{"rank0/w": "e0"}, {"rank0/w": "e1"}]
+        )
+
+    async def test_a_named_policy_stamps_its_own_id_on_the_event(self):
+        """A multi policy run's event names the policy, so the comparator can tell two policies apart."""
+        response = _checksum_response([{"w": "e0"}])
+
+        inference_controller, event_logger = await self._log(
+            _orchestration_args(), response=response, trainer_model_id="solver"
+        )
+
+        inference_controller.check_weights.assert_awaited_once_with(action="checksum", model_id="solver")
+        assert event_logger.log.call_args.args[1] == dict(
+            rollout_id=0, trainer_model_id="solver", engine_checksums=[{"rank0/w": "e0"}]
         )

@@ -1,5 +1,7 @@
 """Tests for test_utils.comparisons.inference_engine_checksums.compare_inference_engine_checksums."""
 
+import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -17,20 +19,38 @@ from miles.utils.test_utils.comparisons.inference_engine_checksums import (
 def _write_inference_engine_events(
     side_dir: Path, partials: list[dict[str, Any]], *, model_id: str | None = None
 ) -> None:
-    events_dir = side_dir / "events"
-    source = (
-        SimpleProcessIdentity(component="main")
-        if model_id is None
-        else TrainerControllerProcessIdentity(trainer_id=f"{model_id}-actor", model_id=model_id)
-    )
+    events_dir = side_dir / EVENTS_DIRNAME
+    source = _source_of(model_id)
     event_logger = EventLogger(log_dir=events_dir, source=source, file_name=f"{source.to_name()}.jsonl")
     for partial in partials:
         event_logger.log(InferenceEngineWeightChecksumEvent, partial, print_log=False)
     event_logger.close()
 
 
-def _partial(*, rollout_id: int, engine_checksums: list[dict[str, str]]) -> dict[str, Any]:
-    return dict(rollout_id=rollout_id, engine_checksums=engine_checksums)
+def _write_events_predating_the_trainer_model_id_field(side_dir: Path, partials: list[dict[str, Any]]) -> None:
+    events_dir = side_dir / EVENTS_DIRNAME
+    events_dir.mkdir(parents=True, exist_ok=True)
+    source = _source_of(None)
+    lines: list[str] = []
+    for partial in partials:
+        dumped = InferenceEngineWeightChecksumEvent(
+            **partial, timestamp=datetime.now(timezone.utc), source=source
+        ).model_dump(mode="json")
+        del dumped["trainer_model_id"]
+        lines.append(json.dumps(dumped))
+    (events_dir / f"{source.to_name()}.jsonl").write_text("".join(f"{line}\n" for line in lines), encoding="utf-8")
+
+
+def _source_of(model_id: str | None) -> SimpleProcessIdentity | TrainerControllerProcessIdentity:
+    if model_id is None:
+        return SimpleProcessIdentity(component="main")
+    return TrainerControllerProcessIdentity(trainer_id=f"{model_id}-actor", model_id=model_id)
+
+
+def _partial(
+    *, rollout_id: int, engine_checksums: list[dict[str, str]], trainer_model_id: str | None = None
+) -> dict[str, Any]:
+    return dict(rollout_id=rollout_id, trainer_model_id=trainer_model_id, engine_checksums=engine_checksums)
 
 
 class TestCompareInferenceEngineChecksums:
@@ -142,10 +162,14 @@ class TestSeveralPolicies:
         """Every policy counts its own rollouts, so keying by rollout id alone rejects a legal multi policy run."""
         for side in ("baseline", "target"):
             _write_inference_engine_events(
-                tmp_path / side, [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "aaa"}])], model_id="a"
+                tmp_path / side,
+                [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "aaa"}], trainer_model_id="a")],
+                model_id="a",
             )
             _write_inference_engine_events(
-                tmp_path / side, [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "bbb"}])], model_id="b"
+                tmp_path / side,
+                [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "bbb"}], trainer_model_id="b")],
+                model_id="b",
             )
 
         compare_inference_engine_checksums(str(tmp_path / "baseline"), str(tmp_path / "target"))
@@ -153,19 +177,62 @@ class TestSeveralPolicies:
     def test_a_policy_whose_weights_differ_is_reported(self, tmp_path: Path) -> None:
         """Comparing only one of the two policies would hide exactly the drift this comparison exists to catch."""
         _write_inference_engine_events(
-            tmp_path / "baseline", [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "aaa"}])], model_id="a"
+            tmp_path / "baseline",
+            [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "aaa"}], trainer_model_id="a")],
+            model_id="a",
         )
         _write_inference_engine_events(
-            tmp_path / "baseline", [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "bbb"}])], model_id="b"
+            tmp_path / "baseline",
+            [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "bbb"}], trainer_model_id="b")],
+            model_id="b",
         )
         _write_inference_engine_events(
-            tmp_path / "target", [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "aaa"}])], model_id="a"
+            tmp_path / "target",
+            [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "aaa"}], trainer_model_id="a")],
+            model_id="a",
         )
         _write_inference_engine_events(
-            tmp_path / "target", [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "ccc"}])], model_id="b"
+            tmp_path / "target",
+            [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "ccc"}], trainer_model_id="b")],
+            model_id="b",
         )
 
         with pytest.raises(AssertionError, match=r"baseline/b/rollout_1 vs target/b/rollout_1"):
+            compare_inference_engine_checksums(str(tmp_path / "baseline"), str(tmp_path / "target"))
+
+    def test_the_writers_identity_no_longer_decides_which_policy_an_event_belongs_to(self, tmp_path: Path) -> None:
+        """The orchestration script writes every policy's event, so only the payload can name the policy."""
+        for side in ("baseline", "target"):
+            _write_inference_engine_events(
+                tmp_path / side,
+                [
+                    _partial(rollout_id=1, engine_checksums=[{"rank0/w": "aaa"}], trainer_model_id="a"),
+                    _partial(rollout_id=1, engine_checksums=[{"rank0/w": "bbb"}], trainer_model_id="b"),
+                ],
+            )
+
+        compare_inference_engine_checksums(str(tmp_path / "baseline"), str(tmp_path / "target"))
+
+
+class TestLogsPredatingTheTrainerModelIdField:
+    def test_events_without_the_field_read_back_as_one_unnamed_policy(self, tmp_path: Path) -> None:
+        """A log written before the event named its policy is a single policy run, so it compares under None."""
+        partials = [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "aaa"}])]
+        _write_events_predating_the_trainer_model_id_field(tmp_path / "baseline", partials)
+        _write_inference_engine_events(tmp_path / "target", partials)
+
+        compare_inference_engine_checksums(str(tmp_path / "baseline"), str(tmp_path / "target"))
+
+    def test_a_field_less_event_still_compares_its_checksums(self, tmp_path: Path) -> None:
+        """Reading the missing field as None must not turn the old side into an unchecked one."""
+        _write_events_predating_the_trainer_model_id_field(
+            tmp_path / "baseline", [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "aaa"}])]
+        )
+        _write_inference_engine_events(
+            tmp_path / "target", [_partial(rollout_id=1, engine_checksums=[{"rank0/w": "zzz"}])]
+        )
+
+        with pytest.raises(AssertionError, match=r"key rank0/w"):
             compare_inference_engine_checksums(str(tmp_path / "baseline"), str(tmp_path / "target"))
 
 

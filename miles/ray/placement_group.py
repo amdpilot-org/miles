@@ -335,6 +335,7 @@ async def _maybe_log_inference_engine_weight_checksums(
         InferenceEngineWeightChecksumEvent,
         dict(
             rollout_id=args.start_rollout_id - 1 if rollout_id is None else rollout_id,
+            trainer_model_id=trainer_model_id,
             engine_checksums=engine_checksums,
         ),
     )
