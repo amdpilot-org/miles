@@ -581,6 +581,85 @@ class TestClusterBackend:
 
         assert args.object_store_backend == "ray"
 
+    def test_refuses_a_kubernetes_run_that_serves_the_miles_dashboard(self, tmp_path):
+        """The dashboard is a named Ray actor, and this backend brings up no Ray cluster to hold it."""
+        args = self._parse(
+            [
+                "--cluster-backend",
+                "kubernetes",
+                "--num-rollout",
+                "1",
+                "--use-miles-dashboard",
+                "--dump-details",
+                str(tmp_path),
+            ]
+        )
+
+        with pytest.raises(AssertionError, match="--use-miles-dashboard"):
+            miles_validate_args(args)
+
+    def test_refuses_a_kubernetes_run_that_posts_through_the_ray_cluster(self):
+        """Distributed POST reads ray.nodes(), which answers nothing where there is no cluster."""
+        args = self._parse(["--cluster-backend", "kubernetes", "--num-rollout", "1", "--use-distributed-post"])
+
+        with pytest.raises(AssertionError, match="--use-distributed-post"):
+            miles_validate_args(args)
+
+    def test_refuses_a_kubernetes_run_that_drives_multi_lora(self):
+        """The multi-LoRA controller calls into RayWorkerManager, which this backend never instantiates."""
+        args = self._parse(
+            [
+                "--cluster-backend",
+                "kubernetes",
+                "--num-rollout",
+                "1",
+                "--multi-lora-n-adapters",
+                "2",
+                "--lora-rank",
+                "8",
+                "--target-modules",
+                "linear_qkv",
+            ]
+        )
+
+        with pytest.raises(AssertionError, match="--multi-lora-n-adapters"):
+            miles_validate_args(args)
+
+    def test_refuses_these_modes_before_the_run_reaches_them(self):
+        """Each of them failed deep inside a started run, after the launcher had reported success."""
+        args = self._parse(["--cluster-backend", "kubernetes", "--num-rollout", "1", "--use-distributed-post"])
+
+        with pytest.raises(AssertionError):
+            miles_validate_args(args)
+
+        assert args.use_distributed_post is True
+
+    def test_a_ray_run_may_still_post_through_the_ray_cluster(self):
+        """These are Ray-only modes, not modes a run may no longer have."""
+        args = self._parse(["--cluster-backend", "ray", "--num-rollout", "1", "--use-distributed-post"])
+
+        miles_validate_args(args)
+
+        assert args.use_distributed_post is True
+
+    def test_a_ray_run_may_still_serve_the_miles_dashboard(self, tmp_path):
+        """The Ray cluster that holds the dashboard actor is exactly what this backend has."""
+        args = self._parse(
+            [
+                "--cluster-backend",
+                "ray",
+                "--num-rollout",
+                "1",
+                "--use-miles-dashboard",
+                "--dump-details",
+                str(tmp_path),
+            ]
+        )
+
+        miles_validate_args(args)
+
+        assert args.use_miles_dashboard is True
+
 
 def test_recompute_logprobs_via_prefill_flag_is_parsed():
     parser = argparse.ArgumentParser()

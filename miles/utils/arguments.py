@@ -3910,6 +3910,15 @@ def miles_validate_args(args):
     ).value
 
     if ClusterBackend(args.cluster_backend) == ClusterBackend.KUBERNETES:
+        assert (
+            not args.use_miles_dashboard
+        ), "--use-miles-dashboard creates a Ray actor, which --cluster-backend kubernetes has no Ray cluster for"
+        assert (
+            not args.use_distributed_post
+        ), "--use-distributed-post reads ray.nodes(), which --cluster-backend kubernetes has no Ray cluster for"
+        assert (
+            args.multi_lora_n_adapters == 0
+        ), "--multi-lora-n-adapters drives RayWorkerManager, which --cluster-backend kubernetes does not use"
         if ObjectStoreBackend(args.object_store_backend) != ObjectStoreBackend.MOONCAKE:
             logger.info(
                 f"Overriding --object-store-backend {args.object_store_backend} with "
