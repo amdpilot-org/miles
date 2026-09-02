@@ -62,6 +62,9 @@ class ManifestDiffs(FrozenStrictBaseModel):
 def diff_manifests(
     *, before: Manifest, after: Manifest, allow_diff_object_keys: frozenset[ManifestObjectKey] = frozenset()
 ) -> ManifestDiffs:
+    for manifest in (before, after):
+        _assert_unambiguous_keys(manifest, allow_diff_object_keys=allow_diff_object_keys)
+
     old = before.by_identity
     new = after.by_identity
     shared = sorted(set(old) & set(new))
@@ -81,6 +84,11 @@ def diff_manifests(
         additions=sorted(set(new) - set(old), key=str),
         removals=sorted(set(old) - set(new), key=str),
     )
+
+
+def _assert_unambiguous_keys(manifest: Manifest, *, allow_diff_object_keys: frozenset[ManifestObjectKey]) -> None:
+    for key in sorted(allow_diff_object_keys, key=lambda entry: (entry.kind, entry.name)):
+        manifest.object_keyed(key=key)
 
 
 def _compute_change(
