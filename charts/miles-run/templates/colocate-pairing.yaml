@@ -46,6 +46,8 @@ metadata:
     {{- include "miles-run.labels" $labels | nindent 4 }}
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "miles-run.selectorLabels" $labels | nindent 6 }}
