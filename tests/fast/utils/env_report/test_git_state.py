@@ -9,6 +9,7 @@ import pytest
 from tests.fast.utils.env_report.conftest import make_args
 
 from miles.utils.audit_utils.event_logger.models import EnvReportGitRepoInfo
+from miles.utils.env_report import git_state
 from miles.utils.env_report.collector import collect_env_report, collect_env_report_snapshot
 from miles.utils.env_report.git_state import collect_git_info
 
@@ -46,7 +47,7 @@ class TestCollectGitInfo:
         assert collect_git_info(package_name="x", location=str(tmp_path)) is None
 
 
-def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
+def _git(repo: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess:
     env = {
         "GIT_AUTHOR_NAME": "test",
         "GIT_COMMITTER_NAME": "test",
@@ -60,7 +61,7 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
         capture_output=True,
         text=True,
         env=env,
-        check=True,
+        check=check,
     )
 
 
@@ -179,6 +180,23 @@ def _make_repo(path: Path) -> None:
     (path / "tracked.txt").write_text("hello\n")
     _git(path, "add", "tracked.txt")
     _git(path, "commit", "-m", "init")
+
+
+def _make_conflicted_repo(path: Path, *, ours: str, theirs: str) -> None:
+    _make_repo(path)
+    trunk = _git(path, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+    _git(path, "checkout", "-b", "theirs")
+    (path / "tracked.txt").write_text(theirs)
+    _git(path, "commit", "-a", "-m", "theirs")
+    _git(path, "checkout", trunk)
+    (path / "tracked.txt").write_text(ours)
+    _git(path, "commit", "-a", "-m", "ours")
+    _git(path, "merge", "theirs", check=False)
+    assert _git(path, "ls-files", "--unmerged").stdout != ""
+
+
+def _completed(stdout: bytes) -> subprocess.CompletedProcess:
+    return subprocess.CompletedProcess(args=["git"], returncode=0, stdout=stdout, stderr=b"")
 
 
 def _git_info(path: Path) -> EnvReportGitRepoInfo:
@@ -311,6 +329,38 @@ class TestUncommittedHash:
         (tmp_path / "small.txt").write_text("x")
 
         assert _git_info(tmp_path).untracked_unhashed_paths == []
+
+    def test_two_unmerged_indexes_holding_different_conflicts_do_not_share_a_hash(self, tmp_path: Path) -> None:
+        """A half-merged checkout is exactly the state a rank is wrong in, and two of them must not compare equal."""
+        left = tmp_path / "left"
+        right = tmp_path / "right"
+        _make_conflicted_repo(left, ours="ours\n", theirs="theirs-left\n")
+        _make_conflicted_repo(right, ours="ours\n", theirs="theirs-right\n")
+
+        info = _git_info(left)
+
+        assert info.dirty is True
+        assert info.uncommitted_hash != _git_info(right).uncommitted_hash
+
+    def test_a_combined_patch_is_split_off_the_stat_rather_than_dropped(self) -> None:
+        """git describes an unmerged path with a combined header, and folding it into the stat hashes none of it."""
+        stdout = b" f.txt | 4 ++++\n 1 file changed\n\ndiff --cc f.txt\n@@@ -1,1 -1,1 +1,2 @@@\n++conflict\n"
+
+        with patch("miles.utils.env_report.git_state._run_git", return_value=_completed(stdout)):
+            diff = git_state._collect_diff(location=".")
+
+        assert diff.stat == "f.txt | 4 ++++\n 1 file changed"
+        assert diff.patch == stdout[stdout.index(b"diff --cc ") :]
+
+    def test_an_unmerged_path_line_is_part_of_the_patch_not_of_the_stat(self) -> None:
+        """git names a path it cannot diff instead of diffing it, and that name is the only trace of the conflict."""
+        stdout = b" f.txt | Unmerged\n 0 files changed\n\n* Unmerged path f.txt\n"
+
+        with patch("miles.utils.env_report.git_state._run_git", return_value=_completed(stdout)):
+            diff = git_state._collect_diff(location=".")
+
+        assert diff.stat == "f.txt | Unmerged\n 0 files changed"
+        assert diff.patch == b"* Unmerged path f.txt\n"
 
 
 class TestTheReportedGitState:
