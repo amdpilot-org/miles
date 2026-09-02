@@ -80,16 +80,17 @@ def start_mooncake_master(
 
     log_path = Path(log_path)
     quoted_log_path = shlex.quote(str(log_path))
+    kill_this_master = f"pkill -f {shlex.quote(f'^mooncake_master --rpc_port {rpc_port} ')} >/dev/null 2>&1 || true"
     command_runner = run_command if run_command is not None else run_shell_command
     command_runner(
-        "pkill -x mooncake_master >/dev/null 2>&1 || true; "
+        f"{kill_this_master}; "
         f"(setsid mooncake_master --rpc_port {rpc_port} --metrics_port {metrics_port} "
         f"> {quoted_log_path} 2>&1 &)"
     )
     try:
         wait_for_server_ready(host, rpc_port, timeout=timeout)
     except RuntimeError as exc:
-        command_runner("pkill -x mooncake_master >/dev/null 2>&1 || true")
+        command_runner(kill_this_master)
         try:
             log_lines = log_path.read_text(errors="replace").splitlines()
             log_tail = "\n".join(log_lines[-100:]) or "<empty>"

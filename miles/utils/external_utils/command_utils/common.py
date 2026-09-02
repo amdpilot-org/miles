@@ -16,9 +16,14 @@ from typing import TYPE_CHECKING, NamedTuple
 from miles.utils.external_utils.model_args_utils import load_model_args
 from miles.utils.file_arg_utils import PSEUDO_FILE_PREFIX
 from miles.utils.logging_utils import configure_logger_raw
-from miles.utils.object_store_config import MOONCAKE_MASTER_PORT, compute_mooncake_init_kwargs
+from miles.utils.object_store_config import (
+    MOONCAKE_MASTER_ADDRESS_KEY,
+    MOONCAKE_MASTER_PORT,
+    compute_mooncake_init_kwargs,
+)
 from miles.utils.workers.argv_utils import parse_declared_args
 from miles.utils.workers.worker_provider.kubernetes.helm.naming import CHART_NAME
+from miles.utils.workers.worker_provider.static import parse_host_and_port
 
 if TYPE_CHECKING:
     from miles.utils.external_utils.command_utils.base_backend import ExecuteTrainConfig, ExecuteTrainRequest
@@ -186,6 +191,19 @@ MOONCAKE_MASTER_LOG_PATH = Path("/tmp/mooncake_master.log")
 OBJECT_STORE_BACKEND_FLAG = "--object-store-backend"
 MOONCAKE_BACKEND_NAME = "mooncake"
 MOONCAKE_INIT_KWARGS_FLAG = "--mooncake-store-init-kwargs"
+
+
+def get_owned_mooncake_master_port(train_argv: list[str]) -> int | None:
+    declared = ArgvManipulator.get_effective(train_argv, MOONCAKE_INIT_KWARGS_FLAG)
+    if declared is None:
+        return MOONCAKE_MASTER_PORT
+
+    address = json.loads(declared).get(MOONCAKE_MASTER_ADDRESS_KEY)
+    if address is None:
+        return None
+
+    endpoint = parse_host_and_port(address)
+    return endpoint.port if endpoint.host in ("127.0.0.1", "0.0.0.0", "localhost", "[::1]") else None
 
 
 def get_mooncake_object_store_args(master_port: int = MOONCAKE_MASTER_PORT, master_host: str = "127.0.0.1") -> str:
