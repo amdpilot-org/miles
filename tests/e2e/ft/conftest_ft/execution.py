@@ -29,7 +29,8 @@ def materialize_cyclic_debug_rollout_data(count: int) -> str:
     available = sorted(int(p.stem) for p in src.glob("*.pt") if p.stem.isdigit())
     if not available:
         raise FileNotFoundError(f"No debug rollout data files found in {src}")
-    dst = Path(tempfile.mkdtemp(prefix="ft_cyclic_rollout_"))
+    dst = Path(tempfile.mkdtemp(prefix="ft_cyclic_rollout_", dir=DATA_DIR))
+    dst.chmod(0o755)
     for i in range(count):
         (dst / f"{i}.pt").symlink_to(src / f"{available[i % len(available)]}.pt")
     return str(dst)
