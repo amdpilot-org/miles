@@ -35,8 +35,9 @@ class KubernetesCommandBackend(BaseCommandBackend):
         num_gpus_per_node: int | None = None,
     ) -> list[str | None]:
         assert self.config.namespace, "Set CommandUtilConfig.namespace to run a command somewhere"
+        assert num_nodes is not None, "kubernetes cannot infer num_nodes from a live cluster the way ray does; pass it"
         chart = chart_dir(repo_base_dir=repo_base_dir)
-        self._assert_the_nodes_asked_for_can_be_scheduled(num_nodes=num_nodes or 1, chart=chart)
+        self._assert_the_nodes_asked_for_can_be_scheduled(num_nodes=num_nodes, chart=chart)
         return command_job.run_on_nodes(
             command_job.CommandJobContext(
                 namespace=self.config.namespace,
@@ -46,7 +47,7 @@ class KubernetesCommandBackend(BaseCommandBackend):
             ),
             cmd,
             capture_output=capture_output,
-            completions=num_nodes or 1,
+            completions=num_nodes,
             step="command",
         )
 
