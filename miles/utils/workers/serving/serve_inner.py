@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import socket
 import sys
 from typing import Any
 
@@ -21,7 +22,8 @@ from miles.utils.workers.serving.worker_identity import read_worker_identity, re
 from miles.utils.workers.types import ClusterBackend
 from miles.utils.workers.worker_spec import RPC_PORT_NAME, PortInfo, ServeWorkerSpec
 
-DEFAULT_HOST = "0.0.0.0"
+IPV4_WILDCARD_HOST = "0.0.0.0"
+IPV6_WILDCARD_HOST = "::"
 
 
 def main() -> None:
@@ -34,9 +36,10 @@ def main() -> None:
     _log(f"pool_id={args.pool_id} worker_class={spec.worker_class}")
 
     port = _rpc_port_of(spec).effective_static_port(worker_in_pod_index=read_worker_in_pod_index(os.environ))
+    host = IPV6_WILDCARD_HOST if socket.has_dualstack_ipv6() else IPV4_WILDCARD_HOST
     app = create_rpc_app(worker)
-    _log(f"serve host={DEFAULT_HOST} port={port}")
-    uvicorn.run(app, host=DEFAULT_HOST, port=port)
+    _log(f"serve host={host} port={port}")
+    uvicorn.run(app, host=host, port=port)
 
 
 def create_worker(spec: ServeWorkerSpec, *, specs_fn: str, worker_argv: list[str]) -> Any:
