@@ -67,7 +67,9 @@ class KubernetesCellOperations(BaseCellOperations):
 
 async def _inject_fault_over_rpc(*, handle: BaseWorkerHandle, mode: FailureMode, worker_name: str) -> None:
     try:
-        await asyncio.wait_for(handle.inject_fault(mode=mode.value), timeout=INJECT_FAULT_TIMEOUT_SECONDS)
+        await asyncio.wait_for(
+            handle.submit_without_result("inject_fault", mode=mode.value), timeout=INJECT_FAULT_TIMEOUT_SECONDS
+        )
     except (WorkerUnreachableError, TimeoutError, asyncio.TimeoutError):
         logger.info("Injecting %s into %s left it unreachable, which is what was asked for", mode.value, worker_name)
 

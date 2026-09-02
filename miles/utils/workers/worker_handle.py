@@ -4,6 +4,7 @@ import abc
 import asyncio
 import logging
 import time
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,9 @@ class BaseWorkerHandle(abc.ABC):
 
     async def wait_idle(self, *, timeout: float) -> None:
         raise NotImplementedError(f"{type(self).__name__} cannot tell whether the worker is running a call")
+
+    async def submit_without_result(self, method_name: str, /, **kwargs: Any) -> None:
+        raise NotImplementedError(f"{type(self).__name__} cannot submit a call it will never get an answer to")
 
     async def wait_dead(self, *, timeout: float) -> None:
         deadline = time.monotonic() + timeout
