@@ -69,6 +69,26 @@ class TestCommandJob:
         assert job["spec"]["completions"] == 1
         assert job["spec"]["completionMode"] == "Indexed"
 
+    def test_spreads_the_pods_without_dropping_the_cluster_s_own_required_terms(self):
+        """Merging over the configured affinity dropped its own required terms, letting a pod land where it must not."""
+        job = single_object_of_kind(
+            render_run(
+                *ENABLE_COMMAND_JOB,
+                "--set",
+                "commandJob.completions=4",
+                "--set-json",
+                'infra.scheduling={"affinity":{"podAntiAffinity":{"requiredDuringSchedulingIgnoredDuring'
+                'Execution":[{"topologyKey":"topology.kubernetes.io/zone"}]}}}',
+            ),
+            "Job",
+        )
+
+        anti_affinity = job["spec"]["template"]["spec"]["affinity"]["podAntiAffinity"]
+        assert [term["topologyKey"] for term in anti_affinity["requiredDuringSchedulingIgnoredDuringExecution"]] == [
+            "kubernetes.io/hostname",
+            "topology.kubernetes.io/zone",
+        ]
+
     def test_requests_gpus_only_when_asked(self):
         """Checkpoint conversion needs gpus; a download must not sit in the gpu queue."""
         with_gpus = single_object_of_kind(render_run(*ENABLE_COMMAND_JOB, "--set", "commandJob.gpusPerPod=8"), "Job")
