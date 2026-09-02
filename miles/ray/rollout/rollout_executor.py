@@ -304,7 +304,10 @@ class RolloutExecutor:
                 eval_fn.save(rollout_id)
         event_logger_checkpoint.snapshot(self.args, rollout_id)
 
-    def load(self, rollout_id: int | None = None) -> None:
+    def load(self, rollout_id: int | None = None, require_restorable: bool = False) -> None:
+        assert not require_restorable or self.data_source.can_restore(
+            rollout_id
+        ), f"{type(self.data_source).__name__} holds no state for rollout {rollout_id}, which this run restores"
         self.data_source.load(rollout_id)
         if not self.use_legacy_rollout_v1:
             if self.generate_rollout is not None:

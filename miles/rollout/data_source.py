@@ -47,6 +47,10 @@ class DataSource(abc.ABC):
         """Pending-sample backlog, or None for sources without a buffer."""
         return None
 
+    def can_restore(self, rollout_id: int) -> bool:
+        """Whether load() would restore the state this source saved at ``rollout_id``."""
+        return True
+
 
 # TODO may further refactor data-loading part later
 class RolloutDataSource(DataSource):
@@ -139,6 +143,11 @@ class RolloutDataSource(DataSource):
         path = compute_global_dataset_state_path(self.args.save, rollout_id=rollout_id)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save(state_dict, path)
+
+    def can_restore(self, rollout_id: int) -> bool:
+        if not self.args.rollout_global_dataset or self.args.load is None:
+            return True
+        return os.path.exists(compute_global_dataset_state_path(self.args.load, rollout_id=rollout_id))
 
     def load(self, rollout_id=None):
         if not self.args.rollout_global_dataset:
