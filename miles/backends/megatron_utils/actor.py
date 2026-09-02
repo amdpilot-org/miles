@@ -101,7 +101,7 @@ def _setup_disk_offload_reclaim(disk_dir: str) -> None:
 class MegatronTrainRayActor(TrainRayActor):
     @with_logs
     @with_defer(lambda: Timer().start("train_wait"))
-    def init(
+    def _init(
         self,
         args: Pickled,
         role: str,

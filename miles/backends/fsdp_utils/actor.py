@@ -57,7 +57,7 @@ class FSDPTrainRayActor(TrainRayActor):
     """
 
     @with_defer(lambda: Timer().start("train_wait"))
-    def init(
+    def _init(
         self,
         args: Pickled,
         role: str,
