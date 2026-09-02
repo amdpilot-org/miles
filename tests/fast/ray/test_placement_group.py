@@ -659,6 +659,22 @@ class TestTakeOverTrainers:
 
         assert discarded == [args]
 
+    async def test_discards_the_log_of_a_configured_trainer_without_a_checkpoint(self, monkeypatch, tmp_path):
+        """A --megatron-config run takes over the same way, and reading its base --load would find no tracker at all."""
+        self._patched(monkeypatch, events=[])
+        discarded = self._recorded_discards(monkeypatch)
+        args = self._args(
+            megatron_config=write_megatron_config(tmp_path, "alpha"),
+            load=str(tmp_path / "ckpt"),
+            use_critic=False,
+        )
+
+        handle = _make_trainer_handle(initialized=True, deployment_identity=self._identity())
+
+        assert await take_over_trainers(args, handles={"alpha-actor": handle}) is True
+
+        assert discarded == [args]
+
     async def test_keeps_the_log_with_a_checkpoint(self, monkeypatch, tmp_path):
         """That run resumes from its checkpoint, and the snapshot beside it is what replaces the log."""
         self._patched(monkeypatch, events=[])
