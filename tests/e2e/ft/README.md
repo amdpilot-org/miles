@@ -353,8 +353,8 @@ Assertions:
 ```
 Type: soak (no baseline, no compare); passes if training completes without hanging and the
       witnesses hold
-Steps: 30 (default)
-CLI: --mode, --seed (42), --num-steps (30), --trainer-crash-interval-seconds (120),
+Steps: 60 (default)
+CLI: --mode, --seed (42), --num-steps (60), --trainer-crash-interval-seconds (120),
      --rollout-crash-interval-seconds (240), --fully-async (off)
 
 Targeting and assertions follow the mode's ft_components:
@@ -408,6 +408,7 @@ membership is asserted.
 - **Why quiescence counts replicas against the most ever seen**: a deleted pod vanishes from the listing instead of reading unhealthy, and the survivors all serve; only the missing replica says the kind is still recovering.
 - **Why every enabled form has to land**: the floors count injections, not the forms behind them, so a soak could clear them on `inject_fault:sigkill` alone and never once try `delete_pod`. The draw already prefers a form the log shows has never worked, and this witness is what makes that preference binding.
 - **Why the per-cell pairing**: a floor of ">= 2 healings" passes whenever the last crash never recovered. The default intervals are short enough that a soak reliably clears the floors.
+- **Why the step budget is 60**: a rollout injection costs a 60-poll (~120s) quiescent streak plus an exponential wait of mean 240s, and a weight update forfeits the streak, so a mixed or colocated soak needs well over ten minutes of run to reach the second accepted rollout injection the witness demands. The budget buys that time without lowering the quiescence gate, which exists to stop the injector killing a kind's last live replica.
 - **Why the rollout witness is one-sided**: the trainer witness reads the run's own CellReconfigureEvents, which miss nothing; the rollout witness reads sampled polls, which miss windows by construction. It therefore never demands seeing the down half of a recovery - it demands a Serving reading fresh enough (>= 120s after the cell's last injection, past the ~95s staleness) to prove the survivor really serves. Undercounting an intermediate recovery cannot fail the run; claiming one that never happened cannot pass it.
 - **Stopping the injector**: `stop_and_join` asserts the thread actually stopped, since a thread still mid-injection could crash a cell nothing will heal, and would race the witness being read.
 

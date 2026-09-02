@@ -61,7 +61,7 @@ app: typer.Typer = typer.Typer()
 TEST_NAME: str = "random_crash"
 
 DEFAULT_SEED: int = 42
-DEFAULT_NUM_STEPS: int = 30
+DEFAULT_NUM_STEPS: int = 60
 DEFAULT_TRAINER_CRASH_INTERVAL_SECONDS: float = 120.0
 DEFAULT_ROLLOUT_CRASH_INTERVAL_SECONDS: float = 240.0
 
