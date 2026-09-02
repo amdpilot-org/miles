@@ -122,7 +122,7 @@ def lint_chart(chart: Path) -> bool:
             print(result.stdout + result.stderr, file=sys.stderr)
             ok = False
     for extra in REJECTED_VARIANTS.get(chart.name, []):
-        result = run(["helm", "lint", str(chart), *extra])
+        result = run(["helm", "lint", str(chart), *base, *extra])
         if result.returncode == 0:
             print(f"{chart.name} accepted values it must refuse: {extra}", file=sys.stderr)
             ok = False
