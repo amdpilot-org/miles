@@ -305,6 +305,9 @@ class MegatronTrainRayActor(TrainRayActor):
             "--keep-old-actor holds a second copy of the actor this reload does not roll back, so the run would "
             "compare the reloaded actor against weights of a rollout it no longer stands at"
         )
+        assert not (
+            self.with_ref and self.args.ref_update_interval is not None
+        ), "--ref-update-interval keeps the reference in memory only, and no checkpoint holds it"
         assert (requested_load := self.args.requested_load) is not None, "a hot restart needs --load"
 
         self._finalize_pending_async_save()
