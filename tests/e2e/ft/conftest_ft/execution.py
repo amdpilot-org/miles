@@ -16,8 +16,6 @@ from miles.utils.audit_utils.event_logger.logger import EVENTS_DIRNAME
 from miles.utils.external_utils import command_utils
 from miles.utils.workers.types import ClusterBackend
 
-_RUN_DIR: Path = Path(tempfile.mkdtemp(prefix="ft_test_dumper_"))
-_MEGATRON_SOURCE_PATCHER_CONFIG_PATH: Path = _RUN_DIR / "megatron_source_patcher.yaml"
 _MEGATRON_PATH: str = os.environ.get("MILES_SCRIPT_MEGATRON_PATH", "/root/Megatron-LM")
 MODEL_DIR: str = get_test_model_dir()
 DATA_DIR: str = get_test_data_dir()
@@ -63,9 +61,6 @@ def prepare(mode: FTTestMode, *, config: command_utils.ExecuteTrainConfig | None
     if not mode.has_real_rollout:
         U.hf_download_dataset(DEBUG_ROLLOUT_DATA_HF_REPO, data_dir=DATA_DIR)
     U.hf_download_dataset("zhuzilin/gsm8k", data_dir=DATA_DIR)
-
-    megatron_yaml: str = MEGATRON_PATCHER_YAMLS["thd"]
-    _MEGATRON_SOURCE_PATCHER_CONFIG_PATH.write_text(megatron_yaml)
 
 
 def _resolve_config(config: command_utils.ExecuteTrainConfig | None) -> command_utils.ExecuteTrainConfig:
@@ -158,10 +153,18 @@ def get_debug_dump_args(*, dump_dir: str, enable_dumper: bool) -> str:
         dumper_args = (
             f"--dumper-dir {dump_dir}/dumps "
             f"--dumper-fwd-bwd enable=1 enable_model_value=1 enable_model_grad=1 include_parallel_rank_in_filename=1 "
-            f"--dumper-source-patcher-config-train {_MEGATRON_SOURCE_PATCHER_CONFIG_PATH} "
+            f"--dumper-source-patcher-config-train {_write_megatron_source_patcher_config(dump_dir)} "
         )
 
     return f"--save-debug-event-data {dump_dir}/{EVENTS_DIRNAME} {dumper_args}"
+
+
+def _write_megatron_source_patcher_config(dump_dir: str) -> Path:
+    dumps = Path(dump_dir)
+    path = dumps.parent / f"{dumps.name}_megatron_source_patcher.yaml"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(MEGATRON_PATCHER_YAMLS["thd"])
+    return path
 
 
 def get_ft_args(mode: FTTestMode) -> str:

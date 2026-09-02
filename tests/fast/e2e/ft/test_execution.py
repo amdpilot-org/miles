@@ -1,8 +1,12 @@
 import dataclasses
 from pathlib import Path
 
-from tests.e2e.ft.conftest_ft.execution import get_common_train_args, get_ft_args
+import pytest
+
+from tests.e2e.ft.conftest_ft.execution import get_common_train_args, get_debug_dump_args, get_ft_args, run_training
 from tests.e2e.ft.conftest_ft.modes import MODES
+
+from miles.utils.external_utils import command_utils
 
 
 class TestGetCommonTrainArgs:
@@ -52,3 +56,31 @@ class TestGetFtArgs:
         args = get_ft_args(MODES["kill_train__dp2_cp2__moe_5layer"])
 
         assert args == "--use-fault-tolerance --ft-components train --api-server-port 0 "
+
+
+class TestRunTraining:
+    def test_the_patcher_config_outlives_the_dump_cleanup_of_the_launch(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The arguments are built before the launch wipes the dump directory, so the config must survive it."""
+        dump_dir = tmp_path / "dumps"
+        dump_dir.mkdir()
+        (dump_dir / "stale.pt").write_text("stale")
+        args = get_debug_dump_args(dump_dir=str(dump_dir), enable_dumper=True)
+        patcher_config = Path(args.split("--dumper-source-patcher-config-train ")[1].split()[0])
+        seen: list[tuple[bool, bool]] = []
+
+        class _RecordingBackend:
+            def execute_train(self, **_launch: object) -> None:
+                seen.append((patcher_config.is_file(), (dump_dir / "stale.pt").exists()))
+
+        monkeypatch.setattr(command_utils.CommandUtilConfig, "create_backend", lambda _self: _RecordingBackend())
+
+        run_training(
+            train_args=args,
+            mode=MODES["kill_rollout__dp4__colocate"],
+            dump_dir=str(dump_dir),
+            config=command_utils.ExecuteTrainConfig(run_id="soak"),
+        )
+
+        assert seen == [(True, False)]
