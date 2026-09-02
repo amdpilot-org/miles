@@ -11,6 +11,8 @@ from miles.utils.workers.k8s_types import PodList
 
 logger = logging.getLogger(__name__)
 
+_NO_PREVIOUS_CONTAINER = "previous terminated container"
+
 
 class Diagnosis(FrozenStrictBaseModel):
     directory: Path
@@ -37,6 +39,8 @@ def collect_diagnosis(
     pods = _pod_names(namespace=namespace, selector=selector)
     if pods is None:
         missing.append(f"pod listing in namespace {namespace}")
+    elif not pods:
+        missing.append(f"pods of the run in namespace {namespace}")
     for pod in pods or []:
         missing += _capture_pod(pod, namespace=namespace, directory=directory)
 
@@ -53,11 +57,12 @@ def _capture_pod(pod: str, *, namespace: str, directory: Path) -> list[str]:
         path=directory / f"{pod}.log", command=["kubectl", "logs", pod, "-n", namespace, "--all-containers"]
     ):
         missing.append(f"logs of {pod}")
-    _capture(
+    if not _capture(
         path=directory / f"{pod}.previous.log",
         command=["kubectl", "logs", pod, "-n", namespace, "--all-containers", "--previous"],
-        skip_when_it_fails=True,
-    )
+        ignored_failure=_NO_PREVIOUS_CONTAINER,
+    ):
+        missing.append(f"previous logs of {pod}")
     if not _capture(
         path=directory / f"{pod}.describe.txt", command=["kubectl", "describe", "pod", pod, "-n", namespace]
     ):
@@ -74,9 +79,9 @@ def _pod_names(*, namespace: str, selector: str | None) -> list[str] | None:
         return None
 
 
-def _capture(path: Path, command: list[str], skip_when_it_fails: bool = False) -> bool:
+def _capture(*, path: Path, command: list[str], ignored_failure: str | None = None) -> bool:
     result = run_process(command, capture_output=True, check=False)
-    if result.returncode != 0 and skip_when_it_fails:
+    if result.returncode != 0 and ignored_failure is not None and ignored_failure in result.stderr:
         return True
     path.write_text(result.stdout + result.stderr)
     return result.returncode == 0
