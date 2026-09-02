@@ -2,7 +2,10 @@
 
 * Captures the fixed :data:`TARGET_METRIC_KEYS` whitelist of training/rollout
   metrics from the live process into one JSONL record file; keys outside the
-  whitelist are never recorded.
+  whitelist are never recorded. A whitelisted key is matched by suffix, and the
+  record keeps the key as it was logged, prefix included, so the policies of a
+  multi-policy run stay separate series instead of one series with a repeated
+  step. A gate spec therefore names the prefixed key of the policy it judges.
 * Collection is on only when the harness sets :data:`RECORD_DIR_ENV`
   (`MILES_CI_GATE_RECORD_DIR`); without it `init()` leaves the backend a
   no-op.
@@ -118,7 +121,7 @@ class CiHistoryBackend(TrackingBackend):
                     message = f"CI history metric {key!r} must be int or float, got {type(value).__name__}"
                     logger.error("%s", message)
                     raise TypeError(message)
-                captured.append((key, float(value)))
+                captured.append((logged_key, float(value)))
             for key, value in captured:
                 self._series.setdefault(key, []).append((step, value))
             if captured:
