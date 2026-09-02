@@ -16,7 +16,7 @@ from miles.utils.workers.env_vars import (
     POD_INDEX_ENV_VAR,
     RELEASE_ENV_VAR,
 )
-from miles.utils.workers.naming import POOL_NAME_MAX_LENGTH
+from miles.utils.workers.naming import POOL_NAME_MAX_LENGTH, PORT_NAME_MAX_LENGTH, PORT_NAME_PATTERN
 
 _DNS_LABEL = r"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
 _OPTIONAL_DNS_LABEL = r"^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$"
@@ -43,7 +43,6 @@ _VOLUME_SOURCES = ("hostPath", "persistentVolumeClaim", "emptyDir")
 _DEV_SHM_SOURCES = ("hostPath", "emptyDir")
 _QUANTITY = r"^[0-9]+(\.[0-9]+)?([EPTGMk]i?|m)?$"
 _OBJECT_NAME_MAX = 63
-_PORT_NAME_MAX = 15
 _KUBERNETES_NAME_MAX = 253
 WORKBENCH_OBJECT_NAME_MAX = 52
 
@@ -66,7 +65,7 @@ class ValuesModel(FrozenStrictBaseModel):
 
 
 class PortEntry(ValuesModel):
-    name: Annotated[str, Field(min_length=1, max_length=_PORT_NAME_MAX)]
+    name: Annotated[str, Field(min_length=1, max_length=PORT_NAME_MAX_LENGTH, pattern=PORT_NAME_PATTERN)]
     port: _Port
 
 

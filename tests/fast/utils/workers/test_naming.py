@@ -5,6 +5,7 @@ from miles.utils.workers.naming import (
     _worker_name_of_cell,
     cell_id_of_worker,
     compute_cell_id,
+    compute_port_name,
     compute_worker_name,
     format_name_index,
     parse_cell_id,
@@ -27,6 +28,18 @@ class TestFormatNameIndex:
         """Every emitted index must fit the fixed-width range used for sortable names."""
         with pytest.raises(AssertionError, match="name index must be"):
             format_name_index(index)
+
+
+class TestComputePortName:
+    def test_shortens_a_long_underscored_name_without_a_trailing_dash(self):
+        """disaggregation_bootstrap is the name that first hit the fifteen-character cut."""
+        assert compute_port_name("disaggregation_bootstrap") == "disaggregation"
+
+    @pytest.mark.parametrize("name", ["9000", "80_8080"])
+    def test_rejects_a_name_of_digits_alone(self, name: str):
+        """An IANA service name carries at least one letter, so a port named by its number is not one."""
+        with pytest.raises(AssertionError, match="which Kubernetes rejects"):
+            compute_port_name(name)
 
 
 class TestComputeCellId:

@@ -1,3 +1,4 @@
+import pydantic
 import pytest
 from tests.fast.utils.external_utils.command_utils.helm_backend.launcher.values.utils import (
     LAYOUT,
@@ -10,6 +11,7 @@ from tests.fast.utils.external_utils.command_utils.helm_backend.launcher.values.
 from miles.ray.specs.rollout import ROLLOUT_EXECUTOR_POOL_ID
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values import placeholders, pool_entry
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values.builder import build_values
+from miles.utils.external_utils.command_utils.helm_backend.launcher.values.helm_values_types import PortEntry
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values.misc import LaunchPlan
 from miles.utils.workers.types import PlatformAccess
 from miles.utils.workers.worker_spec import BaseWorkerSpec
@@ -48,6 +50,18 @@ class TestBuildEntry:
         command = build_values([engine()], LAYOUT).as_values()["run"]["inferenceEngines"][0]["command"]
 
         assert command[command.index("--dist-init-addr") + 1] == f"{placeholders.LEADER_ADDRESS_PLACEHOLDER}:9000"
+
+
+class TestPortEntry:
+    @pytest.mark.parametrize("name", ["9000", "bad_name", "trailing-"])
+    def test_refuses_a_name_that_is_not_an_iana_service_name(self, name: str):
+        """The chart writes these straight into containerPort names, and the api server rejects the rest."""
+        with pytest.raises(pydantic.ValidationError, match="String should match pattern"):
+            PortEntry(name=name, port=9000)
+
+    def test_accepts_the_names_the_launcher_computes(self):
+        """A name compute_port_name produced must never be turned away by the model that carries it."""
+        assert PortEntry(name="engine-info-boo", port=9000).name == "engine-info-boo"
 
 
 class TestPrepareCmd:

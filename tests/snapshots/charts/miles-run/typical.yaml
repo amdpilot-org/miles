@@ -1325,7 +1325,7 @@ spec:
                 containerPort: 9000
               - name: "nccl"
                 containerPort: 10000
-              - name: "disaggregation-"
+              - name: "disaggregation"
                 containerPort: 11000
               - name: "engine-info-boo"
                 containerPort: 12000

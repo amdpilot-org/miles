@@ -103,7 +103,7 @@ run:
       port: 9000
     - name: nccl
       port: 10000
-    - name: disaggregation-
+    - name: disaggregation
       port: 11000
     - name: engine-info-boo
       port: 12000

@@ -22,6 +22,7 @@ from miles.utils.external_utils.command_utils.helm_backend.launcher.values.place
     sentinels_to_placeholders,
 )
 from miles.utils.workers.argv_utils import python_argv_prefix
+from miles.utils.workers.naming import compute_port_name
 from miles.utils.workers.types import PlatformAccess
 from miles.utils.workers.worker_provider.kubernetes.helm import env
 from miles.utils.workers.worker_spec import (
@@ -66,7 +67,7 @@ def build_entry(
         object_name=naming.component_name(plan.release, spec.name),
         pool_id=spec.name,
         command=_with_prepare_cmd(_command_of_spec(spec, context, plan=plan), spec, plan=plan),
-        ports=[PortEntry(name=_port_name(port.name), port=port.static_port) for port in spec.port_infos],
+        ports=[PortEntry(name=compute_port_name(port.name), port=port.static_port) for port in spec.port_infos],
         env=_command_env_of_spec(spec, context, addresses=addresses, is_sub_node=is_sub_node) or None,
         meta=_meta_of_spec(spec) or None,
         service_account_name=_service_account_name(spec, plan=plan),
@@ -201,7 +202,3 @@ def _is_sub_node(pairing_layout: PairingLayout | None) -> bool:
     if pairing_layout is None:
         return False
     return pairing_layout.num_gpus_per_inference_pod < pairing_layout.num_gpus_per_node
-
-
-def _port_name(name: str) -> str:
-    return name.replace("_", "-")[:15]
