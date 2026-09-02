@@ -6,6 +6,7 @@ from typing import Any, Generic, Literal, NamedTuple, TypeVar
 import yaml
 from pydantic import Field
 
+from miles.utils.external_utils.command_utils.common import ArgvManipulator
 from miles.utils.external_utils.command_utils.helm_backend.orchestrator.state import STATE_FILE_FLAG
 from miles.utils.pydantic_utils import FrozenOpenBaseModel, FrozenStrictBaseModel
 
@@ -172,15 +173,12 @@ class Manifest(FrozenStrictBaseModel):
     def flag_value(self, flag: str, *, stateful_set: str, container: str) -> str | None:
         found = self._container(stateful_set=stateful_set, container=container)
         command = list(found.command) if found is not None else []
-        if flag not in command:
-            return None
-
-        value_index = command.index(flag) + 1
-        assert value_index < len(command), (
+        assert not (command and command[-1] == flag), (
             f"container {container!r} of {stateful_set} ends its command with {flag}, which takes a value, so this "
             f"launch cannot tell what the installed release was told"
         )
-        return command[value_index]
+        values = ArgvManipulator.get(command, flag)
+        return values[-1] if values else None
 
     def state_file(self, *, stateful_set: str, container: str) -> Path | None:
         named = self.flag_value(STATE_FILE_FLAG, stateful_set=stateful_set, container=container)

@@ -366,3 +366,42 @@ class TestWhichStatefulSetAFlagIsReadOff:
         manifest = _parse(_rendered(_stateful_set(command=["python", "--state-file", "/runs/a.state"])))
 
         assert str(manifest.state_file(stateful_set=ORCHESTRATOR, container="orchestrator")) == "/runs/a.state"
+
+
+class TestHowAFlagMayBeSpelled:
+    def test_a_flag_joined_to_its_value_by_an_equals_sign_is_read(self):
+        """The uuid is passed this way, and reading it as absent made the relaunch mint a new one."""
+        manifest = _parse(_rendered(_stateful_set(command=["python", "--run-uuid=abc123"])))
+
+        assert manifest.flag_value("--run-uuid", stateful_set=ORCHESTRATOR, container="orchestrator") == "abc123"
+
+    def test_a_flag_separated_from_its_value_is_still_read(self):
+        """Both spellings reach the container the same way, and the launcher has to read either."""
+        manifest = _parse(_rendered(_stateful_set(command=["python", "--run-uuid", "abc123"])))
+
+        assert manifest.flag_value("--run-uuid", stateful_set=ORCHESTRATOR, container="orchestrator") == "abc123"
+
+    def test_the_last_of_two_spellings_of_one_flag_wins(self):
+        """argparse reads the last occurrence, so anything else answers with a value the run never used."""
+        manifest = _parse(_rendered(_stateful_set(command=["python", "--run-uuid", "first", "--run-uuid=second"])))
+
+        assert manifest.flag_value("--run-uuid", stateful_set=ORCHESTRATOR, container="orchestrator") == "second"
+
+    def test_a_flag_the_command_never_names_is_still_absent(self):
+        """A release installed without the flag has nothing for the relaunch to inherit."""
+        manifest = _parse(_rendered(_stateful_set(command=["python", "--state-file", "/runs/a.state"])))
+
+        assert manifest.flag_value("--run-uuid", stateful_set=ORCHESTRATOR, container="orchestrator") is None
+
+    def test_a_longer_flag_that_starts_with_the_one_asked_for_is_not_read(self):
+        """--run-uuid-file is another argument, and answering with its value would resume the wrong run."""
+        manifest = _parse(_rendered(_stateful_set(command=["python", "--run-uuid-file=/runs/uuid"])))
+
+        assert manifest.flag_value("--run-uuid", stateful_set=ORCHESTRATOR, container="orchestrator") is None
+
+    def test_a_command_ending_with_the_bare_flag_still_stops_the_launch(self):
+        """Reading past the end says nothing about which release is malformed."""
+        manifest = _parse(_rendered(_stateful_set(command=["python", "--run-uuid"])))
+
+        with pytest.raises(AssertionError, match="takes a value"):
+            manifest.flag_value("--run-uuid", stateful_set=ORCHESTRATOR, container="orchestrator")
