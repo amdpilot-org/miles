@@ -71,6 +71,19 @@ _SGLANG_ARG_PREFIXES = ("sglang_", "eval_sglang_")
 _INHERITED_CREDENTIAL_PATTERN = re.compile(r"^(eval_)?(sglang|router)_(.*_)?(api_keys?|password)$")
 
 
+def _clear_mooncake_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    for name in (
+        "MOONCAKE_LOCAL_HOSTNAME",
+        "MOONCAKE_TE_META_DATA_SERVER",
+        "MOONCAKE_LOCAL_BUFFER_SIZE",
+        "MOONCAKE_PROTOCOL",
+        "MOONCAKE_DEVICE",
+        "MOONCAKE_MASTER",
+        "MOONCAKE_GLOBAL_SEGMENT_SIZE",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+
 class TestSaveInferenceEngineWeightChecksumArguments:
     def _parse(self, extra: list[str]) -> argparse.Namespace:
         parser = argparse.ArgumentParser()
@@ -564,6 +577,52 @@ class TestClusterBackend:
         miles_validate_args(args)
 
         assert args.mooncake_store_init_kwargs == {"master_server_address": "10.0.0.2:60000", "protocol": "rdma"}
+
+    def test_the_platform_environment_answers_the_store_defaults_of_a_kubernetes_run(self, monkeypatch):
+        """The invented defaults outranked the variables the platform configures its pods through."""
+        _clear_mooncake_env(monkeypatch)
+        monkeypatch.setenv("MOONCAKE_MASTER", "10.1.1.2:50051")
+        monkeypatch.setenv("MOONCAKE_PROTOCOL", "rdma")
+        args = self._parse(["--cluster-backend", "kubernetes", "--num-rollout", "1"])
+
+        miles_validate_args(args)
+
+        assert args.mooncake_store_init_kwargs["master_server_address"] == "10.1.1.2:50051"
+        assert args.mooncake_store_init_kwargs["protocol"] == "rdma"
+
+    def test_a_field_the_platform_environment_leaves_alone_keeps_the_launcher_default(self, monkeypatch):
+        """The launcher asserts every one of these kwargs exists, so none of them may go missing."""
+        _clear_mooncake_env(monkeypatch)
+        monkeypatch.setenv("MOONCAKE_MASTER", "10.1.1.2:50051")
+        args = self._parse(["--cluster-backend", "kubernetes", "--num-rollout", "1"])
+
+        miles_validate_args(args)
+
+        assert set(args.mooncake_store_init_kwargs) == set(compute_mooncake_init_kwargs())
+        assert args.mooncake_store_init_kwargs["protocol"] == "tcp"
+
+    def test_a_named_store_configuration_still_outranks_the_environment(self, monkeypatch):
+        """A run that configured the store itself knows more than the pod's platform does."""
+        _clear_mooncake_env(monkeypatch)
+        monkeypatch.setenv("MOONCAKE_MASTER", "10.9.9.9:50051")
+        named = '{"master_server_address": "10.0.0.2:60000"}'
+        args = self._parse(
+            ["--cluster-backend", "kubernetes", "--mooncake-store-init-kwargs", named, "--num-rollout", "1"]
+        )
+
+        miles_validate_args(args)
+
+        assert args.mooncake_store_init_kwargs == {"master_server_address": "10.0.0.2:60000"}
+
+    def test_a_ray_run_is_given_no_store_configuration_by_the_environment(self, monkeypatch):
+        """The ray store reads none of these variables, and inventing kwargs would misreport the run."""
+        _clear_mooncake_env(monkeypatch)
+        monkeypatch.setenv("MOONCAKE_MASTER", "10.1.1.2:50051")
+        args = self._parse(["--cluster-backend", "ray", "--num-rollout", "1"])
+
+        miles_validate_args(args)
+
+        assert args.mooncake_store_init_kwargs is None
 
     def test_a_ray_run_is_not_given_a_store_it_does_not_use(self):
         """The ray store needs none of this, and inventing kwargs would misreport what the run uses."""
