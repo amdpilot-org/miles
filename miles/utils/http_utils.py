@@ -80,7 +80,7 @@ async def wait_tcp_ready_async(host: str, port: int, *, timeout: float = 30) -> 
             writer.close()
             await writer.wait_closed()
             return
-        except (OSError, TimeoutError):
+        except (OSError, asyncio.TimeoutError):
             await asyncio.sleep(_CONNECT_RETRY_INTERVAL_SECONDS)
     raise RuntimeError(f"Server at {host}:{port} not ready after {timeout}s")
 
