@@ -323,7 +323,8 @@ Injection (target side only):
   1. Rollout cells, seed 42, exponential mean CRASH_INTERVAL_SECONDS (30s)
   2. Forms drawn per (cluster backend, cell type), as in the soaks
   3. Stop accepting faults after six completed rollouts, leaving the final two rollouts for recovery
-  4. Stop the injector with a 5s timeout, then re-use the soak's rollout witnesses: >= 2
+  4. Stop the injector, waiting out a mid-flight injection for at most
+     STOP_AND_JOIN_TIMEOUT_SECONDS (180s), then re-use the soak's rollout witnesses: >= 2
      accepted rollout injections, each paired with one completed recovery cycle
 
 Assertions:
