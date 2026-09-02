@@ -119,7 +119,9 @@ Load-bearing: adds --save/--load and --save-interval 3 (bounds one take-over's c
    thread finished without raising (where the run's own metric verdict surfaces); each landed
    take-over stamped orchestrator and rollout-executor once; no other workload rolled or lost a
    pod; one trainer boot uuid throughout, first read before any take-over stamped a workload; no
-   take-over threw away more than one save interval
+   take-over threw away more than MAX_REDONE_STEPS_PER_TAKE_OVER = SAVE_INTERVAL + 1 steps - one
+   save interval, plus the one step the checkpoint tracker read at the draw may still lag the
+   save the run had just written
 4. Artifact: per take-over cost (index, checkpoint held, step reached) in
    <dump_dir>/hot_restart/evidence.json
 
