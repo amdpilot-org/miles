@@ -50,8 +50,8 @@ class RegistrationHub(BaseWorkerProvider):
             )
             return
 
-        state.last_ingest_time = self.clock()
         self._replace_cells_of_reporter(reporter_id=snapshot.reporter_id, cell_of_id=cell_of_id)
+        state.last_ingest_time = self.clock()
         state.sequence_number = snapshot.sequence_number
 
     def _replace_cells_of_reporter(self, *, reporter_id: str, cell_of_id: dict[str, RegisteredCellInfo]) -> None:
