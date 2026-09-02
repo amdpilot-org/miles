@@ -13,6 +13,7 @@ import yaml
 from miles.utils.file_arg_utils import resolve_file_arg
 from miles.utils.pydantic_utils import FrozenStrictBaseModel
 from miles.utils.workers.argv_utils import coerce_dict_to_args
+from miles.utils.workers.naming import POOL_NAME_MAX_LENGTH, TRAINER_CONTROLLER_POOL_ID_PREFIX, TRAINER_ID_MAX_LENGTH
 
 logger = logging.getLogger(__name__)
 
@@ -306,6 +307,12 @@ def _assert_valid_trainer_ids(trainer_ids: list[str]) -> None:
         f"controller and its engine pool, so two entries sharing it would land in the same pool"
     )
     _assert_valid_ids(trainer_ids, kind="trainer")
+
+    too_long_trainer_ids = [trainer_id for trainer_id in trainer_ids if len(trainer_id) > TRAINER_ID_MAX_LENGTH]
+    assert not too_long_trainer_ids, (
+        f"--megatron-config trainer ids {too_long_trainer_ids} are longer than {TRAINER_ID_MAX_LENGTH} "
+        f"characters; shorten them"
+    )
 
 
 def _assert_valid_ids(ids: list[str], *, kind: str) -> None:
