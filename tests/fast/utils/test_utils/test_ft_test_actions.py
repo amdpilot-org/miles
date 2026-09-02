@@ -89,6 +89,15 @@ def test_load_actions_returns_empty_when_no_action_matches_filter() -> None:
     assert _load_actions(_args(raw), _CONTROLLER_ACTIONS) == []
 
 
+def test_load_actions_pads_a_legacy_cell_id_to_the_runtime_spelling() -> None:
+    """Regression: an unpadded cell_id passed validation and then matched no running cell."""
+    raw = json.dumps([{"at_rollout": 1, "action": "crash_before_allreduce", "cell_id": "trainer-engine-actor-2"}])
+
+    [action] = _load_actions(_args(raw), _ACTOR_ACTIONS)
+
+    assert action.cell_id == "trainer-engine-actor-00002"
+
+
 def test_load_actions_rejects_extra_field() -> None:
     """An unexpected JSON field is rejected because the model forbids extras."""
     raw = json.dumps(

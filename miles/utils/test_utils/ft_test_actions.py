@@ -11,7 +11,7 @@ from pydantic import TypeAdapter, model_validator
 
 from miles.utils.pydantic_utils import FrozenStrictBaseModel
 from miles.utils.retry_utils import retry_until_deadline
-from miles.utils.workers.naming import parse_cell_id
+from miles.utils.workers.naming import compute_cell_id, parse_cell_id
 
 if TYPE_CHECKING:
     from miles.ray.train.group import TrainerController
@@ -72,17 +72,26 @@ def _load_actions(args: object, action_filter: set[str]) -> list[FTTestAction]:
             f"{CI_FT_TEST_ACTIONS_PATH_FLAG} is re-read only by the orchestration script, so {action.action} "
             f"cannot be declared in it (action={action})"
         )
-        if (cell_id := action.cell_id) is None:
-            continue
-        try:
-            parse_cell_id(cell_id)
-        except ValueError as e:
-            raise ValueError(f"FT test action has malformed cell_id {cell_id!r} (action={action})") from e
 
-    actions = [a for a in all_actions if a.action in action_filter]
+    canonical_actions = [_with_a_canonical_cell_id(action) for action in all_actions]
+
+    actions = [a for a in canonical_actions if a.action in action_filter]
     if actions:
         logger.info("FT test actions activated: %d actions (%s)", len(actions), action_filter)
     return actions
+
+
+def _with_a_canonical_cell_id(action: FTTestAction) -> FTTestAction:
+    if (cell_id := action.cell_id) is None:
+        return action
+    try:
+        parsed = parse_cell_id(cell_id)
+    except ValueError as e:
+        raise ValueError(f"FT test action has malformed cell_id {cell_id!r} (action={action})") from e
+
+    return action.model_copy(
+        update=dict(cell_id=compute_cell_id(pool_id=parsed.pool_id, cell_index=parsed.cell_index))
+    )
 
 
 def _assert_loop_parkable(args: object, *, trainer_model_id: str | None) -> None:
