@@ -298,8 +298,12 @@ async def update_weights(
     inference_controller: BaseWorkerHandle,
     *,
     rollout_id: int | None = None,
+    weights_after_rollout_id: int | None = None,
     trainer_model_id: str | None = None,
 ) -> None:
+    if weights_after_rollout_id is None:
+        weights_after_rollout_id = rollout_id
+
     if rollout_id is not None:
         await FTTestActionOrchestrationExecutor.from_args(args, trainer_model_id=trainer_model_id).run_after_step(
             rollout_id=rollout_id
@@ -310,7 +314,10 @@ async def update_weights(
     await inference_controller.end_update_weights(snapshot_cell_id_to_hashes=info.snapshot_cell_id_to_hashes)
 
     await _maybe_log_inference_engine_weight_checksums(
-        args, inference_controller=inference_controller, rollout_id=rollout_id, trainer_model_id=trainer_model_id
+        args,
+        inference_controller=inference_controller,
+        rollout_id=weights_after_rollout_id,
+        trainer_model_id=trainer_model_id,
     )
 
     if weight_version is not None:
