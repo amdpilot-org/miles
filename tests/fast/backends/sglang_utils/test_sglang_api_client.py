@@ -302,7 +302,9 @@ async def test_every_remaining_post_method_wire_contract(client, recorder, call,
     """Each remaining POST method posts its documented payload to its own endpoint."""
     await call(client)
 
-    assert recorder.calls == [("post", f"{SERVER_URL}/{endpoint}", {"json": expected_payload})]
+    verb, url, kwargs = recorder.calls[0]
+    assert (verb, url, kwargs["json"]) == ("post", f"{SERVER_URL}/{endpoint}", expected_payload)
+    assert len(recorder.calls) == 1
 
 
 async def test_get_remote_instance_transfer_engine_info_unwraps_the_response(client, monkeypatch):
@@ -505,7 +507,7 @@ class TestInformationGetters:
 
         verb, url, kwargs = rec.calls[0]
         assert (verb, url) == ("get", f"{SERVER_URL}/get_remote_instance_transfer_engine_info")
-        assert kwargs == {"params": {"rank": 2}, "timeout": 5.0}
+        assert (kwargs["params"], kwargs["timeout"]) == ({"rank": 2}, 5.0)
 
     async def test_parallelism_info_returns_the_whole_json_body(self, client, monkeypatch):
         """Unlike the transfer-engine getter, this one does not unwrap a field."""
@@ -513,7 +515,7 @@ class TestInformationGetters:
         rec.install(monkeypatch, responses=[_FakeResponse(payload={"tp_size": 4, "dp_size": 2})])
 
         assert await client.get_parallelism_info(rank=1) == {"tp_size": 4, "dp_size": 2}
-        assert rec.calls[0][2] == {"params": {"rank": 1}, "timeout": 5.0}
+        assert (rec.calls[0][2]["params"], rec.calls[0][2]["timeout"]) == ({"rank": 1}, 5.0)
 
     async def test_server_info_returns_the_whole_json_body_without_params(self, client, monkeypatch):
         """``/server_info`` is rank-independent, so it must not send a rank parameter."""
@@ -534,6 +536,34 @@ _DIRECT_HTTP_METHODS = [
     ("start_profile", lambda c: c.start_profile()),
     ("stop_profile", lambda c: c.stop_profile()),
 ]
+
+_AUTHENTICATED_CALLS = [
+    ("abort_all_requests", lambda c: c.abort_all_requests()),
+    ("health_generate", lambda c: c.health_generate()),
+    ("get_server_info", lambda c: c.get_server_info()),
+    ("get_parallelism_info", lambda c: c.get_parallelism_info(rank=0)),
+    ("get_remote_instance_transfer_engine_info", lambda c: c.get_remote_instance_transfer_engine_info(rank=0)),
+    ("get_weight_version", lambda c: c.get_weight_version()),
+    ("flush_cache", lambda c: c.flush_cache()),
+    ("pause_generation", lambda c: c.pause_generation()),
+    ("continue_generation", lambda c: c.continue_generation()),
+    ("start_profile", lambda c: c.start_profile()),
+    ("stop_profile", lambda c: c.stop_profile()),
+]
+
+
+class TestEveryRequestIsAuthenticated:
+    """An engine started with --sglang-api-key answers 401 to any request that carries no bearer token."""
+
+    @pytest.mark.parametrize("name, call", _AUTHENTICATED_CALLS, ids=[name for name, _call in _AUTHENTICATED_CALLS])
+    async def test_a_client_holding_an_api_key_sends_a_bearer_token(self, monkeypatch, name, call):
+        """Every endpoint the client speaks to sits behind the same key, whatever helper builds the request."""
+        rec = _Recorder()
+        rec.install(monkeypatch, responses=[_FakeResponse(payload={"weight_version": "v1"})])
+
+        await call(SGLangApiClient(server_url=SERVER_URL, api_key="secret"))
+
+        assert rec.calls[0][2]["headers"]["Authorization"] == "Bearer secret"
 
 
 class TestMethodsThatBypassMakeRequest:
