@@ -135,6 +135,9 @@ emptyDir:
 {{- $mountPath := include "miles-common.mountPath" (dict "root" $root "volume" $volume "index" $index "mount" $mount) }}
 {{- $all = append $all $mountPath }}
 {{- if or (eq $runsRoot $mountPath) (hasPrefix (printf "%s/" $mountPath) $runsRoot) }}
+{{- if hasKey $volume "emptyDir" }}
+{{- fail (printf "infra.paths.runsRoot is %s, which falls under the emptyDir volume %s mounted at %s: an emptyDir belongs to a single pod, so the launcher, the orchestrator and every worker would each write into a directory of their own and no run would ever report a verdict" $runsRoot $volume.name $mountPath) }}
+{{- end }}
 {{- if $mount.readOnly }}
 {{- $readOnly = append $readOnly $mountPath }}
 {{- else }}
