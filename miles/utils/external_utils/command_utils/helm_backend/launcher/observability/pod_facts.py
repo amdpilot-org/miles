@@ -120,10 +120,14 @@ def is_pod_scheduling_gated(pod: Pod) -> bool:
 
 
 def _described(pod: Pod) -> str:
+    restarts = f", restarted {count} times" if (count := restarts_of_pod(pod)) else ""
+    return f"{_phase_described(pod)}{restarts}"
+
+
+def _phase_described(pod: Pod) -> str:
     if is_pod_scheduling_gated(pod):
         return "Pending (scheduling gated)"
     phase = phase_of_pod(pod)
     if phase == "Running" and not is_pod_ready(pod):
         return "Running (not ready yet)"
-    restarts = f", restarted {count} times" if (count := restarts_of_pod(pod)) else ""
-    return f"{phase}{restarts}"
+    return phase

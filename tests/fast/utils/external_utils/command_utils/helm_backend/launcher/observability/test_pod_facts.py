@@ -36,6 +36,12 @@ class TestStatusChanges:
             "pod p is now Running, restarted 2 times"
         ]
 
+    def test_reports_the_restarts_of_a_pod_that_never_became_ready(self):
+        """A crash looping pod reads Running and not ready every poll, so only the count moves."""
+        changes = pod_facts.status_changes([make_pod(ready=False)], [make_pod(ready=False, restarts=3)])
+
+        assert changes == ["pod p is now Running (not ready yet), restarted 3 times"]
+
 
 class TestContainerRuns:
     def test_finds_the_container_a_running_pod_is_serving_from(self):
