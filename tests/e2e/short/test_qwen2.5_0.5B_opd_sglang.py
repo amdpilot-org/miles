@@ -6,6 +6,7 @@ import urllib.request
 from tests.ci.ci_register import register_cuda_ci, register_rocm_ci
 
 from miles.utils.external_utils import command_utils
+from miles.utils.workers.types import ClusterBackend
 
 register_cuda_ci(est_time=400, suite="stage-c-8-gpu-h100", labels=["short"])
 register_rocm_ci(est_time=300, suite="nightly-stage-c-8-gpu-mi350", labels=["short"])
@@ -86,7 +87,11 @@ def _launch_teacher_server(teacher_gpu: str):
 
 
 def execute():
-    U = command_utils.default_config().create_backend()
+    config = command_utils.default_config()
+    assert (
+        config.cluster_backend is ClusterBackend.RAY
+    ), f"the OPD teacher runs on the launcher and names {TEACHER_HOST} in the reward url, so only ray works"
+    U = config.create_backend()
     train_gpus, teacher_gpu = _get_gpu_split()
     teacher_process = None
 
@@ -206,6 +211,7 @@ def execute():
             before_ray_job_submit=launch_teacher,
             # student-side top-k OPD needs opd_student_top_logprobs, produced only by v1
             extra_env_vars={"MILES_USE_LEGACY_ROLLOUT_V1": "1"},
+            config=config,
         )
     finally:
         if teacher_process:
