@@ -47,7 +47,7 @@ def _decode_payload(*, num_gpus: int = 1) -> dict[str, Any]:
 
 
 def _install_payloads(monkeypatch, payloads: dict[str, dict[str, Any]]) -> None:
-    async def _fetch(url: str) -> dict[str, Any]:
+    async def _fetch(url: str, *, api_key: str | None) -> dict[str, Any]:
         return payloads[url]
 
     monkeypatch.setattr(external_engine_provider_module, "_fetch_server_info_with_retry", _fetch)
@@ -133,7 +133,7 @@ class TestDiscoverExternalEngine:
         copy of sglang's own formula in miles for every dimension it grows."""
         _install_payloads(monkeypatch, {"http://host1:8000": _regular_payload(num_gpus=8)})
 
-        engine = await _discover_external_engine("http://host1:8000")
+        engine = await _discover_external_engine("http://host1:8000", api_key=None)
 
         assert (engine.num_gpus, engine.worker_type) == (8, "regular")
         assert (engine.host, engine.port) == ("host1", 8000)
@@ -145,7 +145,7 @@ class TestDiscoverExternalEngine:
             {"http://host1:8000": {**_prefill_payload(num_gpus=2), "disaggregation_bootstrap_port": "12090"}},
         )
 
-        engine = await _discover_external_engine("http://host1:8000")
+        engine = await _discover_external_engine("http://host1:8000", api_key=None)
 
         assert (engine.worker_type, engine.disaggregation_bootstrap_port) == ("prefill", 12090)
 
@@ -153,7 +153,7 @@ class TestDiscoverExternalEngine:
         """Only prefill engines own a bootstrap port; decode must come back None."""
         _install_payloads(monkeypatch, {"http://host1:8000": _decode_payload(num_gpus=4)})
 
-        engine = await _discover_external_engine("http://host1:8000")
+        engine = await _discover_external_engine("http://host1:8000", api_key=None)
 
         assert (engine.worker_type, engine.disaggregation_bootstrap_port) == ("decode", None)
 
@@ -162,8 +162,9 @@ class _FakeApiClient:
     calls: list[str] = []
     answers: list[Any] = []
 
-    def __init__(self, *, server_url: str) -> None:
+    def __init__(self, *, server_url: str, api_key: str | None) -> None:
         self.server_url = server_url
+        self.api_key = api_key
 
     async def get_server_info(self) -> dict[str, Any]:
         _FakeApiClient.calls.append(self.server_url)
@@ -186,7 +187,7 @@ class TestFetchServerInfoWithRetry:
         """An engine that answers on the second try must not fail the run."""
         fake_api_client.answers = [httpx.ConnectError("still booting"), _regular_payload()]
 
-        payload = await _fetch_server_info_with_retry("http://host1:8000")
+        payload = await _fetch_server_info_with_retry("http://host1:8000", api_key=None)
 
         assert payload == _regular_payload()
         assert fake_api_client.calls == ["http://host1:8000", "http://host1:8000"]
@@ -196,7 +197,7 @@ class TestFetchServerInfoWithRetry:
         fake_api_client.answers = [httpx.ConnectError("nobody home")]
 
         with pytest.raises(TimeoutError, match="server_info"):
-            await _fetch_server_info_with_retry("http://host1:8000", timeout_seconds=0.01)
+            await _fetch_server_info_with_retry("http://host1:8000", api_key=None, timeout_seconds=0.01)
 
 
 class TestStaticInferenceEngineWorkerProvider:
@@ -211,7 +212,7 @@ class TestStaticInferenceEngineWorkerProvider:
         on ranks the missing engine was supposed to claim."""
         args = _make_args(["host1:8000", "host2:8000"])
 
-        async def _fetch(url: str) -> dict[str, Any]:
+        async def _fetch(url: str, *, api_key: str | None) -> dict[str, Any]:
             if url == "http://host2:8000":
                 raise TimeoutError(f"External engine {url} did not answer /server_info")
             return _regular_payload()
