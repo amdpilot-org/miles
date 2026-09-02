@@ -13,9 +13,11 @@ from miles.utils.workers.serving.worker_identity import (
 from miles.utils.workers.worker_spec import SchedulingSpec
 
 
-def scheduling(*, workers_per_pod: int = 1, gpu_slots_per_worker: int = 0, pods_per_cell: int = 1) -> SchedulingSpec:
+def scheduling(
+    *, workers_per_pod: int = 1, gpu_slots_per_worker: int = 0, pods_per_cell: int = 1, num_cells: int = 1
+) -> SchedulingSpec:
     return SchedulingSpec(
-        num_cells=1,
+        num_cells=num_cells,
         num_workers_per_cell=workers_per_pod * pods_per_cell,
         num_gpus_per_worker=gpu_slots_per_worker,
         num_gpu_slots_per_worker=gpu_slots_per_worker,
@@ -41,12 +43,19 @@ class TestEnvVarOwnership:
 class TestReadCellIndex:
     def test_reads_the_cell_the_platform_stamped_onto_the_pod(self):
         """The driver numbers the pool's cells the same way, so both sides must agree on this index."""
-        assert read_worker_identity(scheduling=scheduling(), environ=_environ(cell_index="3")).cell_index == 3
+        assert (
+            read_worker_identity(scheduling=scheduling(num_cells=4), environ=_environ(cell_index="3")).cell_index == 3
+        )
 
     def test_refuses_a_pod_that_was_told_nothing_about_its_cell(self):
         """A pod that guessed would report itself as a member of whichever cell it invented."""
         with pytest.raises(AssertionError, match=CELL_INDEX_ENV_VAR):
             read_worker_identity(scheduling=scheduling(), environ={})
+
+    def test_refuses_a_cell_the_pool_was_never_scheduled_to_have(self):
+        """No address enumerates such a cell, so nothing would ever reach the workers this pod reports."""
+        with pytest.raises(AssertionError, match=CELL_INDEX_ENV_VAR):
+            read_worker_identity(scheduling=scheduling(num_cells=4), environ=_environ(cell_index="4"))
 
 
 class TestReadWorkerIdentity:
@@ -92,7 +101,7 @@ class TestReadWorkerIdentity:
     def test_the_ctor_context_carries_the_cell_the_pod_is_in(self):
         """ctor kwargs are computed from this context, and a trainer keys its checkpoints off the cell."""
         identity = read_worker_identity(
-            scheduling=scheduling(workers_per_pod=2, gpu_slots_per_worker=1),
+            scheduling=scheduling(workers_per_pod=2, gpu_slots_per_worker=1, num_cells=2),
             environ=_environ(subprocess_index="1", cell_index="1"),
         )
 
@@ -106,6 +115,11 @@ class TestReadWorkerIdentity:
 
         with pytest.raises(TypeError):
             identity.ctor_context()
+
+    def test_refuses_a_multi_worker_pod_whose_process_was_told_no_subprocess_index(self):
+        """A process started outside the supervisor would claim the leading worker and leave the rest unserved."""
+        with pytest.raises(AssertionError, match=SUBPROCESS_INDEX_ENV_VAR):
+            read_worker_identity(scheduling=scheduling(workers_per_pod=2, gpu_slots_per_worker=1), environ=_environ())
 
     def test_refuses_a_subprocess_index_the_pod_was_not_launched_for(self):
         """A worker beyond the pod's share would collide with a worker of the next pod in the cell."""

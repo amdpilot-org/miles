@@ -38,7 +38,14 @@ def read_worker_identity(*, scheduling: SchedulingSpec, environ: Mapping[str, st
     workers_per_pod = scheduling.workers_per_pod()
     pods_per_cell = scheduling.pods_per_cell()
 
-    worker_in_pod_index = read_worker_in_pod_index(environ)
+    worker_in_pod_index = read_worker_in_pod_index(
+        environ,
+        required_because=(
+            f"this pod runs {workers_per_pod} workers, so a default of zero would claim the leading one"
+            if workers_per_pod > 1
+            else None
+        ),
+    )
     assert worker_in_pod_index < workers_per_pod, (
         f"{SUBPROCESS_INDEX_ENV_VAR} is {worker_in_pod_index} in a pod launched for {workers_per_pod} workers; "
         f"the worker this process reports would collide with another pod's"
@@ -59,12 +66,17 @@ def read_worker_identity(*, scheduling: SchedulingSpec, environ: Mapping[str, st
         f"the workers this pod reports would belong to no cell of this pool"
     )
 
+    cell_index = _index_from(
+        environ,
+        CELL_INDEX_ENV_VAR,
+        required_because="nothing else tells this pod which cell of its pool it belongs to",
+    )
+    assert (
+        cell_index < scheduling.num_cells
+    ), f"{CELL_INDEX_ENV_VAR} is {cell_index}, but the pool is scheduled with {scheduling.num_cells} cells"
+
     return KubernetesWorkerIdentity(
-        cell_index=_index_from(
-            environ,
-            CELL_INDEX_ENV_VAR,
-            required_because="nothing else tells this pod which cell of its pool it belongs to",
-        ),
+        cell_index=cell_index,
         pod_in_cell_index=pod_in_cell_index,
         worker_in_pod_index=worker_in_pod_index,
         workers_per_pod=workers_per_pod,
@@ -72,8 +84,8 @@ def read_worker_identity(*, scheduling: SchedulingSpec, environ: Mapping[str, st
     )
 
 
-def read_worker_in_pod_index(environ: Mapping[str, str]) -> int:
-    return _index_from(environ, SUBPROCESS_INDEX_ENV_VAR, required_because=None)
+def read_worker_in_pod_index(environ: Mapping[str, str], *, required_because: str | None = None) -> int:
+    return _index_from(environ, SUBPROCESS_INDEX_ENV_VAR, required_because=required_because)
 
 
 def _index_from(environ: Mapping[str, str], name: str, *, required_because: str | None) -> int:
