@@ -253,7 +253,7 @@ class DefaultMultiDataBuffer(DataBuffer):
         return await self._inner_of(trainer_model_id).get(trainer_model_id=trainer_model_id, **context)
 
     def get_metrics(self, trainer_model_id: str | None = None) -> dict[str, float]:
-        return self._inner_of(trainer_model_id).get_metrics()
+        return self._inner_of(trainer_model_id).get_metrics(trainer_model_id=trainer_model_id)
 
     def _inner_of(self, trainer_model_id: str | None) -> DataBuffer:
         assert trainer_model_id in self._inners, (
