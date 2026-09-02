@@ -7,7 +7,7 @@ from miles.utils.audit_utils.event_logger.logger import EventLogger, is_event_lo
 from miles.utils.audit_utils.process_identity import ProcessIdentity
 from miles.utils.env_report.reporter import EnvReporter, start_env_reporting
 
-_LOGGER_CONFIGURED = False
+_STRICT_ASYNC_WARNINGS_INSTALLED = False
 _ENV_REPORTER: EnvReporter | None = None
 
 logger = logging.getLogger(__name__)
@@ -30,11 +30,7 @@ def configure_logger(args, *, source: ProcessIdentity, report_env: bool = True) 
 
 # ref: SGLang
 def configure_logger_raw(name: str = "") -> None:
-    global _LOGGER_CONFIGURED
-    if _LOGGER_CONFIGURED:
-        return
-
-    _LOGGER_CONFIGURED = True
+    global _STRICT_ASYNC_WARNINGS_INSTALLED
 
     logging.basicConfig(
         level=logging.INFO,
@@ -43,7 +39,9 @@ def configure_logger_raw(name: str = "") -> None:
         force=True,
     )
 
-    configure_strict_async_warnings()
+    if not _STRICT_ASYNC_WARNINGS_INSTALLED:
+        _STRICT_ASYNC_WARNINGS_INSTALLED = True
+        configure_strict_async_warnings()
 
 
 def configure_strict_async_warnings() -> None:
