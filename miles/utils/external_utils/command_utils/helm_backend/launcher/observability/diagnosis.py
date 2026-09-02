@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-import time
+from datetime import datetime
 from pathlib import Path
 
 from miles.utils.external_utils.command_utils.common import run_process
@@ -26,8 +26,8 @@ class Diagnosis(FrozenStrictBaseModel):
 def collect_diagnosis(
     *, namespace: str, output_dir: Path, selector: str | None = None, state_file: Path | None = None
 ) -> Diagnosis:
-    directory = output_dir / f"miles-diagnosis-{namespace}-{time.strftime('%Y%m%d-%H%M%S')}"
-    directory.mkdir(parents=True, exist_ok=True)
+    directory = output_dir / f"miles-diagnosis-{namespace}-{datetime.now().strftime('%Y%m%d-%H%M%S-%f')}"
+    directory.mkdir(parents=True)
 
     missing: list[str] = []
     if not _capture(

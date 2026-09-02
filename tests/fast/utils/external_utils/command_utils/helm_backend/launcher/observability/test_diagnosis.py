@@ -1,5 +1,8 @@
+import re
 import subprocess
+from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -83,3 +86,34 @@ class TestThePodsACollectionCovers:
         assert (collected.directory / "trainer-0.log").exists()
         assert (collected.directory / "engine-0.describe.txt").exists()
         assert collected.is_complete
+
+
+class TestTheDirectoryACollectionGetsForItself:
+    def test_two_collections_of_one_second_do_not_share_a_directory(self, monkeypatch, tmp_path):
+        """A relaunch diagnoses twice within a second, and one directory means one set of files."""
+        first = _collect(monkeypatch, tmp_path, pods=["trainer-0"])
+        second = _collect(monkeypatch, tmp_path, pods=["trainer-0"])
+
+        assert first.directory != second.directory
+
+    def test_the_name_carries_the_microsecond_the_collection_started_at(self, monkeypatch, tmp_path):
+        """Second resolution is what let two collections land in one directory in the first place."""
+        collected = _collect(monkeypatch, tmp_path, pods=["trainer-0"])
+
+        assert re.fullmatch(r"miles-diagnosis-rl-\d{8}-\d{6}-\d{6}", collected.directory.name)
+
+    def test_a_collection_into_a_directory_that_exists_fails_loudly(self, monkeypatch, tmp_path):
+        """Silently reusing it interleaves two runs' evidence, which is worse than collecting nothing."""
+        monkeypatch.setattr(diagnosis, "datetime", SimpleNamespace(now=lambda: datetime(2026, 1, 1, 0, 0, 0, 5)))
+
+        _collect(monkeypatch, tmp_path, pods=["trainer-0"])
+
+        with pytest.raises(FileExistsError):
+            _collect(monkeypatch, tmp_path, pods=["trainer-0"])
+
+    def test_the_name_says_which_namespace_was_diagnosed(self, monkeypatch, tmp_path):
+        """One output directory holds the diagnoses of every run a user launched from this machine."""
+        collected = _collect(monkeypatch, tmp_path, pods=["trainer-0"])
+
+        assert collected.directory.name.startswith("miles-diagnosis-rl-")
+        assert collected.directory.parent == tmp_path
