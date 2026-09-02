@@ -17,6 +17,7 @@ from tests.ci.metric_history import register_ci_gate
 
 from miles.utils.external_utils import command_utils
 from miles.utils.workers.naming import format_name_index
+from miles.utils.workers.types import ClusterBackend
 
 MODEL_NAME = "Qwen3-4B"
 MODEL_TYPE = "qwen3-4B"
@@ -92,7 +93,11 @@ def _assert_streamed():
 
 
 def execute():
-    U = command_utils.default_config().create_backend()
+    config = command_utils.default_config()
+    assert (
+        config.cluster_backend is ClusterBackend.RAY
+    ), "the disk-offload evidence lives in actor logs the launcher can read only on ray"
+    U = config.create_backend()
     ckpt_args = f"--hf-checkpoint /root/models/{MODEL_NAME}/ " f"--ref-load /root/{MODEL_NAME}_torch_dist "
 
     rollout_args = (
@@ -180,7 +185,7 @@ def execute():
         f"{misc_args} "
     )
 
-    U.execute_train(train_args=train_args, num_gpus_per_node=NUM_GPUS, megatron_model_type=MODEL_TYPE)
+    U.execute_train(train_args=train_args, num_gpus_per_node=NUM_GPUS, megatron_model_type=MODEL_TYPE, config=config)
 
     _assert_offloaded_to_disk()
     _assert_streamed()
