@@ -10,7 +10,7 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
-from miles.utils.external_utils.command_utils.common import run_process, run_shell_command
+from miles.utils.external_utils.command_utils.common import run_process
 
 logger = logging.getLogger(__name__)
 
@@ -33,14 +33,16 @@ class KindCluster:
 
 
 def create_cluster(*, run_id: str, kubeconfig: Path) -> KindCluster:
-    kind = _resolve_kind_binary()
-    run_shell_command(f"{kind} create cluster --name {run_id} --kubeconfig {kubeconfig} --wait {_READY_TIMEOUT}")
+    _run_kind("create", "cluster", "--name", run_id, "--kubeconfig", str(kubeconfig), "--wait", _READY_TIMEOUT)
     return KindCluster(name=run_id, kubeconfig=kubeconfig)
 
 
 def delete_cluster(cluster: KindCluster) -> None:
-    kind = _resolve_kind_binary()
-    run_shell_command(f"{kind} delete cluster --name {cluster.name} --kubeconfig {cluster.kubeconfig}")
+    _run_kind("delete", "cluster", "--name", cluster.name, "--kubeconfig", str(cluster.kubeconfig))
+
+
+def _run_kind(*args: str) -> None:
+    run_process([_resolve_kind_binary(), *args], capture_output=False, check=True)
 
 
 def _resolve_kind_binary() -> str:
