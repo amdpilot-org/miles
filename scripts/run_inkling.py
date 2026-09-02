@@ -428,5 +428,10 @@ def _prepare_cmd(args: ScriptArgs) -> dict[str, str]:
     return {"trainer": command_utils.rsync_cmd(args.torch_dist, args.torch_dist_local)}
 
 
+@app.callback()
+def _callback() -> None:
+    pass
+
+
 if __name__ == "__main__":
     app()
