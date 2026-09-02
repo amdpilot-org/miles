@@ -199,3 +199,79 @@ class TestCiRunCleanup:
         installed = [command for command in commands if command[1] == "upgrade" and "--dry-run" not in command]
 
         assert installed[0][installed[0].index("--labels") + 1] == f"{command_wrapper.CI_LABEL}=true"
+
+
+class _FakeObservability:
+    def __init__(self, **kwargs: Any) -> None:
+        self.kwargs = kwargs
+
+    def __enter__(self) -> None:
+        return None
+
+    def __exit__(self, *exc_info: Any) -> bool:
+        return False
+
+
+def _follow(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, outcome: Any, diagnosed: list[str]) -> None:
+    monkeypatch.setattr(entrypoint, "with_observability", _FakeObservability)
+    monkeypatch.setattr(entrypoint, "farewell", lambda **kwargs: "farewell hint")
+    monkeypatch.setattr(entrypoint, "_collect_diagnosis", lambda **kwargs: diagnosed.append(kwargs["release"]))
+
+    def wait_for_run(**kwargs: Any) -> Any:
+        if isinstance(outcome, BaseException):
+            raise outcome
+        return outcome
+
+    monkeypatch.setattr(entrypoint, "wait_for_run", wait_for_run)
+    entrypoint._follow_until_finished(release="r", namespace="rl", state_file=tmp_path / "state.json")
+
+
+class TestFollowUntilFinished:
+    def test_prints_the_farewell_hint_when_ctrl_c_ends_the_watch(self, monkeypatch, tmp_path, caplog):
+        """The message above the watch tells the user ctrl+c is for exactly this, and the hint went missing."""
+        diagnosed: list[str] = []
+
+        with caplog.at_level("INFO", logger=entrypoint.__name__):
+            with pytest.raises(KeyboardInterrupt):
+                _follow(monkeypatch, tmp_path, outcome=KeyboardInterrupt(), diagnosed=diagnosed)
+
+        assert "farewell hint" in caplog.text
+
+    def test_diagnoses_nothing_when_the_user_stopped_watching(self, monkeypatch, tmp_path):
+        """Ctrl+c stops the watch, not the run, so there is no failure to collect evidence about."""
+        diagnosed: list[str] = []
+
+        with pytest.raises(KeyboardInterrupt):
+            _follow(monkeypatch, tmp_path, outcome=KeyboardInterrupt(), diagnosed=diagnosed)
+
+        assert diagnosed == []
+
+    def test_prints_the_farewell_hint_after_a_run_that_finished(self, monkeypatch, tmp_path, caplog):
+        """A finished run is still installed and still reconnectable, so its user needs the same commands."""
+        diagnosed: list[str] = []
+
+        with caplog.at_level("INFO", logger=entrypoint.__name__):
+            _follow(monkeypatch, tmp_path, outcome=SimpleNamespace(exit_code=0), diagnosed=diagnosed)
+
+        assert "farewell hint" in caplog.text
+        assert diagnosed == []
+
+    def test_prints_the_farewell_hint_after_a_run_that_failed(self, monkeypatch, tmp_path, caplog):
+        """The failed run is what a user most needs the cleanup and reconnect commands for."""
+        diagnosed: list[str] = []
+
+        with caplog.at_level("INFO", logger=entrypoint.__name__):
+            with pytest.raises(entrypoint.RunExitedError) as failure:
+                _follow(monkeypatch, tmp_path, outcome=SimpleNamespace(exit_code=3), diagnosed=diagnosed)
+
+        assert "farewell hint" in caplog.text
+        assert failure.value.code == 3
+
+    def test_still_collects_a_diagnosis_of_a_run_that_failed(self, monkeypatch, tmp_path):
+        """Printing the hint from a finally block must not cost the evidence the failure is diagnosed from."""
+        diagnosed: list[str] = []
+
+        with pytest.raises(entrypoint.RunExitedError):
+            _follow(monkeypatch, tmp_path, outcome=SimpleNamespace(exit_code=3), diagnosed=diagnosed)
+
+        assert diagnosed == ["r"]
