@@ -392,3 +392,72 @@ def _head_of_this_call(commits):
         return subprocess.CompletedProcess(args=["git", *args], returncode=0, stdout=stdout, stderr=b"")
 
     return _run
+
+
+def _make_repo_with_subpackage(root: Path) -> Path:
+    _make_repo(root)
+    package = root / "python"
+    package.mkdir()
+    (package / "module.py").write_text("x = 1\n")
+    _git(root, "add", "python/module.py")
+    _git(root, "commit", "-m", "add the package directory")
+    return package
+
+
+class TestTheUntrackedFilesOfAnEditablePackageInstalledFromASubdirectory:
+    def test_a_file_outside_the_package_directory_is_still_enumerated(self, tmp_path: Path) -> None:
+        """sglang installs from python/, and the commit and the diff describe the whole repository."""
+        package = _make_repo_with_subpackage(tmp_path)
+        (tmp_path / "root_stray.py").write_text("x = 1\n")
+
+        assert _git_info(package).untracked_paths == ["root_stray.py"]
+
+    def test_a_file_inside_the_package_directory_is_named_from_the_repository_root(self, tmp_path: Path) -> None:
+        """Two ranks installed under different paths must agree on the name of the same untracked file."""
+        package = _make_repo_with_subpackage(tmp_path)
+        (package / "sub_stray.py").write_text("x = 1\n")
+
+        assert _git_info(package).untracked_paths == ["python/sub_stray.py"]
+
+    def test_a_file_outside_the_package_directory_reaches_the_hash(self, tmp_path: Path) -> None:
+        """An untracked module the report cannot see is exactly the difference between two ranks it hides."""
+        package = _make_repo_with_subpackage(tmp_path)
+        clean_hash = _git_info(package).uncommitted_hash
+
+        (tmp_path / "root_stray.py").write_text("x = 1\n")
+
+        assert _git_info(package).uncommitted_hash != clean_hash
+        assert _git_info(package).dirty is True
+
+    def test_the_content_of_a_file_outside_the_package_directory_reaches_the_hash(self, tmp_path: Path) -> None:
+        """Hashing by name alone would call two different patches of the same repository one run."""
+        package = _make_repo_with_subpackage(tmp_path)
+        (tmp_path / "root_stray.py").write_text("x = 1\n")
+        first = _git_info(package).uncommitted_hash
+
+        (tmp_path / "root_stray.py").write_text("x = 2\n")
+
+        assert _git_info(package).uncommitted_hash != first
+
+    def test_the_subdirectory_and_the_root_report_the_same_untracked_state(self, tmp_path: Path) -> None:
+        """The location a package was installed from must not change what the report says about its repository."""
+        package = _make_repo_with_subpackage(tmp_path)
+        (tmp_path / "root_stray.py").write_text("x = 1\n")
+        (package / "sub_stray.py").write_text("x = 1\n")
+
+        assert _git_info(package).untracked_paths == _git_info(tmp_path).untracked_paths
+        assert _git_info(package).uncommitted_hash == _git_info(tmp_path).uncommitted_hash
+
+
+class TestResolvingTheRepositoryRoot:
+    def test_a_subdirectory_of_a_repository_resolves_to_the_repository_root(self, tmp_path: Path) -> None:
+        """Everything the untracked enumeration reads is relative to this path."""
+        package = _make_repo_with_subpackage(tmp_path)
+
+        root = git_state._resolve_repo_root(location=str(package))
+
+        assert (root / "tracked.txt").exists()
+
+    def test_a_location_git_cannot_answer_for_is_taken_as_the_root_itself(self, tmp_path: Path) -> None:
+        """A package outside any repository must be read as it always was, not crash the report."""
+        assert git_state._resolve_repo_root(location=str(tmp_path)) == tmp_path

@@ -108,14 +108,15 @@ def _hash_uncommitted(*, diff_patch: bytes | None, untracked: _UntrackedFiles) -
 
 
 def _collect_untracked(*, location: str) -> _UntrackedFiles:
-    result = _run_git(args=["ls-files", "--others", "--exclude-standard", "-z"], location=location)
+    root = _resolve_repo_root(location=location)
+
+    result = _run_git(args=["ls-files", "--others", "--exclude-standard", "-z"], location=str(root))
     if result.returncode != 0:
         return _UntrackedFiles(paths=[], hash_entries=[], paths_truncated=False, total_count=0, unhashed_paths=[])
 
     all_paths = sorted(path for path in result.stdout.split(b"\0") if path)
     selected = all_paths[:_UNTRACKED_MAX_FILES]
 
-    root = Path(location)
     paths: list[str] = []
     hash_entries: list[bytes] = []
     unhashed_paths: list[str] = []
@@ -133,6 +134,13 @@ def _collect_untracked(*, location: str) -> _UntrackedFiles:
         total_count=len(all_paths),
         unhashed_paths=unhashed_paths,
     )
+
+
+def _resolve_repo_root(*, location: str) -> Path:
+    result = _run_git(args=["rev-parse", "--show-toplevel"], location=location)
+    if result.returncode != 0 or not (toplevel := _decode(result.stdout).strip()):
+        return Path(location)
+    return Path(toplevel)
 
 
 def _untracked_hash_entry(*, root: Path, raw_path: bytes) -> tuple[bytes, bool]:
