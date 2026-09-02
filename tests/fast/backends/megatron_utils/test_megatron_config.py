@@ -736,13 +736,14 @@ class TestSynthesizedCriticTrainer:
         assert (critic.trainer_id, critic.model_id, critic.role) == ("alpha-critic", "alpha", "critic")
         assert critic.overrides["eps_clip"] == 0.3
 
-    def test_the_synthesized_critic_reproduces_the_legacy_worker_swap(self):
+    def test_the_synthesized_critic_reproduces_the_legacy_worker_swap(self, tmp_path):
         """The worker no longer remaps critic_* onto the standard fields, so the overlay must do it."""
+        critic_load = _write_megatron_checkpoint(tmp_path)
         args = _make_args(
             use_critic=True,
             save="/ckpt/run",
             load="/ckpt/run",
-            critic_load="/ckpt/critic",
+            critic_load=critic_load,
             critic_save="/ckpt/run_critic",
             critic_lr=2e-6,
             critic_lr_warmup_iters=3,
@@ -756,11 +757,36 @@ class TestSynthesizedCriticTrainer:
             False,
         )
         assert (critic_args.load, critic_args.save, critic_args.lr, critic_args.lr_warmup_iters) == (
-            "/ckpt/critic",
+            critic_load,
             "/ckpt/run_critic",
             2e-6,
             3,
         )
+
+    def test_the_critic_resolves_its_reload_directory_from_its_own_load(self, tmp_path):
+        """A hot restart reads requested_load, so a critic pointed at the actor's directory reloads the wrong model."""
+        critic_load = _write_megatron_checkpoint(tmp_path)
+        args = _make_args(use_critic=True, save="/ckpt/run", load="/ckpt/run", critic_load=critic_load)
+        resolve_args_checkpoint_load(args)
+
+        critic_args = compute_trainer_args(args, resolve_megatron_config(args).trainers[1])
+
+        assert critic_args.requested_load == critic_load
+
+    def test_the_actor_of_a_critic_run_keeps_the_reload_directory_it_was_given(self, tmp_path):
+        """Re-resolving an actor whose --load already fell back to --ref-load would repoint it at the reference."""
+        args = _make_args(
+            use_critic=True,
+            save="/ckpt/run",
+            load=str(tmp_path / "run"),
+            ref_load=_write_megatron_checkpoint(tmp_path),
+            critic_load="/ckpt/critic",
+        )
+        resolve_args_checkpoint_load(args)
+
+        actor_args = compute_trainer_args(args, resolve_megatron_config(args).trainers[0])
+
+        assert actor_args.requested_load == str(tmp_path / "run")
 
     def test_the_actor_of_a_critic_run_keeps_its_own_checkpoint_and_schedule(self):
         """The two trainers share one command line, so a leaked critic override would retrain the actor."""

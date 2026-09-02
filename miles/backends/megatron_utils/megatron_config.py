@@ -330,7 +330,7 @@ def compute_trainer_args(args: Namespace, trainer: MegatronTrainerConfig) -> Nam
         ans.load = _compute_trainer_checkpoint_dir(base_dir=ans.load, trainer_id=trainer.trainer_id)
         ans.save_hf = _compute_trainer_checkpoint_dir(base_dir=ans.save_hf, trainer_id=trainer.trainer_id)
 
-    if args.megatron_config is not None:
+    if args.megatron_config is not None or "load" in trainer.overrides:
         resolve_args_checkpoint_load(ans)
 
     return ans
