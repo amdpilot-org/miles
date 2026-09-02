@@ -43,6 +43,10 @@ def sentinels_to_placeholders(argv: list[str], spec: BaseWorkerSpec) -> list[str
     return argv
 
 
+def sentinel_to_placeholder(value: str, spec: BaseWorkerSpec) -> str:
+    return sentinels_to_placeholders([value], spec)[0]
+
+
 def _assert_sentinel_is_a_whole_token(
     argv: list[str], *, sentinel: str, spec: BaseWorkerSpec, built_out_of: str
 ) -> None:
