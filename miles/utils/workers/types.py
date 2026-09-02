@@ -51,7 +51,13 @@ HOT_RESTART_SEPARATOR = ","
 
 
 def parse_hot_restart(value: str) -> list[HotRestartComponent]:
-    return [HotRestartComponent(name.strip()) for name in value.split(HOT_RESTART_SEPARATOR) if name.strip()]
+    components = [
+        HotRestartComponent(stripped) for name in value.split(HOT_RESTART_SEPARATOR) if (stripped := name.strip())
+    ]
+    assert (
+        components or not value
+    ), f"--hot-restart {value!r} names no component; pass one of {[one.value for one in HotRestartComponent]}"
+    return components
 
 
 class DeploymentIdentity(FrozenStrictBaseModel):
