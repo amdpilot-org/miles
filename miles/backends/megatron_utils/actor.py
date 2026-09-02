@@ -57,7 +57,7 @@ from .ft.checkpoint_transfer import recv_ckpt
 from .ft.checkpoint_transfer import send_ckpt as _send_ckpt
 from .ft.in_memory_checkpoint import InMemoryCheckpointManager
 from .ft.indep_dp import reconfigure_indep_dp_group
-from .initialize import init, is_first_replica_megatron_main_rank, set_random_seed_from_args
+from .initialize import capture_random_state, init, is_first_replica_megatron_main_rank, restore_random_state
 from .lora_utils import is_lora_enabled, lora_rollout_enabled
 from .model import (
     LoadCheckpointOutput,
@@ -204,6 +204,7 @@ class MegatronTrainRayActor(TrainRayActor):
             dict(no_load_optim=False, no_load_rng=False, finetune=False) if recv_ckpt_src_rank is not None else {}
         )
         self.model, self.optimizer, self.opt_param_scheduler = build_model_and_optimizer(args, role=role)
+        self._post_init_random_state = capture_random_state()
 
         parallel_state = get_parallel_state()
         if parallel_state.cp.size > 1:
@@ -337,7 +338,7 @@ class MegatronTrainRayActor(TrainRayActor):
                 f"started from"
             )
             overrider_for_loading = {}
-            set_random_seed_from_args(self.args)
+            restore_random_state(self._post_init_random_state)
             if self.optimizer is not None:
                 reset_optimizer_state(
                     self.optimizer, stream_optimizer_state_to_disk=self.args.stream_optimizer_state_to_disk
