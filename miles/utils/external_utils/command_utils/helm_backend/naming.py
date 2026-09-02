@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import random
-import time
+from datetime import datetime
 from pathlib import Path
 
 from pydantic import model_validator
@@ -143,4 +143,4 @@ def _orchestrator_state_path(run_directory: str | Path, launch_token: str) -> Pa
 
 
 def _new_launch_token() -> str:
-    return f"{time.strftime('%y%m%d-%H%M%S')}-{random.Random().randint(0, 999999):06d}"
+    return f"{datetime.now().strftime('%y%m%d-%H%M%S-%f')}-{random.Random().randint(0, 999999):06d}"
