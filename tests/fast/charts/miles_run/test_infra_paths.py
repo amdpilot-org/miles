@@ -139,6 +139,59 @@ class TestRunsRootIsOnAMountedVolume:
 
 
 @requires_helm
+class TestRunsRootContainmentIgnoresHowAPathIsSpelled:
+    def test_a_mount_written_with_a_trailing_slash_still_covers_the_runs_root(self):
+        """The mount is the same directory however it is typed, and the refusal would be unexplainable."""
+        container = orchestrator_container(
+            *volumes_args(host_path_volume(mounts=[{"mountPath": "/cluster-storage/"}])),
+            "--set",
+            "infra.paths.runsRoot=/cluster-storage/miles_data",
+        )
+
+        assert container["image"]
+
+    def test_a_mount_at_the_filesystem_root_covers_every_runs_root(self):
+        """A volume mounted at / holds every path, and trimming its slash must not leave an empty prefix."""
+        container = orchestrator_container(
+            *volumes_args(host_path_volume(mounts=[{"mountPath": "/"}])),
+            "--set",
+            "infra.paths.runsRoot=/anywhere/miles_data",
+        )
+
+        assert container["image"]
+
+    def test_redundant_separators_on_either_side_name_the_same_directory(self):
+        """A path pasted together from two configured halves carries them, and names the mount all the same."""
+        container = orchestrator_container(
+            *volumes_args(host_path_volume(mounts=[{"mountPath": "/cluster-storage/./data"}])),
+            "--set",
+            "infra.paths.runsRoot=/cluster-storage//data/miles_data",
+        )
+
+        assert container["image"]
+
+    def test_a_runs_root_beside_a_mount_is_not_taken_for_one_inside_it(self):
+        """/cluster-storage-2 starts with the mount path as text, and only the separator tells them apart."""
+        error = render_run_error(
+            *volumes_args(host_path_volume(mounts=[{"mountPath": "/cluster-storage/"}])),
+            "--set",
+            "infra.paths.runsRoot=/cluster-storage-2/miles_data",
+        )
+
+        assert "/cluster-storage-2/miles_data" in error
+
+    def test_a_runs_root_under_an_empty_dir_mount_is_refused_however_the_mount_is_spelled(self):
+        """Every pod would get a directory of its own, so no run could ever report a verdict."""
+        error = render_run_error(
+            *volumes_args({"name": "scratch", "emptyDir": {}, "mounts": [{"mountPath": "/scratch/"}]}),
+            "--set",
+            "infra.paths.runsRoot=/scratch/miles_data",
+        )
+
+        assert "emptyDir" in error
+
+
+@requires_helm
 class TestRunDirectory:
     def test_the_orchestrator_watches_the_state_file_the_launcher_named(self):
         """The launcher polls the path it injected, so a chart that derives its own is a run that can only hang."""
