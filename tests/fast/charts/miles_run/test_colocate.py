@@ -134,6 +134,16 @@ class TestColocatedEnginePool:
         """The trainer requests the whole node, and two claims on one gpu would never both schedule."""
         assert colocated_engine_pod()["containers"][0]["resources"]["limits"]["nvidia.com/gpu"] == 0
 
+    def test_zeroes_a_gpu_request_the_pool_declared_for_itself(self):
+        """A request left above the zeroed limit is rejected outright, so the engine never runs at all."""
+        engines = [{**ENGINES[0], "resources": {"limits": {"nvidia.com/gpu": 8}, "requests": {"nvidia.com/gpu": 8}}}]
+        pod = colocated_engine_pod("--set-json", f"run.inferenceEngines={json.dumps(with_object_names(engines))}")
+
+        assert pod["containers"][0]["resources"] == {
+            "limits": {"nvidia.com/gpu": 0},
+            "requests": {"nvidia.com/gpu": 0},
+        }
+
     def test_gives_a_second_colocated_pool_the_same_treatment(self):
         """A prefill/decode run gates both pool_ids, and one left ungated would race the trainer for its gpus."""
         pod = pool_pod(render_run(*ENABLE), "myrun-miles-run-decode")

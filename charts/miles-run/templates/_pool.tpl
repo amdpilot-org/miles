@@ -79,6 +79,9 @@ spec:
             {{- $resources = deepCopy $resources }}
             {{- $_ := set $limits "nvidia.com/gpu" 0 }}
             {{- $ignored := set $resources "limits" $limits }}
+            {{- with $resources.requests }}
+            {{- $alsoIgnored := set $resources "requests" (set (deepCopy .) "nvidia.com/gpu" 0) }}
+            {{- end }}
             {{- end }}
             resources:
               {{- toYaml $resources | nindent 14 }}
