@@ -174,7 +174,7 @@ def build_train_args(
         f"{rollout_args} "
         f"{optimizer_args} "
         f"{grpo_args} "
-        f"{wandb_args if wandb_args is not None else command_utils.get_default_wandb_args(__file__)} "
+        f"{wandb_args if wandb_args is not None else command_utils.get_default_wandb_args(__file__, run_id=args.run_id)} "
         f"{eval_args} "
         f"{perf_args} "
         f"{sglang_args} "
