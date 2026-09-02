@@ -699,3 +699,64 @@ class TestATakeOverDrivesARealInferenceControllerOverTheWire:
             await releaser
 
         assert worker.calls.index("previous_script_call_end") < worker.calls.index("abort_all")
+
+
+class TestTheExternalAgentIsStoppedByATakeOver:
+    async def test_a_take_over_asks_the_agent_backend_to_stop(self, monkeypatch):
+        """That loop keeps issuing completion requests after the script that started it is gone."""
+        asked: list[object] = []
+
+        async def hook(args) -> None:
+            asked.append(args)
+
+        monkeypatch.setattr(hot_restart_module, "call_agent_abort_hook", hook)
+
+        await init_or_reset_inference_controller(_FakeInferenceController(initialized=True), args=_BROADCAST_ARGS)
+
+        assert asked == [_BROADCAST_ARGS]
+
+    async def test_the_agent_is_stopped_after_the_fleet_was_asked_to_abort(self, monkeypatch):
+        """Stopping it first would let the fleet it is still driving accept fresh work in between."""
+        controller = _FakeInferenceController(initialized=True)
+
+        async def hook(args) -> None:
+            controller.calls.append("agent_abort")
+
+        monkeypatch.setattr(hot_restart_module, "call_agent_abort_hook", hook)
+
+        await init_or_reset_inference_controller(controller, args=_BROADCAST_ARGS)
+
+        assert controller.calls[-2:] == ["abort_all", "agent_abort"]
+
+    async def test_a_cold_start_stops_no_agent(self, monkeypatch):
+        """There is no previous script, so there is no agent loop of one still running."""
+        asked: list[object] = []
+
+        async def hook(args) -> None:
+            asked.append(args)
+
+        monkeypatch.setattr(hot_restart_module, "call_agent_abort_hook", hook)
+
+        await init_or_reset_inference_controller(_FakeInferenceController(initialized=False), args=_BROADCAST_ARGS)
+
+        assert asked == []
+
+    async def test_an_agent_that_never_answers_fails_on_the_take_over_budget(
+        self, monkeypatch, short_take_over_budget: None
+    ):
+        """It runs on the same bounded budget as the rest of the take-over, not on an unbounded wait."""
+
+        async def hook(args) -> None:
+            await asyncio.sleep(_STALLED_SECONDS)
+
+        monkeypatch.setattr(hot_restart_module, "call_agent_abort_hook", hook)
+
+        started = time.monotonic()
+        with pytest.raises(asyncio.TimeoutError):
+            await init_or_reset_inference_controller(_FakeInferenceController(initialized=True), args=_BROADCAST_ARGS)
+
+        assert time.monotonic() - started < _STALLED_SECONDS
+
+    async def test_a_run_without_a_custom_agent_function_stops_nothing(self):
+        """Almost every run configures none, and the real hook has to be a no-op for those."""
+        await init_or_reset_inference_controller(_FakeInferenceController(initialized=True), args=_BROADCAST_ARGS)
