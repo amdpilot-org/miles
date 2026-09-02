@@ -1013,6 +1013,29 @@ class TestDeployComponent:
                 self._parse(["--deploy-component", "trainer", "--deploy-instance-id", "actro", *_SHARED_STORE_ARGS])
             )
 
+    def test_refuses_a_ray_trainer_deployment_that_debugs_the_rollout_alone(self):
+        """It sizes the placement group for an inference side this deployment does not deploy."""
+        with pytest.raises(AssertionError, match="--debug-rollout-only"):
+            _validate_deploy_component(
+                self._parse(
+                    [*_RAY_RPC_ARGS, "--deploy-component", "trainer", "--debug-rollout-only", *_SHARED_STORE_ARGS]
+                )
+            )
+
+    def test_a_ray_trainer_deployment_that_trains_normally_still_validates(self):
+        """The refusal is about that one flag, and the split trainer itself is unchanged."""
+        _validate_deploy_component(self._parse([*_RAY_RPC_ARGS, "--deploy-component", "trainer", *_SHARED_STORE_ARGS]))
+
+    def test_a_kubernetes_trainer_deployment_is_not_refused_the_flag(self):
+        """The empty layout is a ray placement group, which this backend builds none of."""
+        _validate_deploy_component(
+            self._parse(["--deploy-component", "trainer", "--debug-rollout-only", *_SHARED_STORE_ARGS])
+        )
+
+    def test_an_unsplit_ray_run_may_still_debug_the_rollout_alone(self):
+        """It deploys the inference side itself, so the layout it sizes has the bundles it asks for."""
+        _validate_deploy_component(self._parse([*_RAY_RPC_ARGS, "--debug-rollout-only"]))
+
 
 class TestInitExpectedNumCells:
     def test_a_run_told_nothing_names_no_number_and_is_left_to_the_default(self):
