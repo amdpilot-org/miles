@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 _HEAD_MOVE_ATTEMPTS = 2
 _UNTRACKED_MAX_FILES = 1000
 _UNTRACKED_MAX_FILE_BYTES = 10 * 1024 * 1024
+_PATCH_SECTION_STARTS = (b"diff --git ", b"diff --cc ", b"diff --combined ", b"* Unmerged path ")
 
 
 def collect_git_info(*, package_name: str, location: str) -> EnvReportGitRepoInfo | None:
@@ -34,11 +35,7 @@ def _collect_stable_git_info(*, package_name: str, location: str) -> EnvReportGi
         if commit_result.returncode != 0:
             return None
 
-        diff_stat_result = _run_git(args=["diff", "--stat", "HEAD"], location=location)
-        diff_stat = _decode(diff_stat_result.stdout).strip()
-
-        patch_result = _run_git(args=["diff", "HEAD"], location=location)
-        diff_patch = patch_result.stdout if patch_result.returncode == 0 else None
+        diff = _collect_diff(location=location)
 
         untracked = _collect_untracked(location=location)
 
@@ -49,9 +46,9 @@ def _collect_stable_git_info(*, package_name: str, location: str) -> EnvReportGi
             package_name=package_name,
             location=location,
             commit=_decode(commit_result.stdout).strip(),
-            dirty=bool(diff_stat) or bool(untracked.paths),
-            diff_stat=diff_stat,
-            uncommitted_hash=_hash_uncommitted(diff_patch=diff_patch, untracked=untracked),
+            dirty=bool(diff.stat) or bool(untracked.paths),
+            diff_stat=diff.stat,
+            uncommitted_hash=_hash_uncommitted(diff_patch=diff.patch, untracked=untracked),
             untracked_paths=untracked.paths,
             untracked_paths_truncated=untracked.paths_truncated,
             untracked_unhashed_paths=untracked.unhashed_paths,
@@ -61,6 +58,29 @@ def _collect_stable_git_info(*, package_name: str, location: str) -> EnvReportGi
     except Exception:
         logger.warning("Failed to collect git info for %s at %s", package_name, location, exc_info=True)
         return None
+
+
+@dataclass(frozen=True)
+class _GitDiff:
+    stat: str
+    patch: bytes | None
+
+
+def _collect_diff(*, location: str) -> _GitDiff:
+    result = _run_git(args=["diff", "--patch-with-stat", "HEAD"], location=location)
+    if result.returncode != 0:
+        return _GitDiff(stat="", patch=None)
+
+    if (patch_start := _find_patch_start(stdout=result.stdout)) is None:
+        return _GitDiff(stat=_decode(result.stdout).strip(), patch=b"")
+
+    return _GitDiff(stat=_decode(result.stdout[:patch_start]).strip(), patch=result.stdout[patch_start:])
+
+
+def _find_patch_start(*, stdout: bytes) -> int | None:
+    sentinelled = b"\n" + stdout
+    starts = [found for start in _PATCH_SECTION_STARTS if (found := sentinelled.find(b"\n" + start)) >= 0]
+    return min(starts) if starts else None
 
 
 @dataclass(frozen=True)
