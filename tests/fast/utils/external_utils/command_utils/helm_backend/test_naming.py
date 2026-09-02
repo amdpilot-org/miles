@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 from miles.utils.external_utils.command_utils.helm_backend.naming import RunFiles, _orchestrator_state_path
 from miles.utils.external_utils.command_utils.helm_backend.orchestrator.state import (
     OrchestratorState,
@@ -7,6 +10,12 @@ from miles.utils.external_utils.command_utils.helm_backend.orchestrator.state im
 
 def _write(path, status: OrchestratorStatus, *, exit_code: int | None = None) -> None:
     OrchestratorState(status=status, exit_code=exit_code).write(path)
+
+
+def _record(run_directory, launch_token: str, state_file) -> None:
+    path = Path(run_directory) / "launches" / f"launch-{launch_token}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"state_file": str(state_file)}))
 
 
 def _state_file(tmp_path):
@@ -36,9 +45,17 @@ class TestRunDir:
 
 
 class TestLatestExitFile:
-    def test_names_no_file_before_a_launch_has_written_one(self, tmp_path):
+    def test_names_no_file_before_a_launch_has_recorded_one(self, tmp_path):
         """A run directory a launch has only just created holds no verdict to collect."""
         assert RunFiles.latest_state_file(run_directory=tmp_path) is None
+
+    def test_names_the_newest_launch_s_state_file_before_it_is_written(self, tmp_path):
+        """A generation whose pods never came up must not hand the previous generation's verdict over."""
+        _record(tmp_path, "260101-000100-000002", _orchestrator_state_path(tmp_path, "260101-000100-000002"))
+        pending = _orchestrator_state_path(tmp_path, "260101-000200-000001")
+        _record(tmp_path, "260101-000200-000001", pending)
+
+        assert RunFiles.latest_state_file(run_directory=tmp_path) == pending
 
     def test_picks_the_newest_launch_rather_than_the_newest_write(self, tmp_path):
         """An earlier launch torn down after a later one started writes last, and its verdict is not the run's."""
@@ -46,5 +63,7 @@ class TestLatestExitFile:
         earlier = _orchestrator_state_path(tmp_path, "260101-000100-000002")
         _write(later, OrchestratorStatus.EXITED, exit_code=0)
         _write(earlier, OrchestratorStatus.EXITED, exit_code=1)
+        _record(tmp_path, "260101-000100-000002", earlier)
+        _record(tmp_path, "260101-000200-000001", later)
 
         assert RunFiles.latest_state_file(run_directory=tmp_path) == later

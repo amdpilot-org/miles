@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import shutil
+from pathlib import Path
 
 from miles.utils.external_utils.command_utils.common import run_process
 from miles.utils.external_utils.command_utils.helm_backend.launcher.command_wrapper import Helm, Kubectl
@@ -53,12 +54,18 @@ def collect_diagnosis_command(args: DiagnosisArgs) -> None:
 
     state_file = RunFiles.latest_state_file(run_directory=args.run_dir) if args.run_dir is not None else None
     diagnosis = collect_diagnosis(namespace=args.namespace, output_dir=args.output_dir, state_file=state_file)
-    missing = diagnosis.missing + ((f"a verdict under {args.run_dir}",) if args.run_dir and not state_file else ())
+    missing = diagnosis.missing + _missing_verdict(args, state_file=state_file)
 
     print(str(diagnosis.directory), flush=True)
     if missing:
         logger.error("FAIL  the diagnosis is incomplete, these could not be collected: %s", ", ".join(missing))
         raise SystemExit(1)
+
+
+def _missing_verdict(args: DiagnosisArgs, *, state_file: Path | None) -> tuple[str, ...]:
+    if args.run_dir is None or (state_file is not None and state_file.is_file()):
+        return ()
+    return (f"a verdict under {args.run_dir}",)
 
 
 def _helm_install_command(args: InstallArgs) -> list[str]:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import random
 import time
 from pathlib import Path
@@ -25,7 +26,8 @@ _RUNS_DIR_NAME = "miles-runs"
 _STATE_DIR_NAME = "state"
 _VALUES_DIR_NAME = "values"
 _RECORDS_DIR_NAME = "launches"
-_STATE_FILE_GLOB = "orchestrator-*.state"
+_RECORD_FILE_GLOB = "launch-*.json"
+_RECORDED_STATE_FILE_KEY = "state_file"
 
 
 def platform_account_name(*, release: str, access: PlatformAccess) -> str:
@@ -128,9 +130,12 @@ class RunFiles:
 
     @staticmethod
     def latest_state_file(*, run_directory: str | Path) -> Path | None:
-        """The newest launch's file, by the launch token in its name; see _new_launch_token."""
-        written = sorted((Path(run_directory) / _STATE_DIR_NAME).glob(_STATE_FILE_GLOB))
-        return written[-1] if written else None
+        """The newest launch's state file, written or not; launches sort by the token in their name."""
+        recorded = sorted((Path(run_directory) / _RECORDS_DIR_NAME).glob(_RECORD_FILE_GLOB))
+        if not recorded:
+            return None
+        named = json.loads(recorded[-1].read_text())[_RECORDED_STATE_FILE_KEY]
+        return Path(named) if named else None
 
 
 def _orchestrator_state_path(run_directory: str | Path, launch_token: str) -> Path:
