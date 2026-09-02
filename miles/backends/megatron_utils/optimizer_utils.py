@@ -3,9 +3,14 @@ from megatron.core.optimizer import USING_PYTORCH_OPTIMIZER
 from megatron.core.optimizer.optimizer import ChainedOptimizer, MegatronOptimizer
 
 
-def reset_optimizer_state(optimizer: MegatronOptimizer, *, stream_optimizer_state_to_disk: bool) -> None:
+def reset_optimizer_state(
+    optimizer: MegatronOptimizer, *, stream_optimizer_state_to_disk: bool, chunked_optimizer_state_offload: bool
+) -> None:
     assert isinstance(optimizer, ChainedOptimizer)
     assert not optimizer.config.offload_optimizer_states
+    assert (
+        not chunked_optimizer_state_offload
+    ), "--chunked-optimizer-state-offload keeps the canonical moments outside the optimizer state this clears"
     assert not optimizer.config.fp16, (
         "an fp16 optimizer keeps a loss scaler with a scale and a growth tracker beside the state this clears, so "
         "the reset would leave the trainer with the scaler of the rollouts it just discarded"

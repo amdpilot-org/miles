@@ -341,7 +341,9 @@ class MegatronTrainRayActor(TrainRayActor):
             self._post_init_random_state.restore()
             if self.optimizer is not None:
                 reset_optimizer_state(
-                    self.optimizer, stream_optimizer_state_to_disk=self.args.stream_optimizer_state_to_disk
+                    self.optimizer,
+                    stream_optimizer_state_to_disk=self.args.stream_optimizer_state_to_disk,
+                    chunked_optimizer_state_offload=self.args.chunked_optimizer_state_offload,
                 )
 
         load_output = self._load_state_core(
