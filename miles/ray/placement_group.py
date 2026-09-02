@@ -177,12 +177,13 @@ def create_trainer_handles(args, *, trainer_configs: list[MegatronTrainerConfig]
 # TODO: move (when reorganizing files)
 async def take_over_trainers(args, *, handles: dict[str, BaseWorkerHandle]) -> bool:
     await wait_external_trainers(args, handles=handles)
-    resumed = await wait_trainers_idle(handles)
+    return await wait_trainers_idle(handles)
 
+
+# TODO: move (when reorganizing files)
+def discard_the_event_log_of_a_take_over_that_found_no_checkpoint(args, *, resumed: bool) -> None:
     if resumed and not _trainer_has_checkpoint(args):
         event_logger_checkpoint.discard(args)
-
-    return resumed
 
 
 def _trainer_has_checkpoint(args) -> bool:
@@ -243,6 +244,8 @@ async def create_training_models(
         assert (
             not critic_configs
         ), f"a run without --use-critic needs no critic, but the trainer configs are {trainer_configs}"
+
+    discard_the_event_log_of_a_take_over_that_found_no_checkpoint(args, resumed=resumed)
 
     args.start_rollout_id = actor_info.start_rollout_id
 

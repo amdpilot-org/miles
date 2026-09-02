@@ -4,7 +4,12 @@ from pathlib import Path
 
 from miles.backends.megatron_utils.megatron_config import MegatronConfig, compute_trainer_args, resolve_megatron_config
 from miles.backends.sglang_utils.sglang_config import resolve_sglang_config
-from miles.ray.placement_group import create_trainer_handles, create_training_model, take_over_trainers
+from miles.ray.placement_group import (
+    create_trainer_handles,
+    create_training_model,
+    discard_the_event_log_of_a_take_over_that_found_no_checkpoint,
+    take_over_trainers,
+)
 from miles.ray.specs.train import compute_trainer_configs
 from miles.utils.arguments import validate_async_off_policy_correction
 from miles.utils.multi_policy.checkpoint_state import MultiPolicyCheckpointState
@@ -40,6 +45,8 @@ async def create_trainers(args, *, rollout_executor: BaseWorkerHandle) -> dict[s
         trainers[model_id] = TrainerInfo(
             model_id=model_id, start_rollout_id=created.start_rollout_id, handle=created.handle
         )
+
+    discard_the_event_log_of_a_take_over_that_found_no_checkpoint(args, resumed=resumed)
 
     for model_id, trainer in trainers.items():
         await rollout_executor.set_train_parallel_config(
