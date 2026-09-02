@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 
 import pytest
@@ -74,6 +75,18 @@ class TestTheReleasesADiagnosisCovers:
         _helm_listing(monkeypatch, [])
 
         assert entrypoint._releases_of_run(release=PRIMARY, namespace="rl") == [PRIMARY]
+
+    def test_asks_helm_only_for_the_releases_of_this_run(self, monkeypatch):
+        """helm truncates a busy namespace to 256 releases, which can drop the sibling that actually failed."""
+        commands = _helm_listing(monkeypatch, [PRIMARY])
+
+        entrypoint._releases_of_run(release=PRIMARY, namespace="rl")
+
+        assert commands[0][commands[0].index("--filter") + 1] == f"^{re.escape(ReleaseName.run_prefix(run_id=RUN_ID))}"
+
+    def test_the_filter_is_a_regex_the_run_id_cannot_break_out_of(self):
+        """helm reads it as a regular expression, and a run id is not written to be one."""
+        assert re.fullmatch(f"^{re.escape(ReleaseName.run_prefix(run_id=RUN_ID))}.*", PRIMARY)
 
 
 class TestTheSelectorItDescribesWith:
