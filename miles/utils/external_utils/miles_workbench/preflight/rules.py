@@ -25,6 +25,7 @@ CLUSTER_PROVIDED_RESOURCES = ("configmap/kube-root-ca.crt", "serviceaccount/defa
 DEFAULT_TOKEN_PREFIX = "secret/default-token-"
 
 CHART_RULES: dict[str, tuple[str, ...]] = {
+    "configmaps": ("create", "delete", "get", "patch"),
     "statefulsets.apps": ("create", "delete", "get", "patch"),
     "secrets": ("create", "delete", "get", "list", "update"),
 }
