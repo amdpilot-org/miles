@@ -91,7 +91,7 @@ class TestRbacTemplates:
             ("", "serviceaccounts"): write,
             ("", "services"): write,
             ("", "pods"): {"delete", "get", "list", "patch", "update", "watch"},
-            ("", "pods/exec"): {"create"},
+            ("", "pods/exec"): {"create", "get"},
             ("", "pods/log"): {"get"},
             ("", "events"): {"get", "list", "watch"},
             ("", "persistentvolumeclaims"): {"get", "list", "watch"},

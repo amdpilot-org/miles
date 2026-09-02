@@ -23,7 +23,7 @@
   verbs: ["delete", "get", "list", "patch", "update", "watch"]
 - apiGroups: [""]
   resources: ["pods/exec"]
-  verbs: ["create"]
+  verbs: ["create", "get"]
 - apiGroups: [""]
   resources: ["pods/log"]
   verbs: ["get"]

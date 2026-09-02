@@ -40,7 +40,7 @@ CHART_RBAC_RULES: dict[str, tuple[str, ...]] = {
 
 WORKFLOW_RULES: dict[str, tuple[str, ...]] = {
     "pods": ("get", "list"),
-    "pods/exec": ("create",),
+    "pods/exec": ("create", "get"),
     "pods/log": ("get",),
     "statefulsets.apps": ("get", "list", "watch"),
 }
