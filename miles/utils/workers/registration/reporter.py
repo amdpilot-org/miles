@@ -11,6 +11,7 @@ from miles.utils.async_utils import AsyncLoopThread
 from miles.utils.audit_utils.process_identity import SimpleProcessIdentity
 from miles.utils.logging_utils import configure_logger
 from miles.utils.workers.registration.models import RegisteredCellInfo, RegistrationSnapshot
+from miles.utils.workers.rpc.client.misc import ServerRestartedError
 from miles.utils.workers.worker_handle import BaseWorkerHandle
 from miles.utils.workers.worker_provider.base import BaseWorkerProvider, CellInfo
 
@@ -53,6 +54,15 @@ class RegistrationReporter:
                 await self._trigger.wait()
                 try:
                     await self._send_once()
+                except ServerRestartedError:
+                    logger.warning(
+                        f"The hub {self.reporter_id} reports into is a new process, so its readiness is awaited "
+                        f"again before the next snapshot",
+                        exc_info=True,
+                    )
+                    await self.hub_endpoint.wait_ready(
+                        timeout=HUB_READY_TIMEOUT_SECONDS, allow_server_uuid_change=True
+                    )
                 except Exception:
                     logger.warning(f"Reporting the cells of {self.reporter_id} failed", exc_info=True)
         finally:
