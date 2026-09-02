@@ -9,7 +9,6 @@
 
 import dataclasses
 import sys
-import tempfile
 from pathlib import Path
 from typing import Annotated
 
@@ -25,10 +24,6 @@ from miles.utils.debug_utils.run_megatron.cli.parallel_utils import ParallelConf
 from miles.utils.external_utils import command_utils
 
 
-def _backend():
-    return command_utils.default_config().create_backend()
-
-
 app: typer.Typer = typer.Typer()
 
 HF_REPO: str = "fzyzcjy/Qwen3-30B-A3B-5layer"
@@ -36,8 +31,6 @@ MODEL_NAME: str = "Qwen3-30B-A3B-5layer"
 MODEL_TYPE: str = "qwen3-30B-A3B-5layer"
 NUM_GPUS: int = 8
 NUM_LAYERS: int = 5
-
-_RUN_DIR: Path = Path(tempfile.mkdtemp(prefix="test_run_megatron_"))
 
 register_cuda_ci(est_time=200, suite="stage-c-8-gpu-h100", labels=["short"])
 register_rocm_ci(est_time=2000, suite="nightly-stage-c-8-gpu-mi350", labels=["short"])
@@ -77,9 +70,13 @@ def _resolve_mode(mode: str) -> tuple[str, _ModeConfig]:
     return mode, CONFIGS[mode]
 
 
-def _prepare(dump_dir: Path, config: _ModeConfig) -> Path:
+def _run_dir(launcher_config: command_utils.ExecuteTrainConfig) -> Path:
+    return Path(launcher_config.output_dir) / "test_run_megatron" / launcher_config.run_id
+
+
+def _prepare(launcher_config: command_utils.ExecuteTrainConfig, dump_dir: Path, config: _ModeConfig) -> Path:
     """Download model, convert checkpoint, write source patcher config."""
-    U = _backend()
+    U = launcher_config.create_backend()
     U.exec_command_cpu("mkdir -p /root/models")
     U.exec_command_cpu(f"hf download {HF_REPO} --local-dir /root/models/{MODEL_NAME}")
     U.convert_checkpoint(
@@ -89,7 +86,9 @@ def _prepare(dump_dir: Path, config: _ModeConfig) -> Path:
     )
     U.exec_command_cpu(f"rm -rf {dump_dir}")
 
-    source_patcher_path: Path = _RUN_DIR / "megatron_source_patcher.yaml"
+    run_dir: Path = _run_dir(launcher_config)
+    run_dir.mkdir(parents=True, exist_ok=True)
+    source_patcher_path: Path = run_dir / "megatron_source_patcher.yaml"
     yaml_content: str = (
         MEGATRON_PATCHER_YAMLS[config.format].replace(" ep:replicated", "").replace(" etp:replicated", "")
     )
@@ -103,10 +102,12 @@ def run(
 ) -> None:
     """Full pipeline: prepare + run baseline + run target + compare."""
     _config_name, config = _resolve_mode(mode)
-    dump_dir: Path = _RUN_DIR / "dumps"
-    print(f"Run directory: {_RUN_DIR}")
+    launcher_config: command_utils.ExecuteTrainConfig = command_utils.default_config()
+    run_dir: Path = _run_dir(launcher_config)
+    dump_dir: Path = run_dir / "dumps"
+    print(f"Run directory: {run_dir}")
 
-    source_patcher_config: Path = _prepare(dump_dir=dump_dir, config=config)
+    source_patcher_config: Path = _prepare(launcher_config=launcher_config, dump_dir=dump_dir, config=config)
     clear_proxy_env()
 
     extra_args: str = "--attention-backend flash"
@@ -134,7 +135,7 @@ def run(
         f"{target_extra_args_part}"
         f"--extra-args '{extra_args}'"
     )
-    _backend().exec_command_gpu(cmd)
+    launcher_config.create_backend().exec_command_gpu(cmd)
 
 
 @app.command()
@@ -154,7 +155,7 @@ def compare(
         f"--baseline-dir {base / baseline_dir_name / 'standalone'} "
         f"--target-dir {base / target_dir_name / 'standalone'}"
     )
-    _backend().exec_command_cpu(cmd)
+    command_utils.default_config().create_backend().exec_command_cpu(cmd)
 
 
 if __name__ == "__main__":

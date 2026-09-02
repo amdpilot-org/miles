@@ -10,7 +10,6 @@
 # comparator many times via "compare" to investigate issues without re-running training.
 
 import sys
-import tempfile
 from pathlib import Path
 from typing import Annotated
 
@@ -41,9 +40,18 @@ MODEL_NAME = "Qwen3-30B-A3B"
 MODEL_TYPE = "qwen3-30B-A3B"
 NUM_GPUS = 8
 
-_RUN_DIR: Path = Path(tempfile.mkdtemp(prefix="test_miles_dumper_"))
-MEGATRON_SOURCE_PATCHER_CONFIG_PATH: str = str(_RUN_DIR / "megatron_source_patcher.yaml")
-SGLANG_SOURCE_PATCHER_CONFIG_PATH: str = str(_RUN_DIR / "sglang_source_patcher.yaml")
+
+def _run_dir(config: command_utils.ExecuteTrainConfig) -> Path:
+    return Path(config.output_dir) / "test_dumper" / config.run_id
+
+
+def _megatron_source_patcher_config_path(config: command_utils.ExecuteTrainConfig) -> Path:
+    return _run_dir(config) / "megatron_source_patcher.yaml"
+
+
+def _sglang_source_patcher_config_path(config: command_utils.ExecuteTrainConfig) -> Path:
+    return _run_dir(config) / "sglang_source_patcher.yaml"
+
 
 EXP_PATTERNS: list[str] = ["engines/engine_*", "fwd_only", "fwd_bwd"]
 
@@ -87,8 +95,8 @@ def _resolve_mode(mode: str) -> tuple[str, str]:
     return mode, CONFIGS[mode]
 
 
-def prepare(dump_dir: str, mode: str) -> None:
-    U = command_utils.default_config().create_backend()
+def prepare(config: command_utils.ExecuteTrainConfig, dump_dir: str, mode: str) -> None:
+    U = config.create_backend()
     U.exec_command_cpu("mkdir -p /root/models /root/datasets")
     U.exec_command_cpu(f"hf download Qwen/{MODEL_NAME} --local-dir /root/models/{MODEL_NAME}")
     U.hf_download_dataset("zhuzilin/gsm8k")
@@ -96,12 +104,13 @@ def prepare(dump_dir: str, mode: str) -> None:
     U.exec_command_cpu(f"rm -rf {dump_dir}")
 
     megatron_yaml: str = MEGATRON_PATCHER_YAMLS["bshd" if mode.endswith("_bshd") else "thd"]
-    Path(MEGATRON_SOURCE_PATCHER_CONFIG_PATH).write_text(megatron_yaml)
-    Path(SGLANG_SOURCE_PATCHER_CONFIG_PATH).write_text(SGLANG_SOURCE_PATCHER_CONFIG_YAML)
+    _run_dir(config).mkdir(parents=True, exist_ok=True)
+    _megatron_source_patcher_config_path(config).write_text(megatron_yaml)
+    _sglang_source_patcher_config_path(config).write_text(SGLANG_SOURCE_PATCHER_CONFIG_YAML)
 
 
-def _execute(perf_args: str, dump_subdir: str, dump_dir: str) -> None:
-    U = command_utils.default_config().create_backend()
+def _execute(config: command_utils.ExecuteTrainConfig, perf_args: str, dump_subdir: str, dump_dir: str) -> None:
+    U = config.create_backend()
     full_dump_dir: str = f"{dump_dir}/{dump_subdir}"
 
     ckpt_args = f"--hf-checkpoint /root/models/{MODEL_NAME} " f"--ref-load /root/{MODEL_NAME}_torch_dist "
@@ -139,8 +148,8 @@ def _execute(perf_args: str, dump_subdir: str, dump_dir: str) -> None:
         f"--dumper-inference {dumper_filter} "
         f"--dumper-fwd-only enable_model_value=0 enable_model_grad=0 {dumper_filter} "
         f"--dumper-fwd-bwd enable_model_value=0 enable_model_grad=0 {dumper_filter} "
-        f"--dumper-source-patcher-config-train {MEGATRON_SOURCE_PATCHER_CONFIG_PATH} "
-        f"--dumper-source-patcher-config-inference {SGLANG_SOURCE_PATCHER_CONFIG_PATH} "
+        f"--dumper-source-patcher-config-train {_megatron_source_patcher_config_path(config)} "
+        f"--dumper-source-patcher-config-inference {_sglang_source_patcher_config_path(config)} "
     )
 
     misc_args = (
@@ -171,6 +180,7 @@ def _execute(perf_args: str, dump_subdir: str, dump_dir: str) -> None:
         train_args=train_args,
         num_gpus_per_node=NUM_GPUS,
         megatron_model_type=MODEL_TYPE,
+        config=config,
     )
 
 
@@ -206,12 +216,14 @@ def run(
 ) -> None:
     """Full pipeline: prepare + execute + verify + comparator."""
     config_name, perf_args = _resolve_mode(mode)
-    dump_dir: str = str(_RUN_DIR / "dumps")
-    print(f"Run directory: {_RUN_DIR}")
+    config: command_utils.ExecuteTrainConfig = command_utils.default_config()
+    run_dir: Path = _run_dir(config)
+    dump_dir: str = str(run_dir / "dumps")
+    print(f"Run directory: {run_dir}")
 
-    prepare(dump_dir=dump_dir, mode=config_name)
+    prepare(config=config, dump_dir=dump_dir, mode=config_name)
     clear_proxy_env()
-    _execute(perf_args=perf_args, dump_subdir=config_name, dump_dir=dump_dir)
+    _execute(config=config, perf_args=perf_args, dump_subdir=config_name, dump_dir=dump_dir)
     _verify_dumps(config_name=config_name, dump_subdir=config_name, dump_dir=dump_dir)
     _verify_comparator(dump_subdir=config_name, dump_dir=dump_dir)
 

@@ -58,7 +58,6 @@ from pathlib import Path
 
 from miles.utils.external_utils import command_utils
 
-DUMP_ROOT = Path(os.environ.get("ROUTER_EQ_DUMP_ROOT", "/tmp/router-eq"))
 PROMPT_DATA_PATH = "/root/datasets/dapo-math-17k/dapo-math-17k.jsonl"
 # Keep the default divisible by the 4-GPU CI topology: Megatron validates
 # global_batch_size % (micro_batch_size * data_parallel_size) == 0 even in
@@ -128,8 +127,14 @@ def prepare(model_family: str) -> None:
         U.hf_download_dataset("zhuzilin/dapo-math-17k")
 
 
+def _dump_root() -> Path:
+    if (override := os.environ.get("ROUTER_EQ_DUMP_ROOT")) is not None:
+        return Path(override)
+    return Path(command_utils.default_config().output_dir) / "router-eq"
+
+
 def _variant_dir(model_family: str, variant: str) -> Path:
-    return DUMP_ROOT / model_family / variant
+    return _dump_root() / model_family / variant
 
 
 def _variant_dump_path(model_family: str, variant: str) -> Path:
