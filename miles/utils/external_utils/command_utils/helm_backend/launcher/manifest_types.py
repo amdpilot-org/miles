@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Generic, Literal, NamedTuple, TypeVar
 
 import yaml
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from miles.utils.external_utils.command_utils.common import ArgvManipulator
 from miles.utils.external_utils.command_utils.helm_backend.orchestrator.state import STATE_FILE_FLAG
@@ -42,6 +42,11 @@ class PodSpec(FrozenOpenBaseModel):
 
 class PodTemplateMetadata(FrozenOpenBaseModel):
     annotations: dict[str, Any] = {}
+
+    @field_validator("annotations", mode="before")
+    @classmethod
+    def _read_null_as_empty(cls, value: Any) -> Any:
+        return {} if value is None else value
 
 
 class PodTemplate(FrozenOpenBaseModel):
