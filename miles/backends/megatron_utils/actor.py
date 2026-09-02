@@ -318,10 +318,11 @@ class MegatronTrainRayActor(TrainRayActor):
             assert not self.args.use_precision_aware_optimizer
             assert not self.args.optimizer_cpu_offload
             assert not self.args.offload_optimizer_states
-            assert self.args.finetune
-            assert self.args.no_load_optim
-            assert self.args.no_load_rng
-            assert self.args.ckpt_step == self.args.ref_ckpt_step
+            if self.args.megatron_to_hf_mode != "bridge":
+                assert self.args.finetune
+                assert self.args.no_load_optim
+                assert self.args.no_load_rng
+                assert self.args.ckpt_step == self.args.ref_ckpt_step
 
         if self.opt_param_scheduler is not None:
             self.opt_param_scheduler.num_steps = 0
