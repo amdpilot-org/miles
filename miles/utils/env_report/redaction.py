@@ -18,6 +18,7 @@ _SECRET_ARG_NAMES = frozenset(
     }
 )
 _ENV_VAR_ARG_NAMES = frozenset({"train_env_vars"})
+_URL_ARG_NAMES = frozenset({"http_proxy"})
 _REDACTED_PREFIX = "redacted-sha256:"
 _REDACTED_HASH_CHARS = 16
 
@@ -61,6 +62,8 @@ def redact_server_info(server_info: dict[str, Any]) -> dict[str, Any]:
 def redact_arg(name: str, value: Any) -> Any:
     if name in _ENV_VAR_ARG_NAMES and isinstance(value, dict):
         return redact_env_vars({key: str(item) for key, item in value.items()})
+    if name in _URL_ARG_NAMES and isinstance(value, str):
+        return _redact_url_userinfo(value)
     if name not in _SECRET_ARG_NAMES:
         return value
     return _redact_secret_value(value)
@@ -78,7 +81,19 @@ def _argv_value_redactors() -> dict[str, Callable[[str], str]]:
     return {
         **{flag(name): _redact for name in _SECRET_ARG_NAMES},
         **{flag(name): _redact_env_var_json for name in _ENV_VAR_ARG_NAMES},
+        **{flag(name): _redact_url_userinfo for name in _URL_ARG_NAMES},
     }
+
+
+def _redact_url_userinfo(value: str) -> str:
+    scheme, separator, rest = value.partition("://")
+    if not separator:
+        return value
+
+    userinfo, at_sign, host = rest.rpartition("@")
+    if not at_sign:
+        return value
+    return f"{scheme}://{_redact(userinfo)}@{host}"
 
 
 def _redact_env_var_json(value: str) -> str:
