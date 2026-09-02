@@ -13,6 +13,7 @@ from miles.utils.workers.registration.reporter import (
     RegistrationReporterWorker,
     _DebouncedIntervalTrigger,
 )
+from miles.utils.workers.rpc.client.misc import ServerRestartedError
 from miles.utils.workers.rpc.common.metadata import collect_rpc_method_specs
 from miles.utils.workers.worker_info import WorkerInfo
 from miles.utils.workers.worker_provider.base import BaseWorkerProvider, CellInfo, CellReconcileFn, StopWatchFn
@@ -67,9 +68,11 @@ class _FakeHub:
     def __init__(self) -> None:
         self.snapshots: list[RegistrationSnapshot] = []
         self.ready_timeouts: list[float] = []
+        self.pin_drops: list[bool] = []
 
-    async def wait_ready(self, *, timeout: float) -> None:
+    async def wait_ready(self, *, timeout: float, allow_server_uuid_change: bool = False) -> None:
         self.ready_timeouts.append(timeout)
+        self.pin_drops.append(allow_server_uuid_change)
 
     async def registration_ingest(self, *, snapshot: RegistrationSnapshot) -> None:
         self.snapshots.append(snapshot)
@@ -385,3 +388,75 @@ class TestDebouncedIntervalTrigger:
     async def test_no_jitter_asks_for_exactly_the_interval(self):
         """The jitter is a spread around the configured period, not a replacement for it."""
         assert _trigger(interval_seconds=10.0, jitter_ratio=0.0)._compute_next_interval_seconds() == 10.0
+
+
+class _FailingHub(_FakeHub):
+    def __init__(self, failures: int, error: BaseException) -> None:
+        super().__init__()
+        self.failures = failures
+        self.error = error
+
+    async def registration_ingest(self, *, snapshot: RegistrationSnapshot) -> None:
+        if self.failures > 0:
+            self.failures -= 1
+            raise self.error
+        await super().registration_ingest(snapshot=snapshot)
+
+
+class _RestartedHub(_FakeHub):
+    """Answers like a hub whose process was replaced: it refuses every call made on the old pin."""
+
+    async def registration_ingest(self, *, snapshot: RegistrationSnapshot) -> None:
+        if True not in self.pin_drops:
+            raise ServerRestartedError("the hub answering now is a different process")
+        await super().registration_ingest(snapshot=snapshot)
+
+
+async def _report_until(reporter: RegistrationReporter, condition) -> None:
+    run = asyncio.create_task(reporter.run())
+    for _ in range(1000):
+        await asyncio.sleep(0)
+        if condition():
+            break
+
+    run.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await run
+
+
+class TestAHubThatRestartedUnderTheReporter:
+    async def test_it_awaits_the_new_hub_with_the_pin_dropped(self):
+        """Dropping the pin is the only way the handle stops talking to a process that is gone."""
+        hub_endpoint = _RestartedHub()
+        provider = _FakeEngineProvider(cell_indices=[0])
+
+        await _report_until(_reporter(provider=provider, hub_endpoint=hub_endpoint), lambda: hub_endpoint.snapshots)
+
+        assert hub_endpoint.pin_drops[:2] == [False, True]
+
+    async def test_it_goes_on_reporting_into_the_process_that_answers_now(self):
+        """The run waits for engines that are running until this deployment reaches the new hub."""
+        hub_endpoint = _RestartedHub()
+        provider = _FakeEngineProvider(cell_indices=[0])
+
+        await _report_until(_reporter(provider=provider, hub_endpoint=hub_endpoint), lambda: hub_endpoint.snapshots)
+
+        assert [cell.info.cell_id for cell in hub_endpoint.snapshots[0].cells] == [_cell_id(0)]
+
+    async def test_an_ordinary_failure_leaves_the_pin_where_it_was(self):
+        """Re-awaiting readiness on every hiccup would accept whatever process answered next."""
+        hub_endpoint = _FailingHub(failures=1, error=RuntimeError("the hub was busy"))
+        provider = _FakeEngineProvider(cell_indices=[0])
+
+        await _report_until(_reporter(provider=provider, hub_endpoint=hub_endpoint), lambda: hub_endpoint.snapshots)
+
+        assert hub_endpoint.pin_drops == [False]
+
+    async def test_a_hub_that_never_restarted_is_awaited_once(self):
+        """Every reporter of every run takes this path, and it may not wait for readiness twice."""
+        hub_endpoint = _FakeHub()
+        provider = _FakeEngineProvider(cell_indices=[0])
+
+        await _report_until(_reporter(provider=provider, hub_endpoint=hub_endpoint), lambda: hub_endpoint.snapshots)
+
+        assert hub_endpoint.pin_drops == [False]
