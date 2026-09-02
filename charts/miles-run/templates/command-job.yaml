@@ -33,9 +33,7 @@ spec:
   ttlSecondsAfterFinished: {{ .Values.commandJob.ttlSecondsAfterFinished }}
   completions: {{ .Values.commandJob.completions }}
   parallelism: {{ .Values.commandJob.completions }}
-  {{- if gt (int .Values.commandJob.completions) 1 }}
   completionMode: Indexed
-  {{- end }}
   template:
     metadata:
       labels:

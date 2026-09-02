@@ -62,11 +62,12 @@ class TestCommandJob:
         assert (job["spec"]["completions"], job["spec"]["parallelism"]) == (4, 4)
         assert job["spec"]["completionMode"] == "Indexed"
 
-    def test_stays_a_plain_job_for_a_single_pod(self):
-        """A single-pod step has no index to consume, so Indexed mode would only add noise."""
+    def test_indexes_a_single_pod_job_too(self):
+        """Only Indexed mode gives the one pod the completion index and <job>-0 hostname its command substitutes."""
         job = single_object_of_kind(render_run(*ENABLE_COMMAND_JOB), "Job")
 
-        assert "completionMode" not in job["spec"]
+        assert job["spec"]["completions"] == 1
+        assert job["spec"]["completionMode"] == "Indexed"
 
     def test_requests_gpus_only_when_asked(self):
         """Checkpoint conversion needs gpus; a download must not sit in the gpu queue."""
