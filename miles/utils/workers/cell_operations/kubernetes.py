@@ -59,7 +59,7 @@ class KubernetesCellOperations(BaseCellOperations):
         if self._watching is None:
             self._watching = asyncio.ensure_future(self._provider.watch_cells(_ignore_cell))
         try:
-            await asyncio.shield(self._watching)
+            await self._watching
         except BaseException:
             self._watching = None
             raise
