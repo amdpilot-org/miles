@@ -109,9 +109,15 @@ def execute(*, comm_backend: WorkerCommBackend, test_file: str) -> None:
 
     worker_comm_args = "" if comm_backend is WorkerCommBackend.RAY else f"--worker-comm-backend {comm_backend.value} "
 
+    object_store_args = (
+        "--object-store-backend ray "
+        if comm_backend is WorkerCommBackend.RPC
+        else command_utils.get_mooncake_object_store_args()
+    )
+
     train_args = (
         f"{ckpt_args} "
-        f"{command_utils.get_mooncake_object_store_args()} "
+        f"{object_store_args} "
         f"{rollout_args} "
         f"{optimizer_args} "
         f"{grpo_args} "

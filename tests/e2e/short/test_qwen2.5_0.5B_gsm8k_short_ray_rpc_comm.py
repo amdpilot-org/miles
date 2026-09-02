@@ -5,7 +5,7 @@ from types import ModuleType
 
 from tests.ci.ci_register import register_cuda_ci
 
-register_cuda_ci(est_time=450, suite="stage-c-8-gpu-h100", labels=["short", "mooncake", "rpc-comm"])
+register_cuda_ci(est_time=450, suite="stage-c-8-gpu-h100", labels=["short", "rpc-comm"])
 
 
 def _load_base_test() -> ModuleType:
