@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import random
 import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -92,10 +93,10 @@ def _run_job(job: _CommandJob, *, command: list[str], capture_output: bool) -> l
 
         if outcome != "complete":
             raise RuntimeError(
-                f"Job {job.object_name} {outcome}; last log lines:\n{_joined(_logs_per_completion(job))}"
+                f"Job {job.object_name} {outcome}; last log lines:\n{_joined(_terminal_logs_per_completion(job))}"
             )
 
-        logs = _logs_per_completion(job) if capture_output else [None] * job.completions
+        logs = _full_logs_per_completion(job) if capture_output else [None] * job.completions
         Kubectl.delete_job(job.object_name, namespace=job.context.namespace)
         return logs
     finally:
@@ -155,12 +156,23 @@ def _job_status(job: _CommandJob) -> str:
     return "running"
 
 
-def _logs_per_completion(job: _CommandJob) -> list[str]:
+def _full_logs_per_completion(job: _CommandJob) -> list[str]:
+    return _execute_per_completion(job, read=lambda target: Kubectl.full_logs(target, namespace=job.context.namespace))
+
+
+def _terminal_logs_per_completion(job: _CommandJob) -> list[str]:
+    return _execute_per_completion(
+        job,
+        read=lambda target: Kubectl.tail_logs(target, namespace=job.context.namespace, tail=_TERMINAL_LOG_LINES),
+    )
+
+
+def _execute_per_completion(job: _CommandJob, *, read: Callable[[str], str]) -> list[str]:
     pods = _pods_by_completion_index(job)
     if not pods:
-        return [_logs_of_target(f"job/{job.object_name}", namespace=job.context.namespace)] * job.completions
+        return [read(f"job/{job.object_name}")] * job.completions
 
-    logs = {index: _logs_of_target(name, namespace=job.context.namespace) for index, name in pods}
+    logs = {index: read(name) for index, name in pods}
     return [
         logs.get(index, f"no pod of this job reported completion index {index}") for index in range(job.completions)
     ]
@@ -177,10 +189,6 @@ def _pods_by_completion_index(job: _CommandJob) -> list[tuple[int, str]]:
 def _completion_index_of_pod(pod: Pod) -> int:
     raw = pod.metadata.labels.get(_COMPLETION_INDEX_KEY, pod.metadata.annotations.get(_COMPLETION_INDEX_KEY))
     return int(raw) if raw is not None else 0
-
-
-def _logs_of_target(target: str, *, namespace: str) -> str:
-    return Kubectl.logs(target, namespace=namespace, tail=_TERMINAL_LOG_LINES)
 
 
 def _joined(logs: list[str]) -> str:
