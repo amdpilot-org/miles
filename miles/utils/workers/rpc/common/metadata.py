@@ -167,4 +167,9 @@ def _build_method_spec(*, worker_cls: type, name: str, attr: Callable[..., Any])
 
 
 def _is_ray_trace_ctx_param(param: inspect.Parameter) -> bool:
-    return param.name == _RAY_TRACE_CONTEXT_PARAMETER and param.kind is inspect.Parameter.KEYWORD_ONLY
+    return (
+        param.name == _RAY_TRACE_CONTEXT_PARAMETER
+        and param.kind is inspect.Parameter.KEYWORD_ONLY
+        and param.default is None
+        and param.annotation is inspect.Parameter.empty
+    )
