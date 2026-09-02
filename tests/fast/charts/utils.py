@@ -9,7 +9,10 @@ from typing import Any
 import pytest
 import yaml
 
-from miles.utils.external_utils.command_utils.helm_backend.launcher.manifest_types import ObjectIdentity
+from miles.utils.external_utils.command_utils.helm_backend.launcher.manifest_types import (
+    ObjectIdentity,
+    compute_api_group,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CHARTS_DIR = REPO_ROOT / "charts"
@@ -156,7 +159,7 @@ def extra_manifests_args(*manifests: str) -> tuple[str, ...]:
 def objects_added_by(*manifests: str) -> list[dict[str, Any]]:
     def identity(obj: dict[str, Any]) -> ObjectIdentity:
         return ObjectIdentity(
-            api_version=obj.get("apiVersion", ""),
+            api_group=compute_api_group(obj.get("apiVersion", "")),
             kind=obj["kind"],
             namespace=obj["metadata"].get("namespace", NAMESPACE),
             name=obj["metadata"]["name"],
