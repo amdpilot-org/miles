@@ -95,22 +95,27 @@ class RpcWorkerHandle(BaseWorkerHandle):
             )
 
         try:
-            await retry_until_deadline(
-                attempt,
-                total_seconds=timeout,
-                retry_on=RETRYABLE_ERRORS,
-                initial_delay=RETRY_INITIAL_DELAY_SECONDS,
-                backoff_factor=1.0,
-            )
-        except RETRYABLE_ERRORS as e:
+            try:
+                await retry_until_deadline(
+                    attempt,
+                    total_seconds=timeout,
+                    retry_on=RETRYABLE_ERRORS,
+                    initial_delay=RETRY_INITIAL_DELAY_SECONDS,
+                    backoff_factor=1.0,
+                )
+            except RETRYABLE_ERRORS as e:
+                raise WorkerUnreachableError(
+                    f"{self._worker_cls_name} rpc server not ready within {timeout}s: {e!r}"
+                ) from e
+
+            if allow_server_uuid_change:
+                assert (
+                    not self._boot_uuid_pin.needs_handshake()
+                ), "the readiness probe did not pin the answering process"
+        except BaseException:
             if allow_server_uuid_change:
                 self._boot_uuid_pin.repin(pinned_before)
-            raise WorkerUnreachableError(
-                f"{self._worker_cls_name} rpc server not ready within {timeout}s: {e!r}"
-            ) from e
-
-        if allow_server_uuid_change:
-            assert not self._boot_uuid_pin.needs_handshake(), "the readiness probe did not pin the answering process"
+            raise
 
     async def wait_idle(self, *, timeout: float) -> None:
         async def attempt(remaining: float) -> None:
