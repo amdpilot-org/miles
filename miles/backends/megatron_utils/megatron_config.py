@@ -251,6 +251,11 @@ def _apply_critical_derived_overrides(ans: Namespace, *, base: Namespace, traine
     if "hf_checkpoint" in trainer.overrides and base.tokenizer_model == base.hf_checkpoint:
         ans.tokenizer_model = ans.hf_checkpoint
 
+    if ans.vocab_size and {"vocab_size", "tensor_model_parallel_size"} & set(trainer.overrides):
+        from megatron.core.tokenizers.utils.build_tokenizer import vocab_size_with_padding
+
+        ans.padded_vocab_size = vocab_size_with_padding(ans.vocab_size, ans)
+
 
 # ---------------------------- checkpoint dirs -----------------------------
 

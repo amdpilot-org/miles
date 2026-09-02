@@ -96,6 +96,7 @@ def init(
     )
 
     set_parallel_state(create_megatron_parallel_state(indep_dp=indep_dp))
+    args.data_parallel_size = get_parallel_state().intra_dp.size
 
     # sanity check
     if getattr(args, "indep_dp", False):
