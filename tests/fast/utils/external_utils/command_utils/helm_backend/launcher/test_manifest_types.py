@@ -405,3 +405,35 @@ class TestHowAFlagMayBeSpelled:
 
         with pytest.raises(AssertionError, match="takes a value"):
             manifest.flag_value("--run-uuid", stateful_set=ORCHESTRATOR, container="orchestrator")
+
+
+def _stateful_set_with_a_null_annotations_block(name: str = ORCHESTRATOR) -> dict:
+    document = _stateful_set(name=name)
+    document["spec"]["template"]["metadata"] = {"annotations": None}
+    return document
+
+
+class TestAPodTemplateWhoseAnnotationsAreNull:
+    def test_a_release_carrying_one_still_parses(self):
+        """An extra manifest written this way used to take the whole relaunch down in Manifest.parse."""
+        manifest = _parse(_rendered(_stateful_set_with_a_null_annotations_block()))
+
+        assert [described.metadata.name for described in manifest.objects] == [ORCHESTRATOR]
+
+    def test_it_reads_as_an_object_that_carries_no_restart_stamp(self):
+        """An empty annotations block and a null one say the same thing: this object was never hot restarted."""
+        manifest = _parse(_rendered(_stateful_set_with_a_null_annotations_block()))
+
+        assert manifest.restart_at(object_name=ORCHESTRATOR) is None
+
+    def test_the_null_block_reaches_the_diff_as_the_empty_block_it_was_read_as(self):
+        """What the launch compares is the parsed object, so the normalization has to be visible there too."""
+        manifest = _parse(_rendered(_stateful_set_with_a_null_annotations_block()))
+
+        assert manifest.objects[0].body["spec"]["template"]["metadata"] == {"annotations": {}}
+
+    def test_an_object_that_does_carry_annotations_still_reads_them(self):
+        """Normalizing the null must not swallow the stamp a hot restart writes into the same block."""
+        manifest = _parse(_rendered(_stateful_set(annotations={RESTART_AT_ANNOTATION: _STAMP})))
+
+        assert manifest.restart_at(object_name=ORCHESTRATOR) == _STAMP
