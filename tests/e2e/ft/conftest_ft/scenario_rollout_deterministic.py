@@ -2,6 +2,7 @@
 # WARNING: Do NOT relax any assert logic in this file. All assertions must remain strict.
 
 import contextlib
+import shutil
 import threading
 import time
 from collections.abc import Iterator
@@ -80,6 +81,8 @@ def _inject_rollout_faults(
     base_url: str = f"http://{config.create_backend().api_server_host(config)}:{API_SERVER_PORT}"
     print(f"Injecting into {ROLLOUT_CELL_TYPE} cells only, mean interval {CRASH_INTERVAL_SECONDS:.1f}s, seed {SEED}")
 
+    _discard_dumps_of_previous_run(dump_dir)
+
     armed: MutableBox[FaultInjectorHandle | None] = MutableBox(value=None)
 
     def arm_once_generation_is_under_way() -> None:
@@ -115,6 +118,10 @@ def _inject_rollout_faults(
     )
     assert_every_rollout_cell_served_after_its_last_injection(injector)
     _assert_injections_spread_over_rollouts(injector, dump_dir=dump_dir)
+
+
+def _discard_dumps_of_previous_run(dump_dir: str) -> None:
+    shutil.rmtree(dump_dir, ignore_errors=True)
 
 
 def _wait_for_first_rollout(dump_dir: str) -> bool:
