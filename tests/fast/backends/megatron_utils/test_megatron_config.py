@@ -445,6 +445,13 @@ class TestComputeTrainerArgs:
 
         assert _model_args(args, model_id="a").use_critic is False
 
+    def test_a_policy_that_overrides_the_global_batch_size_is_refused(self, tmp_path):
+        """Every policy trains at the run's global batch size, so an override cannot be honored."""
+        path = _write_yaml({"trainers": [{"model_id": "a", "overrides": {"global_batch_size": 128}}]}, tmp_path)
+
+        with pytest.raises(AssertionError, match="global_batch_size"):
+            _model_args(_make_args(path), model_id="a")
+
 
 class TestTrainerCheckpointDirs:
     def test_a_multi_policy_run_gives_every_trainer_its_own_checkpoint_dir(self, tmp_path):
