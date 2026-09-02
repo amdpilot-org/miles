@@ -113,3 +113,24 @@ class TestNewLaunchToken:
         second = naming._new_launch_token()
 
         assert first[:stamp_length] <= second[:stamp_length]
+
+
+class TestSupersededMarker:
+    def test_the_marker_sits_beside_the_state_file_it_supersedes(self):
+        """Both the launcher that writes it and the orchestrator that reads it know only that path."""
+        marker = RunFiles.superseded_marker(state_file="/runs/abc/state/orchestrator-x.state")
+
+        assert marker.as_posix() == "/runs/abc/state/orchestrator-x.state.superseded"
+
+    def test_every_generation_has_a_marker_of_its_own(self):
+        """A run is relaunched many times, and one shared marker would defuse every generation at once."""
+        first = RunFiles.superseded_marker(state_file="/runs/abc/state/orchestrator-1.state")
+        second = RunFiles.superseded_marker(state_file="/runs/abc/state/orchestrator-2.state")
+
+        assert first != second
+
+    def test_a_path_and_the_string_spelling_of_it_name_one_marker(self):
+        """The launcher holds a Path and the wrapper is given a string, and they have to meet."""
+        as_text = RunFiles.superseded_marker(state_file="/runs/abc/state/orchestrator-x.state")
+
+        assert RunFiles.superseded_marker(state_file=Path("/runs/abc/state/orchestrator-x.state")) == as_text

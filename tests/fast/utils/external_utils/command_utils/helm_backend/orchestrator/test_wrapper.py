@@ -397,3 +397,46 @@ class TestUninstallJob:
         orchestrator_wrapper.main(["--state-file", str(state_file), "--", sys.executable, "-c", "pass"])
 
         assert kubectl_calls == []
+
+    def test_leaves_the_uninstall_to_the_launch_that_took_the_run_over(self, tmp_path, kubectl_calls):
+        """The release already carries the replacement, so uninstalling it now tears the new run down."""
+        state_file = tmp_path / "orchestrator.state"
+        RunFiles.superseded_marker(state_file=state_file).write_text(f"{tmp_path / 'orchestrator-new.state'}\n")
+
+        orchestrator_wrapper.main(
+            ["--state-file", str(state_file), "--uninstall-manifest", MANIFEST, "--", sys.executable, "-c", "pass"]
+        )
+
+        assert kubectl_calls == []
+
+    def test_a_superseded_generation_still_publishes_its_own_verdict(self, tmp_path, kubectl_calls):
+        """Losing the run is not a reason to leave the state file of this generation unwritten."""
+        state_file = tmp_path / "orchestrator.state"
+        RunFiles.superseded_marker(state_file=state_file).write_text("taken over\n")
+
+        code = orchestrator_wrapper.main(
+            [
+                "--state-file",
+                str(state_file),
+                "--uninstall-manifest",
+                MANIFEST,
+                "--",
+                sys.executable,
+                "-c",
+                "raise SystemExit(7)",
+            ]
+        )
+
+        assert code == 7
+        assert _state(state_file)["exit_code"] == 7
+
+    def test_a_marker_for_another_generation_defuses_nothing(self, tmp_path, kubectl_calls):
+        """Every generation writes its own state file, and only its own marker speaks for it."""
+        state_file = tmp_path / "orchestrator.state"
+        RunFiles.superseded_marker(state_file=tmp_path / "someone-else.state").write_text("taken over\n")
+
+        orchestrator_wrapper.main(
+            ["--state-file", str(state_file), "--uninstall-manifest", MANIFEST, "--", sys.executable, "-c", "pass"]
+        )
+
+        assert [call[:3] for call in kubectl_calls] == [["create", "-f", MANIFEST]]

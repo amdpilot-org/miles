@@ -55,6 +55,7 @@ from miles.utils.external_utils.command_utils.helm_backend.launcher.values.misc 
 from miles.utils.external_utils.command_utils.helm_backend.naming import ReleaseName, RunFiles, RunNames
 from miles.utils.external_utils.command_utils.helm_backend.orchestrator.observer import wait_for_run
 from miles.utils.external_utils.model_args_utils import shell_safe_model_args
+from miles.utils.file_utils import atomic_write_text
 from miles.utils.object_store import ObjectStoreBackend
 from miles.utils.run_uuid import generate_run_uuid, validate_run_uuid
 from miles.utils.workers.serving.utils import override_argv, override_env
@@ -192,7 +193,9 @@ def execute_train(*, request: ExecuteTrainRequest, config: ExecuteTrainConfig) -
             allow_diff_object_keys=hot_restart_plan.allow_diff_object_keys,
         )
     if rebuilds_orchestrator:
-        _remove_pending_uninstall(release, namespace=namespace)
+        _defuse_previous_generation(
+            release, namespace=namespace, superseded_state_file=carried_state_file, state_file=state_file
+        )
 
     record.write(path=record_path)
     logger.info(f"What this launch launched is recorded under {record_path}")
@@ -406,7 +409,18 @@ def _uninstall_leftover_ci_releases(namespace: str, *, keep_run_id: str) -> list
     return releases
 
 
-def _remove_pending_uninstall(release: str, *, namespace: str) -> None:
+def _defuse_previous_generation(
+    release: str, *, namespace: str, superseded_state_file: Path | None, state_file: Path | None
+) -> None:
+    if superseded_state_file is not None:
+        marker = RunFiles.superseded_marker(state_file=superseded_state_file)
+        logger.info(
+            f"Writing {marker}, so the orchestrator of {superseded_state_file} leaves the uninstall of {release} "
+            f"to the generation this launch installs"
+        )
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        atomic_write_text(marker, f"{state_file}\n")
+
     job = RunNames.uninstall_job(release=release)
     logger.info(f"Deleting {job} if it is pending, so it cannot uninstall the release this launch installs")
     Kubectl.delete_job(job, namespace=namespace, check=True)
