@@ -19,6 +19,7 @@ from miles.utils.external_utils.command_utils.helm_backend.launcher.values.place
     RENDERED_CELL_INDEX,
     WORKER_INDEX_SENTINEL,
     real_or_sentinel_gpu_ids,
+    sentinel_to_placeholder,
     sentinels_to_placeholders,
 )
 from miles.utils.workers.argv_utils import python_argv_prefix
@@ -111,7 +112,7 @@ def _command_env_of_spec(
         f"describes a whole pool and is rendered before any of them exists; serve the spec so its pod can "
         f"compute the environment itself, or drop the dependency"
     )
-    return first
+    return {name: sentinel_to_placeholder(value, spec) for name, value in first.items()}
 
 
 def _with_prepare_cmd(command: list[str], spec: BaseWorkerSpec, plan: LaunchPlan) -> list[str]:
