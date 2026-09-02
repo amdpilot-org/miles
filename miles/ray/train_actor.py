@@ -20,7 +20,7 @@ from miles.utils.distributed_utils import init_gloo_group
 from miles.utils.ft_utils.heartbeat_utils import HeartbeatStatus, SimpleHeartbeat
 from miles.utils.ft_utils.indep_dp import IndepDPInfo
 from miles.utils.init_once import InitOnce, init_once
-from miles.utils.logging_utils import configure_logger
+from miles.utils.logging_utils import configure_logger, rebind_env_reporting
 from miles.utils.memory_utils import clear_memory, print_memory
 from miles.utils.misc import NodeProbeMixin, get_current_node_ip, get_free_port
 from miles.utils.object_store import StoreObjectRef
@@ -135,6 +135,7 @@ class TrainRayActor(NodeProbeMixin):
 
         args.rank = dist.get_rank()
         args.world_size = dist.get_world_size()
+        rebind_env_reporting(args)
 
         try:
             if torch.version.hip is not None:
