@@ -10,6 +10,7 @@ from miles.utils.audit_utils.process_identity import SimpleProcessIdentity
 from miles.utils.test_utils.comparisons.metrics import (
     _check_events_line_up,
     _check_single_metric,
+    _check_step_metrics,
     _keep_only_final_attempt,
     assert_metric_was_finite_and_nonzero,
 )
@@ -122,6 +123,51 @@ class TestCheckSingleMetric:
         issues = _check_single_metric(0, "k", 0.0, 5e-13, rtol=0.1, atol=0.0)
         assert len(issues) == 1
         assert "rel_diff" in issues[0]
+
+
+class TestCheckStepMetrics:
+    def test_matching_selected_keys_report_nothing(self) -> None:
+        """Both sides carrying the same selected keys with the same values is the passing case."""
+        baseline = _metric_event(rollout_id=0, attempt=0, metrics={"train/loss": 1.0})
+        target = _metric_event(rollout_id=0, attempt=0, metrics={"train/loss": 1.0})
+
+        assert _check_step_metrics(0, baseline, target, ["train/"], 0.1, atol=0.0) == []
+
+    def test_a_key_only_the_baseline_has_is_reported(self) -> None:
+        """A metric the target stopped producing must not vanish from the comparison."""
+        baseline = _metric_event(rollout_id=0, attempt=0, metrics={"train/loss": 1.0})
+        target = _metric_event(rollout_id=0, attempt=0, metrics={})
+
+        issues = _check_step_metrics(0, baseline, target, ["train/"], 0.1, atol=0.0)
+
+        assert len(issues) == 1
+        assert "present in baseline but missing in target" in issues[0]
+
+    def test_a_key_only_the_target_has_is_reported(self) -> None:
+        """Regression: a metric the target alone produces used to pass unnoticed."""
+        baseline = _metric_event(rollout_id=0, attempt=0, metrics={})
+        target = _metric_event(rollout_id=0, attempt=0, metrics={"train/loss": 1.0})
+
+        issues = _check_step_metrics(0, baseline, target, ["train/"], 0.1, atol=0.0)
+
+        assert len(issues) == 1
+        assert "present in target but missing in baseline" in issues[0]
+
+    def test_a_target_only_key_outside_the_prefixes_is_ignored(self) -> None:
+        """Only the namespaces this comparison claims to cover are compared."""
+        baseline = _metric_event(rollout_id=0, attempt=0, metrics={})
+        target = _metric_event(rollout_id=0, attempt=0, metrics={"perf/step_time": 1.0})
+
+        assert _check_step_metrics(0, baseline, target, ["train/"], 0.1, atol=0.0) == []
+
+    def test_an_excluded_target_only_key_is_ignored(self) -> None:
+        """An explicitly excluded key stays excluded whichever side carries it."""
+        baseline = _metric_event(rollout_id=0, attempt=0, metrics={})
+        target = _metric_event(rollout_id=0, attempt=0, metrics={"train/loss": 1.0})
+
+        issues = _check_step_metrics(0, baseline, target, ["train/"], 0.1, atol=0.0, exclude_keys=["train/loss"])
+
+        assert issues == []
 
 
 class TestCheckEventsLineUp:

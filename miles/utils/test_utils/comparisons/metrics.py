@@ -156,21 +156,28 @@ def _check_step_metrics(
     atol: float,
     exclude_keys: list[str] | None = None,
 ) -> list[str]:
-    issues: list[str] = []
-    for key in baseline_event.metrics:
-        if not any(key.startswith(prefix) for prefix in key_prefixes):
-            continue
-        if exclude_keys and key in exclude_keys:
-            continue
+    baseline_keys = _select_keys(baseline_event, key_prefixes, exclude_keys=exclude_keys)
+    target_keys = _select_keys(target_event, key_prefixes, exclude_keys=exclude_keys)
 
-        if key not in target_event.metrics:
-            issues.append(f"Step {step_idx}: metric '{key}' present in baseline but missing in target")
-            continue
-
+    issues: list[str] = [
+        f"Step {step_idx}: metric '{key}' present in baseline but missing in target"
+        for key in sorted(baseline_keys - target_keys)
+    ]
+    issues += [
+        f"Step {step_idx}: metric '{key}' present in target but missing in baseline"
+        for key in sorted(target_keys - baseline_keys)
+    ]
+    for key in sorted(baseline_keys & target_keys):
         issues += _check_single_metric(
             step_idx, key, baseline_event.metrics[key], target_event.metrics[key], rtol, atol=atol
         )
     return issues
+
+
+def _select_keys(event: MetricEvent, key_prefixes: list[str], *, exclude_keys: list[str] | None) -> set[str]:
+    prefixes: tuple[str, ...] = tuple(key_prefixes)
+    excluded: set[str] = set(exclude_keys or [])
+    return {key for key in event.metrics if key.startswith(prefixes) and key not in excluded}
 
 
 def _check_single_metric(
