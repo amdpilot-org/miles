@@ -456,7 +456,9 @@ def _releases_of_run(*, release: str, namespace: str) -> list[str]:
         return [release]
 
     try:
-        listed = Helm.list_releases(namespace=namespace)
+        listed = Helm.list_releases(
+            namespace=namespace, name_filter=f"^{re.escape(ReleaseName.run_prefix(run_id=parsed.run_id))}"
+        )
     except Exception:
         logger.warning(f"Could not list what else run {parsed.run_id} installed; diagnosing {release} alone")
         logger.debug("Listing the releases of the run failed", exc_info=True)

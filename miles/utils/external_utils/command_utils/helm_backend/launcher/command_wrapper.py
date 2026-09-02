@@ -97,10 +97,12 @@ class Helm:
         _run(["helm", "dependency", "build", str(chart)], capture_output=False)
 
     @staticmethod
-    def list_releases(*, namespace: str, selector: str | None = None) -> list[str]:
+    def list_releases(*, namespace: str, selector: str | None = None, name_filter: str | None = None) -> list[str]:
         command = ["helm", "list", "--namespace", namespace, "--output", "json"]
         if selector is not None:
             command += ["--selector", selector]
+        if name_filter is not None:
+            command += ["--filter", name_filter]
         listed = _run(command, capture_output=True)
         return [release["name"] for release in json.loads(listed.stdout or "[]")]
 
