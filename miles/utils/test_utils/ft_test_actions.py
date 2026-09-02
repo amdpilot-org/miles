@@ -65,8 +65,13 @@ def _load_actions(args: object, action_filter: set[str]) -> list[FTTestAction]:
     if not (raw := _read_declared_actions(args)):
         return []
     all_actions = _ACTION_LIST_ADAPTER.validate_json(raw)
+    declared_in_a_file = args.ci_ft_test_actions_path is not None
 
     for action in all_actions:
+        assert not declared_in_a_file or action.action in _ORCHESTRATION_ACTIONS, (
+            f"{CI_FT_TEST_ACTIONS_PATH_FLAG} is re-read only by the orchestration script, so {action.action} "
+            f"cannot be declared in it (action={action})"
+        )
         if (cell_id := action.cell_id) is None:
             continue
         try:

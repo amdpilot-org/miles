@@ -552,6 +552,16 @@ class TestActionsDeliveredThroughAFile:
 
         assert _load_actions(args, _ORCHESTRATION_ACTIONS) == []
 
+    def test_a_trainer_side_action_declared_in_a_file_is_refused(self, tmp_path) -> None:
+        """A trainer loads the file once, so a rewritten plan would leave its actions silently unperformed."""
+        path = tmp_path / "plan.json"
+        write_ft_test_actions(
+            path, [{"at_rollout": 2, "action": "stop_cell_at_end", "cell_id": "trainer-engine-actor-00002"}]
+        )
+
+        with pytest.raises(AssertionError, match="cannot be declared in it"):
+            _load_actions(_args_of_path(str(path)), _CONTROLLER_ACTIONS)
+
     def test_a_file_the_run_was_pointed_at_but_nobody_wrote_is_refused(self, tmp_path) -> None:
         """A plan nothing wrote would leave the run performing no action while looking armed."""
         with pytest.raises(AssertionError, match="does not exist"):
