@@ -39,14 +39,13 @@ class TestCommandJob:
 
         assert [container["name"] for container in job["spec"]["template"]["spec"]["containers"]] == ["command-job"]
 
-    def test_an_eviction_does_not_spend_the_one_attempt(self):
-        """Kubernetes counts a displaced pod against backoffLimit like a failed one, so without this
-        a step the cluster evicted before it ran is reported as a step that ran and failed."""
+    def test_a_displaced_pod_fails_the_step_instead_of_running_the_command_twice(self):
+        """Forgiving a disruption lets kubernetes rerun a command step that is meant to run at most once."""
         job = single_object_of_kind(render_run(*ENABLE_COMMAND_JOB), "Job")
 
-        assert job["spec"]["podFailurePolicy"]["rules"] == [
-            {"action": "Ignore", "onPodConditions": [{"type": "DisruptionTarget"}]}
-        ]
+        assert "podFailurePolicy" not in job["spec"]
+        assert job["spec"]["podReplacementPolicy"] == "Failed"
+        assert job["spec"]["backoffLimit"] == 0
 
     def test_never_retries_a_failure(self):
         """The caller reports the failure; a silent retry would hide it and double the side effects."""
