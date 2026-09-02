@@ -22,6 +22,7 @@ from megatron.core.optimizer.optimizer import MegatronOptimizer
 from megatron.core.optimizer_param_scheduler import OptimizerParamScheduler
 from megatron.core.pipeline_parallel import get_forward_backward_func
 from megatron.core.utils import get_model_config
+from megatron.training.checkpointing import checkpoint_exists, get_checkpoint_tracker_filename, read_metadata
 from megatron.training.global_vars import get_args
 from megatron.training.training import get_model
 
@@ -983,6 +984,12 @@ def load_model_state(
         load_ctx = nullcontext()
 
     load_dir = getattr(args, "load", None)
+    if args.finetune and not is_lora_enabled(args) and load_dir == args.requested_load:
+        saved_iteration = _saved_checkpoint_iteration(load_dir)
+        assert (
+            saved_iteration == 0
+        ), f"--finetune points at {load_dir}, whose tracker records iteration {saved_iteration}, expected 0"
+
     # --load may be unset: setup_model_and_optimizer already asserted pretrained_checkpoint covers it.
     if load_dir is None or _has_loadable_ckpt(load_dir):
         with load_ctx:
@@ -1034,3 +1041,10 @@ def load_model_state(
         start_rollout_id = iteration + 1
 
     return LoadCheckpointOutput(loaded_rollout_id=iteration, start_rollout_id=start_rollout_id)
+
+
+def _saved_checkpoint_iteration(load_dir: str | None) -> int:
+    if not _has_loadable_ckpt(load_dir) or not checkpoint_exists(load_dir):
+        return 0
+    iteration, release = read_metadata(get_checkpoint_tracker_filename(load_dir))
+    return 0 if release else iteration
