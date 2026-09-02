@@ -23,7 +23,7 @@ class EvalScoreBounds(NamedTuple):
     min_growth: float | None = None
 
 
-NUM_VERIFIED_ARGS_PER_POLICY = {SOLVER_MODEL_ID: 25, VERIFIER_MODEL_ID: 26}
+NUM_VERIFIED_ARGS_PER_POLICY = {SOLVER_MODEL_ID: 26, VERIFIER_MODEL_ID: 27}
 
 
 def execute(

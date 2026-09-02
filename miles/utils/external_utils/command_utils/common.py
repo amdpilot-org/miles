@@ -10,6 +10,7 @@ import random
 import shlex
 import socket
 import subprocess
+from collections.abc import Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -226,10 +227,18 @@ def encode_pseudo_file(text: str) -> str:
     return PSEUDO_FILE_PREFIX + base64.b64encode(text.encode()).decode()
 
 
-def compute_model_args_overrides(model_type: str) -> dict[str, object]:
+def compute_model_args_overrides(model_type: str, *, all_model_types: Iterable[str]) -> dict[str, object]:
     from miles.backends.megatron_utils.megatron_config import get_megatron_arg_parser
 
-    return parse_declared_args(load_model_args(model_type), parser=get_megatron_arg_parser())
+    parser = get_megatron_arg_parser()
+    declared = parse_declared_args(load_model_args(model_type), parser=parser)
+    resets = {
+        dest: default
+        for other in all_model_types
+        for dest in parse_declared_args(load_model_args(other), parser=parser)
+        if dest not in declared and isinstance(default := parser.get_default(dest), bool)
+    }
+    return {**resets, **declared}
 
 
 NUM_GPUS_OF_HARDWARE = {

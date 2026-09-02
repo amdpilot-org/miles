@@ -230,7 +230,10 @@ def _compute_trainer_config(args: ScriptArgs, model_id: str) -> dict:
         overrides=dict(
             hf_checkpoint=model_path,
             ref_load=model_path,
-            **compute_model_args_overrides(args.megatron_model_type_of_model_id[model_id]),
+            **compute_model_args_overrides(
+                args.megatron_model_type_of_model_id[model_id],
+                all_model_types=list(args.megatron_model_type_of_model_id.values()),
+            ),
             **SHARED_TRAINER_OVERRIDES,
         ),
     )
