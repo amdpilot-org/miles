@@ -21,6 +21,7 @@ else:
 
 from tests.ci.ci_register import register_cuda_ci, register_rocm_ci
 from tests.ci.metric_history import register_ci_gate
+from tests.e2e.script_config import script_args_from_environment
 
 
 # Smoke test for the GLM-5.2 (glm_moe_dsa) training script. Exercises the DSA
@@ -44,7 +45,8 @@ register_ci_gate(metric_key="rollout/raw_reward")
 
 
 def _args() -> ScriptArgs:
-    return ScriptArgs(
+    return script_args_from_environment(
+        ScriptArgs,
         hardware="H200",
         model_name="GLM-5.2_5layer",
         num_nodes=1,

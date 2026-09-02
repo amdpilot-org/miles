@@ -7,6 +7,7 @@ else:
 
 from tests.ci.ci_register import register_cuda_ci, register_rocm_ci
 from tests.ci.metric_history import register_ci_gate
+from tests.e2e.script_config import script_args_from_environment
 
 # TODO: add back after megatron bump
 register_cuda_ci(
@@ -31,7 +32,8 @@ register_ci_gate(metric_key="rollout/raw_reward")
 
 
 def _args() -> ScriptArgs:
-    return ScriptArgs(
+    return script_args_from_environment(
+        ScriptArgs,
         model_name="DeepSeek-V4-Flash-FP8-4layer",
         task="gsm8k",
         enable_eval=False,

@@ -3,6 +3,7 @@ import os
 from scripts.run_inkling import _MODEL_REGISTRY, ScriptArgs, _train
 from tests.ci.ci_register import register_cuda_ci
 from tests.ci.metric_history import register_ci_gate
+from tests.e2e.script_config import script_args_from_environment
 
 
 # Smoke test for scripts/run_inkling.py --train-mode lora on the 4-layer slice:
@@ -26,7 +27,8 @@ _MODEL_ORG = "CharyZeng"
 
 
 def _args() -> ScriptArgs:
-    return ScriptArgs(
+    return script_args_from_environment(
+        ScriptArgs,
         model_name="Inkling-Small-4layer",
         train_mode="lora",
         task="dapo_math",

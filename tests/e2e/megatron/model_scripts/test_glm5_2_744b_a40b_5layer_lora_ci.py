@@ -2,6 +2,7 @@ import os
 
 from scripts.run_glm5_2_744b_a40b_lora import ScriptArgs, _prepare_download, _train
 from tests.ci.ci_register import register_cuda_ci
+from tests.e2e.script_config import script_args_from_environment
 
 from miles.utils.external_utils import command_utils
 
@@ -38,7 +39,8 @@ _CONFIGS = [
 
 
 def _args(dsa: str, shared_outer: bool, virtual_experts: bool) -> ScriptArgs:
-    return ScriptArgs(
+    return script_args_from_environment(
+        ScriptArgs,
         model_name="GLM-5.2_5layer",
         num_nodes=1,
         num_gpus_per_node=4,

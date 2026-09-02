@@ -15,6 +15,7 @@ from scripts.run_deepseek_v32 import (
 )
 from tests.ci.ci_register import register_cuda_ci
 from tests.ci.metric_history import register_ci_gate
+from tests.e2e.script_config import script_args_from_environment
 
 register_cuda_ci(est_time=1700, suite="stage-c-8-gpu-h200", labels=["megatron", "model-scripts"])
 
@@ -26,7 +27,8 @@ register_ci_gate(metric_key="rollout/raw_reward")
 
 
 def _args() -> ScriptArgs:
-    return ScriptArgs(
+    return script_args_from_environment(
+        ScriptArgs,
         model_org="Pinaster",
         model_name="DeepSeek-V3.2-5layer",
         megatron_model_type="deepseek-v32-5layer",

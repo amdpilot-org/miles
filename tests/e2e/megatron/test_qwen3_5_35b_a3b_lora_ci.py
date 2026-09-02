@@ -2,6 +2,7 @@ import os
 
 from scripts.run_qwen3_5_35b_a3b_lora import ScriptArgs, _prepare_download, _train
 from tests.ci.ci_register import register_cuda_ci
+from tests.e2e.script_config import script_args_from_environment
 
 from miles.utils.external_utils import command_utils
 
@@ -23,7 +24,8 @@ _CONFIGS = [
 
 
 def _args(shared_outer: bool, virtual_experts: bool) -> ScriptArgs:
-    return ScriptArgs(
+    return script_args_from_environment(
+        ScriptArgs,
         model_name="Qwen3.5-35B-A3B",
         num_nodes=1,
         num_gpus_per_node=8,

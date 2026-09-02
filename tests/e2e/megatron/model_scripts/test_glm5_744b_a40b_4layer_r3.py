@@ -9,6 +9,7 @@ from scripts.run_glm5_744b_a40b import (
 )
 from tests.ci.ci_register import register_cuda_ci
 from tests.ci.metric_history import register_ci_gate
+from tests.e2e.script_config import script_args_from_environment
 
 
 # Basic smoke test that exercises the rollout indexer-topk replay path on
@@ -30,7 +31,8 @@ register_ci_gate(metric_key="rollout/raw_reward")
 
 
 def _args() -> ScriptArgs:
-    return ScriptArgs(
+    return script_args_from_environment(
+        ScriptArgs,
         hardware="H200",
         model_name="GLM-5_4layer",
         num_nodes=1,

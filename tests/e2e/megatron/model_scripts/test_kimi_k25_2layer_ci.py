@@ -3,6 +3,7 @@ import os
 from scripts.run_kimi_k25 import ScriptArgs, _convert_to_bf16, _execute_train, _prepare_download
 from tests.ci.ci_register import register_cuda_ci
 from tests.ci.metric_history import register_ci_gate
+from tests.e2e.script_config import script_args_from_environment
 
 
 # Smoke test for the Kimi-K2.5 (MoE + MLA, INT4 rollout + BF16 Megatron bridge) training
@@ -20,7 +21,8 @@ register_ci_gate(metric_key="rollout/raw_reward")
 
 
 def _args() -> ScriptArgs:
-    return ScriptArgs(
+    return script_args_from_environment(
+        ScriptArgs,
         hardware="H200",
         model_name="Kimi-K2.5-2layer",
         num_nodes=1,
