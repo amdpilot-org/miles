@@ -4,6 +4,7 @@ import logging
 import time
 from collections.abc import Callable
 from pathlib import Path
+from typing import NamedTuple
 
 from miles.utils.external_utils.command_utils.helm_backend.orchestrator.state import OrchestratorState
 from miles.utils.pydantic_utils import FrozenStrictBaseModel
@@ -30,6 +31,11 @@ class _RunOutcome(FrozenStrictBaseModel):
     reason: str
 
 
+class _GenerationRead(NamedTuple):
+    readable: bool
+    state_file: Path | None
+
+
 def wait_for_run(
     *,
     state_file: str | Path,
@@ -41,16 +47,14 @@ def wait_for_run(
     dead_polls = 0
     failing_polls = 0
     while True:
-        try:
-            active_state_file = read_active_state_file()
-        except Exception:
-            logger.warning("Could not read the active orchestrator generation; retrying", exc_info=True)
+        generation = _read_active_generation(read_active_state_file)
+        if not generation.readable:
             time.sleep(_POLL_INTERVAL_SECONDS)
             continue
 
-        if active_state_file is not None and active_state_file != state_file:
-            logger.info(f"The active orchestrator generation moved from {state_file} to {active_state_file}")
-            state_file = active_state_file
+        if generation.state_file is not None and generation.state_file != state_file:
+            logger.info(f"The active orchestrator generation moved from {state_file} to {generation.state_file}")
+            state_file = generation.state_file
             missing_polls = 0
             dead_polls = 0
             failing_polls = 0
@@ -75,9 +79,26 @@ def wait_for_run(
             failing_polls=failing_polls,
         )
         if outcome is not None:
+            recheck = _read_active_generation(read_active_state_file)
+            if not recheck.readable:
+                time.sleep(_POLL_INTERVAL_SECONDS)
+                continue
+            if recheck.state_file is not None and recheck.state_file != state_file:
+                logger.info(
+                    f"Discarding the verdict of {state_file}: a later orchestrator generation took the run over"
+                )
+                continue
             logger.info(f"Run finished: {outcome.reason} (exit code {outcome.exit_code})")
             return outcome
         time.sleep(_POLL_INTERVAL_SECONDS)
+
+
+def _read_active_generation(read_active_state_file: Callable[[], Path | None]) -> _GenerationRead:
+    try:
+        return _GenerationRead(readable=True, state_file=read_active_state_file())
+    except Exception:
+        logger.warning("Could not read the active orchestrator generation; retrying", exc_info=True)
+        return _GenerationRead(readable=False, state_file=None)
 
 
 def _compute_run_outcome(

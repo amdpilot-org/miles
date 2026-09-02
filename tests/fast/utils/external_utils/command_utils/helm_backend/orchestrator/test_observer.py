@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Callable
 from pathlib import Path
 
 
@@ -199,6 +200,19 @@ class TestComputeRunOutcome:
         )
 
 
+def _reader(scripted: tuple[object, ...], afterwards: Path) -> Callable[[], Path]:
+    reads = iter(scripted)
+
+    def read() -> Path:
+        result = next(reads, afterwards)
+        if isinstance(result, Exception):
+            raise result
+        assert isinstance(result, Path)
+        return result
+
+    return read
+
+
 class TestWaitForRun:
     def test_follows_the_replacement_orchestrator_generation(self, tmp_path, monkeypatch):
         """A hot restart's old SIGTERM verdict must not finish the replacement generation."""
@@ -274,19 +288,28 @@ class TestWaitForRun:
         new_path = _orchestrator_state_path(tmp_path, "new")
         _write(old_path, OrchestratorStatus.EXITED, exit_code=143)
         _write(new_path, OrchestratorStatus.EXITED, exit_code=0)
-        reads = iter((RuntimeError("unreachable"), new_path))
-
-        def read_active_state_file() -> Path:
-            result = next(reads)
-            if isinstance(result, Exception):
-                raise result
-            return result
 
         monkeypatch.setattr(observer.time, "sleep", lambda seconds: None)
         outcome = observer.wait_for_run(
             state_file=old_path,
             read_pod=lambda: _observed("Running"),
-            read_active_state_file=read_active_state_file,
+            read_active_state_file=_reader((RuntimeError("unreachable"),), new_path),
+        )
+
+        assert outcome.exit_code == 0
+
+    def test_retries_the_recheck_it_could_not_read_instead_of_taking_the_verdict(self, tmp_path, monkeypatch):
+        """Failing the confirming read open is the same as never confirming, and hands back the stale verdict."""
+        old_path = _orchestrator_state_path(tmp_path, "old")
+        new_path = _orchestrator_state_path(tmp_path, "new")
+        _write(old_path, OrchestratorStatus.EXITED, exit_code=143)
+        _write(new_path, OrchestratorStatus.EXITED, exit_code=0)
+
+        monkeypatch.setattr(observer.time, "sleep", lambda seconds: None)
+        outcome = observer.wait_for_run(
+            state_file=old_path,
+            read_pod=lambda: _observed("Running"),
+            read_active_state_file=_reader((old_path, RuntimeError("unreachable")), new_path),
         )
 
         assert outcome.exit_code == 0
