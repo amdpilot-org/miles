@@ -324,6 +324,22 @@ class TestExecCommandMultiNode:
 
         assert (calls[0]["job"].completions, calls[0]["job"].gpus_per_pod) == (2, 4)
 
+    def test_names_the_objects_of_every_invocation_apart(self, monkeypatch):
+        """Two commands sharing a namespace deleted each other's Job before it had reported anything."""
+        calls = _record_run_job(monkeypatch)
+        backend = _gpu_backend()
+
+        backend.exec_command_multi_node("hostname", num_nodes=1, num_gpus_per_node=4)
+        backend.exec_command_multi_node("hostname", num_nodes=1, num_gpus_per_node=4)
+
+        names = [call["job"].object_name for call in calls]
+        assert all(name.startswith("miles-run-command-command-") for name in names)
+        assert names[0] != names[1]
+
+
+def _raise_unreachable(job: command_job._CommandJob) -> str:
+    raise RuntimeError("the api server is unreachable")
+
 
 class TestRunJob:
     def test_clears_a_previous_attempt_before_submitting(self, monkeypatch):
@@ -364,7 +380,7 @@ class TestRunJob:
         with pytest.raises(RuntimeError):
             _run(monkeypatch, kubectl)
 
-        assert kubectl.verbs().count("delete") == 1
+        assert kubectl.targets().count("delete job") == 1
 
     def test_deletes_a_successful_job(self, monkeypatch):
         """Finished Jobs otherwise pile up in the namespace until someone notices."""
@@ -372,7 +388,34 @@ class TestRunJob:
 
         _run(monkeypatch, kubectl)
 
-        assert kubectl.verbs().count("delete") == 2
+        assert kubectl.targets().count("delete job") == 2
+
+    def test_deletes_the_service_the_job_was_named_with(self, monkeypatch):
+        """Every invocation names its own Service, so one left behind is one leaked per command run."""
+        kubectl = FakeKubectl(statuses=["complete"])
+
+        _run(monkeypatch, kubectl)
+
+        assert kubectl.targets().count("delete service") == 1
+
+    def test_deletes_the_service_of_a_failed_job_too(self, monkeypatch):
+        """The Job is kept for the diagnosis, but its Service holds no evidence and would leak instead."""
+        kubectl = FakeKubectl(statuses=["failed"])
+
+        with pytest.raises(RuntimeError):
+            _run(monkeypatch, kubectl)
+
+        assert kubectl.targets().count("delete service") == 1
+
+    def test_deletes_the_service_when_the_wait_itself_blows_up(self, monkeypatch):
+        """A launcher that dies mid-wait would otherwise leave the Service behind for good."""
+        kubectl = FakeKubectl(statuses=["complete"])
+        monkeypatch.setattr(command_job, "_wait", _raise_unreachable)
+
+        with pytest.raises(RuntimeError, match="unreachable"):
+            _run(monkeypatch, kubectl)
+
+        assert kubectl.targets().count("delete service") == 1
 
     def test_gives_back_one_result_per_node(self, monkeypatch):
         """Callers of the multi-node helper index the result by rank."""

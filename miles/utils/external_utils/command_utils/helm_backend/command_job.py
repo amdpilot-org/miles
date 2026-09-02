@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import random
 import time
 from pathlib import Path
 from typing import Any
@@ -59,7 +60,12 @@ def run_on_nodes(
     completions: int,
     step: str,
 ) -> list[str | None]:
-    job = _CommandJob(context=context, step=step, completions=completions, gpus_per_pod=context.gpus_per_node)
+    job = _CommandJob(
+        context=context,
+        step=f"{step}-{_new_invocation_token()}",
+        completions=completions,
+        gpus_per_pod=context.gpus_per_node,
+    )
     prepared = substitute_placeholders(
         cmd,
         node_rank="${JOB_COMPLETION_INDEX}",
@@ -70,21 +76,30 @@ def run_on_nodes(
     return _run_job(job, command=["bash", "-c", prepared], capture_output=capture_output)
 
 
+def _new_invocation_token() -> str:
+    return f"{random.Random().randint(0, 0xFFFFFF):06x}"
+
+
 def _run_job(job: _CommandJob, *, command: list[str], capture_output: bool) -> list[str | None]:
     manifest = _render_job(job, command=command)
 
     Kubectl.delete_job(job.object_name, namespace=job.context.namespace)
     Kubectl.apply(manifest, namespace=job.context.namespace)
 
-    with with_observability(namespace=job.context.namespace, selector=job.pod_selector):
-        outcome = _wait(job)
+    try:
+        with with_observability(namespace=job.context.namespace, selector=job.pod_selector):
+            outcome = _wait(job)
 
-    if outcome != "complete":
-        raise RuntimeError(f"Job {job.object_name} {outcome}; last log lines:\n{_joined(_logs_per_completion(job))}")
+        if outcome != "complete":
+            raise RuntimeError(
+                f"Job {job.object_name} {outcome}; last log lines:\n{_joined(_logs_per_completion(job))}"
+            )
 
-    logs = _logs_per_completion(job) if capture_output else [None] * job.completions
-    Kubectl.delete_job(job.object_name, namespace=job.context.namespace)
-    return logs
+        logs = _logs_per_completion(job) if capture_output else [None] * job.completions
+        Kubectl.delete_job(job.object_name, namespace=job.context.namespace)
+        return logs
+    finally:
+        Kubectl.delete_service(job.object_name, namespace=job.context.namespace)
 
 
 def _render_job(job: _CommandJob, *, command: list[str]) -> str:
