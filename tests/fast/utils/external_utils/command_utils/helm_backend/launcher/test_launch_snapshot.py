@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -130,7 +131,7 @@ def values_file(sandbox: Path) -> Path:
     return run_dir(sandbox) / "values" / f"values-{FROZEN_LAUNCH_TOKEN}.yaml"
 
 
-def record_launch(monkeypatch, sandbox: Path, **request_overrides) -> list[str]:
+def record_launch(monkeypatch, sandbox: Path, on_compute_specs=None, **request_overrides) -> list[str]:
     recorded: list[str] = []
 
     def fake_run(command: list[str], **kwargs: Any) -> Any:
@@ -144,7 +145,7 @@ def record_launch(monkeypatch, sandbox: Path, **request_overrides) -> list[str]:
     monkeypatch.setattr(naming, "_new_launch_token", lambda: FROZEN_LAUNCH_TOKEN)
     monkeypatch.setattr(entrypoint, "generate_run_uuid", lambda: FROZEN_RUN_UUID)
 
-    _stub_launch_inputs(monkeypatch, specs=[_router(), _engine(), _trainer()])
+    _stub_launch_inputs(monkeypatch, specs=[_router(), _engine(), _trainer()], on_compute_specs=on_compute_specs)
 
     entrypoint.execute_train(
         request=_request(**request_overrides),
@@ -171,8 +172,13 @@ def format_launch(commands: list[str], values_text: str, sandbox: Path) -> str:
     return "\n".join(lines)
 
 
-def _stub_launch_inputs(monkeypatch, *, specs, colocate: bool = False) -> None:
-    monkeypatch.setattr(entrypoint, "compute_specs", lambda args: specs)
+def _stub_launch_inputs(monkeypatch, *, specs, colocate: bool = False, on_compute_specs=None) -> None:
+    def compute_specs(args):
+        if on_compute_specs is not None:
+            on_compute_specs()
+        return specs
+
+    monkeypatch.setattr(entrypoint, "compute_specs", compute_specs)
     monkeypatch.setattr(
         entrypoint,
         "parse_args",
@@ -254,6 +260,21 @@ class TestTheLauncherRecordsWhatItLaunched:
 
         assert len(seen_when_helm_ran) == 1
         assert seen_when_helm_ran[0]["values_file"] == str(values_file(tmp_path))
+
+
+class TestTheRunEnvironment:
+    def test_computes_the_worker_specs_under_the_environment_the_run_will_have(self, monkeypatch, tmp_path):
+        """A spec reads env vars of its own, and the launcher's environment is not the run's."""
+        seen: list[str | None] = []
+
+        record_launch(
+            monkeypatch,
+            tmp_path,
+            on_compute_specs=lambda: seen.append(os.environ.get("SGLANG_ENABLE_TP_MEMORY_INBALANCE_CHECK")),
+            extra_env_vars={"SGLANG_ENABLE_TP_MEMORY_INBALANCE_CHECK": "true"},
+        )
+
+        assert seen == ["true"]
 
 
 class TestTheLauncherOwnsTheReport:

@@ -98,7 +98,8 @@ def execute_train(*, request: ExecuteTrainRequest, config: ExecuteTrainConfig) -
     )
     deploys_orchestration_script = deploy_component.deploys_orchestration_script()
 
-    specs = compute_specs(args)
+    with override_env(env):
+        specs = compute_specs(args)
     chart = chart_dir(repo_base_dir=repo_base_dir)
     shared_root = InfraInfo.shared_root(InfraInfo.load(chart, list(config.helm_values)), namespace=namespace)
     run_directory = RunFiles.run_dir(shared_root=shared_root, run_id=run_id)
