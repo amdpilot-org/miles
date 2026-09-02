@@ -120,6 +120,7 @@ MODEL_DEFINITION_ARGS: frozenset[str] = frozenset(
         "mscale_all_dim",
         "mtp_num_layers",
         "multi_latent_attention",
+        "norm_epsilon",
         "normalization",
         "num_attention_heads",
         "num_experts",
