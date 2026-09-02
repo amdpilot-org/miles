@@ -33,6 +33,7 @@ def _make_args(*model_ids: str, **overrides: Any) -> Namespace:
         save_debug_rollout_data=None,
         load_debug_rollout_data=None,
         ci_inject_rollout_data_path=None,
+        ckpt_step=None,
     )
     defaults.update(overrides)
     return Namespace(**{**parser_defaults(), **defaults})
@@ -86,6 +87,7 @@ class TestValidateMultiPolicyArgs:
             (dict(dump_details="/tmp/dump"), "--dump-details"),
             (dict(load_debug_rollout_data="/tmp/{rollout_id}.pt"), "--load-debug-rollout-data"),
             (dict(ci_inject_rollout_data_path="/tmp/{rollout_id}.pt"), "--ci-inject-rollout-data-path"),
+            (dict(ckpt_step=7), "--ckpt-step"),
         ],
     )
     def test_the_unsupported_run_shapes_are_refused(self, monkeypatch, overrides, message):
@@ -348,3 +350,31 @@ class TestAssertConsistentRestore:
             multi_policy_utils.assert_consistent_restore(
                 Namespace(save=str(tmp_path), load=None), trainers=self._trainers(a=5, b=3), leader_model_id="c"
             )
+
+
+class TestTheIterationAResumeStartsFrom:
+    def test_a_resume_that_names_one_iteration_for_every_policy_is_refused(self, monkeypatch):
+        """The followers would restore the leader's iteration and only fail the consistency check afterwards."""
+        _stub_sglang_models(monkeypatch, ("a", True), ("b", True))
+
+        with pytest.raises(AssertionError, match="every policy stands at an iteration of its own"):
+            multi_policy_utils.validate_multi_policy_args(
+                _make_args("a", "b", ckpt_step=7), megatron_config=_make_config("a", "b")
+            )
+
+    def test_the_iteration_zero_a_selector_can_name_is_refused_too(self, monkeypatch):
+        """Zero is a checkpoint like any other, and a falsy check would let this one resume."""
+        _stub_sglang_models(monkeypatch, ("a", True), ("b", True))
+
+        with pytest.raises(AssertionError, match="--ckpt-step"):
+            multi_policy_utils.validate_multi_policy_args(
+                _make_args("a", "b", ckpt_step=0), megatron_config=_make_config("a", "b")
+            )
+
+    def test_a_run_that_names_no_iteration_is_accepted(self, monkeypatch):
+        """Every multi policy resume reads the iteration each policy recorded, and this is that run."""
+        _stub_sglang_models(monkeypatch, ("a", True), ("b", True))
+
+        multi_policy_utils.validate_multi_policy_args(
+            _make_args("a", "b", ckpt_step=None), megatron_config=_make_config("a", "b")
+        )
