@@ -53,7 +53,7 @@ class TestParse:
         """Kind and name alone name several distinct objects, and a run may install more than one of them."""
         manifest = _parse(_rendered(_stateful_set()))
 
-        assert list(manifest.by_identity) == [("apps/v1", "StatefulSet", NAMESPACE, ORCHESTRATOR)]
+        assert list(manifest.by_identity) == [("apps", "StatefulSet", NAMESPACE, ORCHESTRATOR)]
 
     def test_skips_the_empty_documents_helm_leaves_behind(self):
         """A template whose guard is off renders to nothing, and yaml reads that as a None document."""
@@ -65,7 +65,7 @@ class TestParse:
         """The upgrade check compares this number, and a kind that carries no pod must not answer for it at all."""
         manifest = _parse(_rendered(_stateful_set(), {"kind": "ConfigMap", "metadata": {"name": "values"}}))
 
-        stateful_set = manifest.by_identity[("apps/v1", "StatefulSet", NAMESPACE, ORCHESTRATOR)]
+        stateful_set = manifest.by_identity[("apps", "StatefulSet", NAMESPACE, ORCHESTRATOR)]
         config_map = manifest.by_identity[("", "ConfigMap", NAMESPACE, "values")]
 
         assert isinstance(stateful_set, PodWorkloadObject) and stateful_set.replicas == 1
@@ -98,8 +98,16 @@ class TestIdentity:
         """Keeping only the last of them would let a relaunch change the other one without being noticed."""
         service = {"apiVersion": "v1", "kind": "Service", "metadata": {"name": "engine"}}
 
-        with pytest.raises(AssertionError, match="v1/Service"):
+        with pytest.raises(AssertionError, match="Service/rl/engine"):
             assert _parse(_rendered(service, service)).by_identity
+
+    def test_two_served_versions_of_one_object_are_refused(self):
+        """A crd answers on every version it serves, and the two spellings are one object to apply."""
+        served = {"apiVersion": "example.com/v1", "kind": "Engine", "metadata": {"name": "engine"}}
+        aliased = {**served, "apiVersion": "example.com/v1beta1"}
+
+        with pytest.raises(AssertionError, match="example.com/Engine/rl/engine"):
+            assert _parse(_rendered(served, aliased)).by_identity
 
 
 class TestFlagValue:
