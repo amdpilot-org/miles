@@ -1,3 +1,5 @@
+import argparse
+import re
 import sys
 from argparse import Namespace
 from types import SimpleNamespace
@@ -10,6 +12,7 @@ from tests.fast.fixtures.megatron_config_fixtures import encode_megatron_config
 
 from miles.backends.megatron_utils import megatron_config as megatron_config_module
 from miles.backends.megatron_utils.megatron_config import (
+    MODEL_DEFINITION_ARGS,
     PER_POLICY_ARGS,
     _compute_trainer_checkpoint_dir,
     _has_megatron_checkpoint,
@@ -260,6 +263,63 @@ class TestOverrideCoercion:
 
         with pytest.raises(AssertionError, match="num_rollout"):
             resolve_megatron_config(_make_args(path))
+
+
+class TestModelDefinitionOverrides:
+    @staticmethod
+    def _parser() -> argparse.ArgumentParser:
+        parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument("--lr", type=float)
+        parser.add_argument("--num-layers", type=int)
+        parser.add_argument("--num-experts", type=int)
+        parser.add_argument("--moe-router-topk", type=int)
+        parser.add_argument("--untie-embeddings-and-output-weights", action="store_true")
+        parser.add_argument("--spec", nargs="*")
+        parser.add_argument("--num-rollout", type=int)
+        return parser
+
+    @pytest.fixture(autouse=True)
+    def _the_parser_of_this_run(self, monkeypatch):
+        monkeypatch.setattr(megatron_config_module, "get_megatron_arg_parser", self._parser)
+
+    def test_a_model_definition_argument_this_run_declares_is_accepted_and_typed(self):
+        """A policy carries the shape of its own model, of which PER_POLICY_ARGS lists only a part."""
+        overrides = _resolve_overrides({"num_experts": "8", "moe_router_topk": "4"}, model_id="a")
+
+        assert overrides == {"num_experts": 8, "moe_router_topk": 4}
+
+    def test_a_model_definition_flag_stays_a_boolean(self):
+        """store_true arguments carry no value on a command line, so the overlay must keep the boolean."""
+        overrides = _resolve_overrides({"untie_embeddings_and_output_weights": True}, model_id="a")
+
+        assert overrides == {"untie_embeddings_and_output_weights": True}
+
+    def test_a_model_definition_argument_this_run_does_not_declare_is_refused(self):
+        """The set is intersected with the parser, so a name this run cannot type admits nothing."""
+        with pytest.raises(AssertionError, match="may not override"):
+            _resolve_overrides({"kv_lora_rank": 512}, model_id="a")
+
+    def test_an_argument_in_neither_whitelist_is_refused(self):
+        """The parser declares --num-rollout, yet the rhythm of a run is read from the base command line."""
+        with pytest.raises(AssertionError, match="num_rollout"):
+            _resolve_overrides({"num_rollout": 3}, model_id="a")
+
+    def test_a_list_reaches_an_argument_that_takes_several_values(self):
+        """--spec names a module and a function, which is how such an argument arrives from yaml."""
+        overrides = _resolve_overrides({"spec": ["miles_plugins.models.glm5.glm5", "get_glm5_spec"]}, model_id="a")
+
+        assert overrides == {"spec": ["miles_plugins.models.glm5.glm5", "get_glm5_spec"]}
+
+    def test_a_list_written_where_a_single_value_is_declared_is_refused(self):
+        """One integer argument cannot be given two, and the overlay is the only place that can say so."""
+        with pytest.raises(AssertionError, match="takes a single value"):
+            _resolve_overrides({"num_experts": [8, 4]}, model_id="a")
+
+    def test_a_training_knob_is_still_accepted_beside_a_model_definition_argument(self):
+        """The model definition arguments are admitted on top of PER_POLICY_ARGS, not instead of it."""
+        overrides = _resolve_overrides({"lr": "5e-7", "num_layers": "12"}, model_id="a")
+
+        assert overrides == {"lr": 5e-7, "num_layers": 12}
 
 
 class TestResolveOverrides:
@@ -777,7 +837,15 @@ class TestPerPolicyArgsCoverage:
         unknown = [flag for flag in flags if flag not in options]
         assert not unknown, f"{model_type} passes {unknown}, which the megatron parser does not declare"
 
-        assert {options[flag].dest for flag in flags} <= PER_POLICY_ARGS
+        assert {options[flag].dest for flag in flags} <= PER_POLICY_ARGS | MODEL_DEFINITION_ARGS
+
+    @pytest.mark.parametrize("model_type", ["qwen2.5-0.5B", "qwen3-0.6B"])
+    def test_a_model_script_names_only_model_definition_arguments(self, model_type):
+        """PER_POLICY_ARGS holds the training knobs, so nothing describing a model shape may hide in it."""
+        options = get_megatron_arg_parser()._option_string_actions
+        flags = [token for token in load_model_args(model_type).split() if token.startswith("--")]
+
+        assert {options[flag].dest for flag in flags} <= MODEL_DEFINITION_ARGS
 
     def test_the_whitelist_names_arguments_the_parser_actually_produces(self):
         """The override keys are compared against this set and then looked up by the same name in the
@@ -786,3 +854,19 @@ class TestPerPolicyArgsCoverage:
         parsed = {action.dest for action in get_megatron_arg_parser()._actions}
 
         assert PER_POLICY_ARGS <= parsed
+
+
+class TestOverrideWhitelistShape:
+    def test_the_two_whitelists_are_disjoint(self):
+        """A name in both no longer says whether it is a training knob or part of a model definition."""
+        assert not PER_POLICY_ARGS & MODEL_DEFINITION_ARGS
+
+    def test_every_whitelisted_name_is_spelled_the_way_a_destination_is(self):
+        """Both sets are matched against argparse destinations, so a command line spelling admits nothing."""
+        misspelled = [
+            name
+            for name in sorted(PER_POLICY_ARGS | MODEL_DEFINITION_ARGS)
+            if re.fullmatch(r"[a-z][a-z0-9_]*", name) is None
+        ]
+
+        assert misspelled == []
