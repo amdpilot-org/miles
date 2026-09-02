@@ -5,11 +5,15 @@ from dataclasses import dataclass
 from types import SimpleNamespace
 from typing import Any
 
+import pytest
+
 from miles.ray.rollout.inference_controller import InferenceController
 from miles.utils.context_lock import ContextLock
 from miles.utils.ft_utils.health_checker import ActivenessTracker
 from miles.utils.test_utils.fault_injector import FailureMode
 from miles.utils.workers.cell_operations.ray import RayCellOperations
+
+_TRAINER_CELL_ID = "trainer-engine-actor-00001"
 
 
 class _RecordingEngineProvider:
@@ -36,6 +40,7 @@ class _RecordingWorkerManagerHandle:
         self.calls: list[tuple[str, tuple[Any, ...], dict[str, Any]]] = []
         self.get_cell_infos = _RecordingRemoteMethod(name="get_cell_infos", calls=self.calls)
         self.start_cells = _RecordingRemoteMethod(name="start_cells", calls=self.calls)
+        self.stop_cells = _RecordingRemoteMethod(name="stop_cells", calls=self.calls)
         self.inject_fault = _RecordingRemoteMethod(name="inject_fault", calls=self.calls)
 
 
@@ -118,6 +123,54 @@ async def test_inject_fault_waits_for_the_controller_lock() -> None:
     assert fixture.worker_manager.calls == [
         ("inject_fault", ("engine-0-2",), {"mode": "sigkill", "worker_in_cell_index": 0})
     ]
+
+
+async def test_a_trainer_cells_fault_reaches_the_worker_manager() -> None:
+    """Regression: routing a trainer cell through the rollout controller raised, so the actor never died."""
+    fixture = _make_fixture()
+    acquired, release = asyncio.Event(), asyncio.Event()
+    holding = asyncio.create_task(_hold_lock(lock=fixture.controller.context_lock, acquired=acquired, release=release))
+    await acquired.wait()
+
+    await asyncio.wait_for(
+        fixture.operations.inject_fault(cell_id=_TRAINER_CELL_ID, mode=FailureMode.SIGKILL, sub_index=0),
+        timeout=5.0,
+    )
+
+    assert fixture.worker_manager.calls == [
+        ("inject_fault", (_TRAINER_CELL_ID,), {"mode": "sigkill", "worker_in_cell_index": 0})
+    ]
+
+    release.set()
+    await holding
+
+
+async def test_a_trainer_cells_suspend_reaches_the_worker_manager() -> None:
+    """A trainer cell is none of the controller's business, and its lock would only stall the stop."""
+    fixture = _make_fixture()
+    acquired, release = asyncio.Event(), asyncio.Event()
+    holding = asyncio.create_task(_hold_lock(lock=fixture.controller.context_lock, acquired=acquired, release=release))
+    await acquired.wait()
+
+    await asyncio.wait_for(fixture.operations.suspend(cell_id=_TRAINER_CELL_ID), timeout=5.0)
+
+    assert fixture.worker_manager.calls == [("stop_cells", ([_TRAINER_CELL_ID],), {})]
+    assert fixture.provider.stopped == []
+
+    release.set()
+    await holding
+
+
+async def test_a_rollout_cell_the_controller_does_not_list_yet_still_goes_through_the_controller() -> None:
+    """Routing on live membership would kill an engine being replaced without the weight-update lock."""
+    fixture = _make_fixture()
+
+    with pytest.raises(KeyError):
+        await asyncio.wait_for(
+            fixture.operations.inject_fault(cell_id="engine-0-7", mode=FailureMode.SIGKILL, sub_index=0), timeout=5.0
+        )
+
+    assert fixture.worker_manager.calls == []
 
 
 async def test_non_disruptive_operations_go_straight_through() -> None:

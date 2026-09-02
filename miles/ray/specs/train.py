@@ -14,6 +14,7 @@ from miles.utils.megatron_args_utils import compute_megatron_world_size_except_d
 from miles.utils.workers.backend_capability.base import BackendCapability
 from miles.utils.workers.naming import (
     TRAINER_CONTROLLER_POOL_ID_PREFIX,
+    TRAINER_POOL_ID_PREFIX,
     compute_cell_id,
     compute_worker_name,
     format_name_index,
@@ -173,7 +174,7 @@ def specs_trainer(args) -> list[ServeWorkerSpec]:
 
 
 def compute_trainer_pool_id(trainer_id: str) -> str:
-    return f"trainer-engine-{trainer_id}"
+    return f"{TRAINER_POOL_ID_PREFIX}{trainer_id}"
 
 
 def compute_trainer_num_cells(args, *, role: str) -> int:

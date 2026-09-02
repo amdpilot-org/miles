@@ -4,6 +4,7 @@ from typing import NamedTuple
 NAME_INDEX_PAD_WIDTH: int = 5
 _NAME_INDEX_LIMIT: int = 10**NAME_INDEX_PAD_WIDTH
 POOL_NAME_MAX_LENGTH = 40
+TRAINER_POOL_ID_PREFIX = "trainer-engine-"
 _LONGEST_ENGINE_POOL_ID_AROUND_THE_INSTANCE_ID = "inference-engine--99-99"
 DEPLOY_INSTANCE_ID_MAX_LENGTH = POOL_NAME_MAX_LENGTH - len(_LONGEST_ENGINE_POOL_ID_AROUND_THE_INSTANCE_ID)
 TRAINER_CONTROLLER_POOL_ID_PREFIX = "trainer-controller-"
@@ -38,6 +39,10 @@ def parse_cell_id(cell_id: str) -> ParsedCellId:
 
 def compute_cell_id(*, pool_id: str, cell_index: int) -> str:
     return f"{pool_id}-{format_name_index(cell_index)}"
+
+
+def is_trainer_cell_id(cell_id: str) -> bool:
+    return parse_cell_id(cell_id).pool_id.startswith(TRAINER_POOL_ID_PREFIX)
 
 
 # TODO refactor & move later
