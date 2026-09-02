@@ -276,6 +276,51 @@ class TestCiCleanup:
         assert commands[1] == ["helm", "uninstall", "miles-run-a", "--namespace", "ci"]
 
 
+def _listed_releases(monkeypatch: pytest.MonkeyPatch, **kwargs) -> list[str]:
+    commands: list[list[str]] = []
+
+    def fake_run(command: list[str], capture_output: bool) -> subprocess.CompletedProcess:
+        commands.append(command)
+        return subprocess.CompletedProcess(
+            args=command, returncode=0, stdout=json.dumps([{"name": "miles-run-a-all"}]), stderr=""
+        )
+
+    monkeypatch.setattr(command_wrapper, "_run", fake_run)
+    Helm.list_releases(**kwargs)
+    return commands[0]
+
+
+class TestListReleases:
+    def test_a_name_filter_is_passed_to_helm_rather_than_applied_afterwards(self, monkeypatch):
+        """helm truncates to its 256-release maximum before returning, and a filter is applied before that."""
+        command = _listed_releases(monkeypatch, namespace="rl", name_filter="^miles-run-a-")
+
+        assert command[command.index("--filter") + 1] == "^miles-run-a-"
+
+    def test_a_listing_that_names_no_filter_asks_for_the_whole_namespace(self, monkeypatch):
+        """The ci cleanup selects on a label instead, and a filter here would hide the releases it removes."""
+        assert "--filter" not in _listed_releases(monkeypatch, namespace="rl")
+
+    def test_a_filter_and_a_label_selector_narrow_the_same_listing(self, monkeypatch):
+        """Neither is a replacement for the other, so passing one may not drop the other."""
+        command = _listed_releases(monkeypatch, namespace="rl", selector="ci=true", name_filter="^miles-run-a-")
+
+        assert command[command.index("--selector") + 1] == "ci=true"
+        assert command[command.index("--filter") + 1] == "^miles-run-a-"
+
+    def test_it_reads_back_the_names_helm_reported(self, monkeypatch):
+        """The filter is only worth passing if what comes back is still the list of release names."""
+        monkeypatch.setattr(
+            command_wrapper,
+            "_run",
+            lambda command, capture_output: subprocess.CompletedProcess(
+                args=command, returncode=0, stdout=json.dumps([{"name": "miles-run-a-all"}]), stderr=""
+            ),
+        )
+
+        assert Helm.list_releases(namespace="rl", name_filter="^miles-run-a-") == ["miles-run-a-all"]
+
+
 class TestChartDir:
     def test_finds_the_chart_inside_the_checkout(self):
         """The launcher installs the chart of the code it runs, not one from a registry."""
@@ -293,6 +338,22 @@ class TestReleaseName:
     def test_a_release_is_the_chart_name_the_run_id_and_the_component(self):
         """The launcher finds a run's release again from the run id alone, so the rule is fixed."""
         assert _unsplit("260101-000000-000") == "miles-run-260101-000000-000-all"
+
+    def test_the_run_prefix_is_what_every_release_of_that_run_starts_with(self):
+        """A filter built from it has to match the trainer and inference releases of the run as well."""
+        prefix = ReleaseName.run_prefix(run_id="260101-000000-000")
+
+        assert _unsplit("260101-000000-000").startswith(prefix)
+        engines = ReleaseName(
+            run_id="260101-000000-000", deploy_component=DeployComponent.INFERENCE, deploy_instance_id="dc1"
+        )
+        assert engines.serialize().startswith(prefix)
+
+    def test_the_run_prefix_ends_where_the_component_begins(self):
+        """Without the separator the prefix of one run also matches a run whose id merely starts with it."""
+        assert not ReleaseName.run_prefix(run_id="260101-000000-000").startswith(
+            ReleaseName.run_prefix(run_id="260101-000000-00")
+        )
 
     def test_the_same_run_id_always_names_the_same_release(self):
         """Relaunching a run upgrades its release; a fresh name would deploy a second copy instead."""
