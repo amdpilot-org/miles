@@ -397,7 +397,13 @@ def _assert_upgrade_is_allowed(
 
 
 def _belongs_to_run(release: str, *, run_id: str) -> bool:
-    return (parsed := ReleaseName.parse(release)) is not None and parsed.run_id == run_id
+    try:
+        return (parsed := ReleaseName.parse(release)) is not None and parsed.run_id == run_id
+    except Exception:
+        logger.info(
+            f"Release {release} does not follow the Miles naming rules, so it belongs to no run", exc_info=True
+        )
+        return False
 
 
 def _uninstall_leftover_ci_releases(namespace: str, *, keep_run_id: str) -> list[str]:
