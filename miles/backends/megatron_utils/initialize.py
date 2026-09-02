@@ -1,5 +1,7 @@
+import dataclasses
 import logging
 import random
+from typing import Any
 
 import numpy as np
 import torch
@@ -47,6 +49,32 @@ def set_random_seed_from_args(args) -> None:
         args.te_rng_tracker,
         args.inference_rng_tracker,
     )
+
+
+@dataclasses.dataclass(frozen=True)
+class RandomState:
+    python: tuple[Any, ...]
+    numpy: dict[str, Any] | tuple[Any, ...]
+    torch_cpu: torch.Tensor
+    torch_cuda: list[torch.Tensor]
+    megatron_cuda_tracker: dict[str, torch.Tensor]
+
+    @classmethod
+    def capture(cls) -> "RandomState":
+        return cls(
+            python=random.getstate(),
+            numpy=np.random.get_state(),
+            torch_cpu=torch.get_rng_state(),
+            torch_cuda=torch.cuda.get_rng_state_all(),
+            megatron_cuda_tracker=tensor_parallel.get_cuda_rng_tracker().get_states(),
+        )
+
+    def restore(self) -> None:
+        random.setstate(self.python)
+        np.random.set_state(self.numpy)
+        torch.set_rng_state(self.torch_cpu)
+        torch.cuda.set_rng_state_all(self.torch_cuda)
+        tensor_parallel.get_cuda_rng_tracker().set_states(dict(self.megatron_cuda_tracker))
 
 
 def _initialize_distributed(args, get_embedding_ranks=None, get_position_embedding_ranks=None):

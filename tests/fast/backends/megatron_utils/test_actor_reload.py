@@ -14,6 +14,14 @@ from miles.utils.init_once import InitOnce
 _ACTOR_MODULE_NAME = "miles.backends.megatron_utils.actor"
 
 
+class _FakeRandomState:
+    def __init__(self) -> None:
+        self.restores = 0
+
+    def restore(self) -> None:
+        self.restores += 1
+
+
 @pytest.fixture(scope="module")
 def actor_module():
     """Import the megatron actor with the one native dependency the fast environment lacks stubbed out."""
@@ -108,6 +116,7 @@ def _actor(actor_module, *, role: str, args: Namespace):
     actor.optimizer = None
     actor.opt_param_scheduler = None
     actor._last_rollout_id = None
+    actor._post_init_random_state = _FakeRandomState()
     return actor
 
 
@@ -234,7 +243,6 @@ def _cold_started_args(tmp_path: Path, **overrides) -> Namespace:
 
 
 def _stub_the_reset(actor_module, monkeypatch) -> None:
-    monkeypatch.setattr(actor_module, "set_random_seed_from_args", lambda *a, **k: None)
     monkeypatch.setattr(actor_module, "reset_optimizer_state", lambda *a, **k: None)
 
 
@@ -269,15 +277,13 @@ class TestAReloadThatFindsNothingItSaved:
             3,
         )
 
-    def test_it_reseeds_the_rng_and_resets_the_optimizer(self, actor_module, tmp_path, monkeypatch):
+    def test_it_restores_the_random_stream_and_resets_the_optimizer(self, actor_module, tmp_path, monkeypatch):
         """A checkpoint load overwrites neither, so a live trainer would keep both from the rollouts it discards."""
         args = _cold_started_args(tmp_path)
         _watch_the_load(actor_module, monkeypatch, args=args, iteration=0)
         actor = _actor(actor_module, role="actor", args=args)
         actor.optimizer = "the live optimizer"
-        reseeded: list[Namespace] = []
         reset: list[str] = []
-        monkeypatch.setattr(actor_module, "set_random_seed_from_args", reseeded.append)
         monkeypatch.setattr(
             actor_module,
             "reset_optimizer_state",
@@ -286,7 +292,7 @@ class TestAReloadThatFindsNothingItSaved:
 
         actor.load_state()
 
-        assert reseeded == [args] and reset == ["the live optimizer"]
+        assert actor._post_init_random_state.restores == 1 and reset == ["the live optimizer"]
 
     @pytest.mark.parametrize(
         "overrides",
