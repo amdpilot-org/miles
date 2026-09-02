@@ -153,3 +153,9 @@ def _assert_cell_addressable(cell: RegisteredCellInfo, *, reporter_id: str) -> N
     assert worker_cell_ids == {
         cell.info.cell_id
     }, f"{prefix} its workers {sorted(one.name for one in cell.workers)} name cells {sorted(worker_cell_ids)}"
+
+    names = sorted(worker.name for worker in cell.workers)
+    assert len(set(names)) == len(names), f"{prefix} its workers carry the names {names}, one of them twice"
+    assert (
+        sorted(cell.info.worker_names) == names
+    ), f"{prefix} it announces the workers {sorted(cell.info.worker_names)}, but carries {names}"
