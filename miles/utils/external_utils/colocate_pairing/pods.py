@@ -9,7 +9,7 @@ from miles.utils.workers.worker_provider.kubernetes.helm.env import DEFAULT_LABE
 
 _GATE_NAME = "miles.radixark.io/colocate-pairing"
 
-_HOSTNAME_LABEL = "kubernetes.io/hostname"
+_NODE_NAME_FIELD = "metadata.name"
 
 
 class PodCoordinate(FrozenStrictBaseModel):
@@ -36,7 +36,6 @@ def release_patch(
     node_name: str,
     base_gpu_id: int,
     gates: list[str],
-    has_node_selector: bool,
     annotations: Mapping[str, str],
 ) -> list[dict[str, object]]:
     key = DEFAULT_LABEL_KEYS.base_gpu_id_annotation
@@ -46,11 +45,19 @@ def release_patch(
     )
 
     index = gates.index(_GATE_NAME)
-    pin = (
-        {"op": "add", "path": f"/spec/nodeSelector/{_escape_pointer(_HOSTNAME_LABEL)}", "value": node_name}
-        if has_node_selector
-        else {"op": "add", "path": "/spec/nodeSelector", "value": {_HOSTNAME_LABEL: node_name}}
-    )
+    pin = {
+        "op": "add",
+        "path": "/spec/affinity",
+        "value": {
+            "nodeAffinity": {
+                "requiredDuringSchedulingIgnoredDuringExecution": {
+                    "nodeSelectorTerms": [
+                        {"matchFields": [{"key": _NODE_NAME_FIELD, "operator": "In", "values": [node_name]}]}
+                    ]
+                }
+            }
+        },
+    }
     return [
         pin,
         {"op": "add", "path": f"/metadata/annotations/{_escape_pointer(key)}", "value": str(base_gpu_id)},
