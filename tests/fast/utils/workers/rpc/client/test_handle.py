@@ -726,6 +726,33 @@ class TestLongPoll:
                 worker.block_forever.set()
 
 
+class _StallingAfterwardsTransport(_HookTransport):
+    """Answers normally until `stalling` is set, after which every request hangs until it is cancelled."""
+
+    def __init__(self, app: Any) -> None:
+        super().__init__(app)
+        self.stalling = False
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        if self.stalling:
+            await asyncio.sleep(3600)
+        return await super().handle_async_request(request)
+
+
+class _HealthFailsLaterTransport(_HookTransport):
+    """Answers normally until `health_status` is set, after which the health endpoint answers with it."""
+
+    def __init__(self, app: Any) -> None:
+        super().__init__(app)
+        self.health_status: int | None = None
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        if self.health_status is not None and HEALTH_PATH in str(request.url):
+            self.requests += 1
+            return httpx.Response(self.health_status, text="gone", request=request)
+        return await super().handle_async_request(request)
+
+
 class TestBootUuid:
     async def test_restart_detected_when_required_stable(self):
         """A server restart between calls raises ServerRestartedError."""
@@ -920,6 +947,68 @@ class TestBootUuid:
                 transport.switch_to(second_app)
                 await handle.wait_ready(timeout=5.0, allow_server_uuid_change=True)
 
+                assert handle._boot_uuid_pin.needs_handshake() is False
+
+    async def test_a_wait_a_protocol_error_ended_leaves_the_pin_it_found(self) -> None:
+        """Only a retryable exhaustion restored the pin, so a 4xx left the handle open to any process."""
+        async with _running_app(_Worker()) as app:
+            transport = _HealthFailsLaterTransport(app)
+            async with _handle_over(transport, require_stable_boot_uuid=True) as handle:
+                await handle.wait_ready(timeout=5.0)
+                pinned = handle._boot_uuid_pin.expected
+
+                transport.health_status = 404
+                with pytest.raises(RpcProtocolError):
+                    await handle.wait_ready(timeout=5.0, allow_server_uuid_change=True)
+
+                assert handle._boot_uuid_pin.expected == pinned
+
+    async def test_a_wait_that_was_cancelled_leaves_the_pin_it_found(self) -> None:
+        """A take-over cancels these waits, and an unpinned handle is what the take-over is guarding against."""
+        async with _running_app(_Worker()) as app:
+            transport = _StallingAfterwardsTransport(app)
+            async with _handle_over(transport, require_stable_boot_uuid=True) as handle:
+                await handle.wait_ready(timeout=5.0)
+                pinned = handle._boot_uuid_pin.expected
+
+                transport.stalling = True
+                with pytest.raises((asyncio.TimeoutError, TimeoutError)):
+                    await asyncio.wait_for(
+                        handle.wait_ready(timeout=30.0, allow_server_uuid_change=True), timeout=0.05
+                    )
+
+                assert handle._boot_uuid_pin.expected == pinned
+
+    async def test_a_call_after_a_cancelled_wait_still_refuses_a_replacement(self) -> None:
+        """Restoring the pin is only worth anything if the next call is still checked against it."""
+        async with _running_app(_Worker()) as first_app, _running_app(_Worker()) as second_app:
+            transport = _StallingAfterwardsTransport(first_app)
+            async with _handle_over(transport, require_stable_boot_uuid=True) as handle:
+                await handle.wait_ready(timeout=5.0)
+
+                transport.stalling = True
+                with pytest.raises((asyncio.TimeoutError, TimeoutError)):
+                    await asyncio.wait_for(
+                        handle.wait_ready(timeout=30.0, allow_server_uuid_change=True), timeout=0.05
+                    )
+                transport.stalling = False
+                transport.switch_to(second_app)
+
+                with pytest.raises(ServerRestartedError):
+                    await handle.demo_default_arg(a=1, b=2)
+
+    async def test_a_wait_that_succeeded_is_still_pinned_to_the_server_that_answered(self) -> None:
+        """The restore runs on every path that does not end pinned and ready, and this path does."""
+        async with _running_app(_Worker()) as first_app, _running_app(_Worker()) as second_app:
+            transport = _HookTransport(first_app)
+            async with _handle_over(transport, require_stable_boot_uuid=True) as handle:
+                await handle.wait_ready(timeout=5.0)
+                pinned = handle._boot_uuid_pin.expected
+
+                transport.switch_to(second_app)
+                await handle.wait_ready(timeout=5.0, allow_server_uuid_change=True)
+
+                assert handle._boot_uuid_pin.expected != pinned
                 assert handle._boot_uuid_pin.needs_handshake() is False
 
 
