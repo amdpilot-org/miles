@@ -99,7 +99,6 @@ infra:
   image:
     repository: radixark/miles
     tag: dev
-  # TODO: describe a volume and its mounts here.
   volumes:
     - name: cluster-storage
       hostPath: {path: /cluster-storage, type: Directory}
@@ -112,6 +111,11 @@ infra:
   paths:
     runsRoot: /cluster-storage/miles_data
 ```
+
+The `hostPath` above stands for a cluster-wide shared filesystem (NFS, Lustre, a CSI mount) already
+mounted at `/cluster-storage` on every node: a per-node directory would lose the orchestrator state
+file and the shared checkpoints. Where Pod Security forbids `hostPath`, replace that key with an RWX
+`persistentVolumeClaim` and keep the mounts.
 
 `charts/miles-run/values.yaml` shows the full shape, and each chart's `values.schema.json` is the
 authoritative field list.
