@@ -384,11 +384,14 @@ class TestStaticInferenceEngineWorkerProvider:
 
     async def test_the_cell_info_satisfies_the_server_cell_meta_contract(self, monkeypatch):
         """A provider whose meta drifts from ServerCellMetadata would crash reconcile at runtime."""
-        args = _make_args(["host1:8000"], num_gpus_per_engine=2, rollout_external_router_pd=True)
-        payload = _decode_payload(num_gpus=2)
-        provider = await self._make_provider(monkeypatch, args, {"http://host1:8000": payload})
+        args = _make_args(["host1:8000", "host2:8000"], num_gpus_per_engine=2, rollout_external_router_pd=True)
+        payloads = {
+            "http://host1:8000": _decode_payload(num_gpus=2),
+            "http://host2:8000": _prefill_payload(num_gpus=2),
+        }
+        provider = await self._make_provider(monkeypatch, args, payloads)
 
-        (info,) = provider.cell_infos
+        (info, _prefill_info) = provider.cell_infos
         meta = _compute_server_cell_meta_from_info(info)
 
         assert (meta.worker_type, meta.num_gpus_per_engine, meta.workers_hash) == (
