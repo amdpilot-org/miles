@@ -86,7 +86,10 @@ Entries: test_hot_restart_checkpointed.py, test_hot_restart_no_checkpoint.py
      thrown away (steps 0..1, each once) and sharing no step with the log that replaced it; the
      surviving log describes each of the 6 steps exactly once; the run still saves after the
      restart, past the step it was frozen at
-5. Compare: bitwise as in scenario_split_deterministic, engine checksums included, no exemption
+5. Compare: bitwise as in scenario_split_deterministic, engine checksums included, with one
+   exemption - rollout/weight_version mean/median/max/min. The trainer outlives a take-over, so
+   its weight update counter keeps counting through the steps the target redoes and stands
+   ahead of the baseline's at the same step
 
 checkpointed lands every take-over on a non-save step, so unsaved steps are rolled back and
 redone; no_checkpoint has nothing to resume from, so its event log is moved aside and it starts
