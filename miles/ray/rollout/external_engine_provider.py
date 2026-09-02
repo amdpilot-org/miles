@@ -263,6 +263,12 @@ def _assert_engines_match_args(args: Any, *, engines: list[_ExternalEngineInfo])
         f"describe the fleet that is actually running"
     )
 
+    reported_gpus = {engine.num_gpus for engine in engines}
+    assert reported_gpus == {args.rollout_num_gpus_per_engine}, (
+        f"external engines report {sorted(reported_gpus)} gpus each, expected "
+        f"{args.rollout_num_gpus_per_engine} (--rollout-num-gpus-per-engine)"
+    )
+
     pd_engine_urls = [engine.url for engine in engines if engine.worker_type != "regular"]
     assert bool(pd_engine_urls) == args.rollout_external_router_pd, (
         f"the router is launched in PD mode iff --rollout-external-router-pd is set "
