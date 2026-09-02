@@ -219,6 +219,10 @@ def parse_declared_args(text: str, *, parser: argparse.ArgumentParser) -> dict[s
     return {dest: getattr(namespace, dest) for dest in dests}
 
 
+def declared_arg_dests(parser: argparse.ArgumentParser) -> frozenset[str]:
+    return frozenset(action.dest for action in parser._actions)
+
+
 def coerce_dict_to_args(
     values: Mapping[str, Any], *, parser: argparse.ArgumentParser, allowed_names: frozenset[str], context: str
 ) -> dict[str, Any]:
@@ -250,6 +254,20 @@ def _coerce_value(
         assert isinstance(value, bool), f"{context} sets {dest!r} to {value!r}, which is not a boolean"
         return value
 
+    if isinstance(value, list):
+        assert _takes_several_values(
+            spec
+        ), f"{context} sets {dest!r} to the list {value!r}, but the command line takes a single value there"
+        return [_coerce_one_value(item, dest=dest, spec=spec, context=context) for item in value]
+
+    return _coerce_one_value(value, dest=dest, spec=spec, context=context)
+
+
+def _takes_several_values(spec: "_ArgSpec") -> bool:
+    return spec.nargs in ("*", "+") or (isinstance(spec.nargs, int) and spec.nargs > 1)
+
+
+def _coerce_one_value(value: Any, *, dest: str, spec: "_ArgSpec", context: str) -> Any:
     assert not isinstance(value, bool) and isinstance(
         value, (int, float, str)
     ), f"{context} sets {dest!r} to {value!r}, which is not a {spec.type.__name__}"
@@ -273,6 +291,7 @@ class _ArgSpec(NamedTuple):
     dest: str
     type: type
     choices: tuple[Any, ...] | None
+    nargs: int | str | None
 
 
 def _compute_arg_specs(parser: argparse.ArgumentParser) -> dict[str, _ArgSpec]:
@@ -290,7 +309,7 @@ def _compute_dest_of_option_names(parser: argparse.ArgumentParser) -> dict[str, 
 
 def _compute_arg_spec(action: argparse.Action) -> _ArgSpec:
     choices = None if action.choices is None else tuple(action.choices)
-    return _ArgSpec(dest=action.dest, type=_compute_arg_type(action), choices=choices)
+    return _ArgSpec(dest=action.dest, type=_compute_arg_type(action), choices=choices, nargs=action.nargs)
 
 
 @contextlib.contextmanager
