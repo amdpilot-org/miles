@@ -20,6 +20,7 @@ class FakeKubectl:
     statuses: list[str]
     pod_indices: list[int] = field(default_factory=list)
     calls: list[list[str]] = field(default_factory=list)
+    logs_returncode: int = 0
 
     def __call__(self, argv: list[str], **kwargs: Any) -> subprocess.CompletedProcess:
         assert argv[0] == "kubectl", f"only kubectl is expected to reach the process layer, got {argv[0]}"
@@ -48,8 +49,10 @@ class FakeKubectl:
             }[status]
             return subprocess.CompletedProcess(args=argv, returncode=0, stdout=body, stderr="")
         if arguments[0] == "logs":
+            if self.logs_returncode != 0 and kwargs.get("check"):
+                raise subprocess.CalledProcessError(self.logs_returncode, argv, stderr="no such container")
             return subprocess.CompletedProcess(
-                args=argv, returncode=0, stdout=f"the output of {arguments[1]}", stderr=""
+                args=argv, returncode=self.logs_returncode, stdout=f"the output of {arguments[1]}", stderr=""
             )
         return subprocess.CompletedProcess(args=argv, returncode=0, stdout="", stderr="")
 
@@ -460,6 +463,22 @@ class TestRunJob:
         logs = _run(monkeypatch, kubectl, completions=2, capture_output=True)
 
         assert logs == ["the output of job/miles-run-command-convert"] * 2
+
+    def test_captures_the_full_logs_unaltered(self, monkeypatch):
+        """A parser reads this as the command's stdout, so a tail limit or a timestamp prefix corrupts it."""
+        kubectl = FakeKubectl(statuses=["complete"], pod_indices=[0])
+
+        _run(monkeypatch, kubectl, completions=1, capture_output=True)
+
+        reads = [call for call in kubectl.calls if call[0] == "logs"]
+        assert all("--tail" not in call and "--timestamps" not in call for call in reads)
+
+    def test_refuses_to_report_a_failed_log_read_as_the_output(self, monkeypatch):
+        """kubectl's error text returned as stdout is a result the caller cannot tell from a real one."""
+        kubectl = FakeKubectl(statuses=["complete"], pod_indices=[0], logs_returncode=1)
+
+        with pytest.raises(subprocess.CalledProcessError):
+            _run(monkeypatch, kubectl, completions=1, capture_output=True)
 
     def test_gives_back_nothing_when_the_output_was_not_asked_for(self, monkeypatch):
         """Most steps only care that the command worked, and a log dump would drown the launcher output."""

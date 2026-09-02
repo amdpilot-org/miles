@@ -204,11 +204,20 @@ class Kubectl:
         return return_type.model_validate_json(result.stdout)
 
     @staticmethod
-    def logs(target: str, *, namespace: str, tail: int) -> str:
+    def tail_logs(target: str, *, namespace: str, tail: int) -> str:
         result = run_process(
             Kubectl.logs_command(namespace=namespace, target=target, tail=tail), capture_output=True, check=False
         )
         return result.stdout or result.stderr
+
+    @staticmethod
+    def full_logs(target: str, *, namespace: str) -> str:
+        result = run_process(
+            Kubectl.logs_command(namespace=namespace, target=target, timestamps=False),
+            capture_output=True,
+            check=True,
+        )
+        return result.stdout
 
     @staticmethod
     def logs_command(
@@ -220,8 +229,11 @@ class Kubectl:
         previous: bool = False,
         tail: int | None = None,
         since_time: str | None = None,
+        timestamps: bool = True,
     ) -> list[str]:
-        command = ["kubectl", "logs", target, "--namespace", namespace, "--timestamps"]
+        command = ["kubectl", "logs", target, "--namespace", namespace]
+        if timestamps:
+            command.append("--timestamps")
         command += ["-c", container] if container is not None else ["--all-containers"]
         if follow:
             command.append("--follow")
