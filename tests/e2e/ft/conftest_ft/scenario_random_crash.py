@@ -225,15 +225,15 @@ def assert_every_rollout_cell_served_after_its_last_injection(injector: FaultInj
     }
 
     assert not offenders, (
-        f"Rollout recovery witness failed: {sorted(offenders)} were never observed Serving on a reading fresh "
-        f"enough to outlast the stale-status window after their last accepted injection, so the run may have "
-        f"ended with a permanently missing replica ({num_injections} accepted injection(s); observed states: "
-        f"{observed})"
+        f"Rollout recovery witness failed: {sorted(offenders)} were never observed healthy and Serving on a "
+        f"reading fresh enough to outlast the stale-status window after their last accepted injection, so the "
+        f"run may have ended with a permanently missing replica ({num_injections} accepted injection(s); "
+        f"observed states: {observed})"
     )
 
     print(
-        f"Rollout recovery witness assertion passed: every injected cell was observed Serving on a fresh "
-        f"reading after its last of {num_injections} accepted injection(s)"
+        f"Rollout recovery witness assertion passed: every injected cell was observed healthy and Serving on a "
+        f"fresh reading after its last of {num_injections} accepted injection(s)"
     )
 
 

@@ -133,6 +133,19 @@ class TestStaleServingGrace:
 
         assert views.compute_cells_not_seen_serving_after_last_injection(events, cell_type="rollout") == {}
 
+    def test_a_serve_reported_by_a_cell_that_is_not_healthy_does_not_clear_it(self) -> None:
+        """A cell that died without being deregistered keeps reporting Serving, and heals nothing."""
+        base = datetime(2026, 8, 24, tzinfo=timezone.utc)
+        events = [
+            _observation("rollout-engine-0", SERVING, at=base),
+            _injection("rollout-engine-0", at=base),
+            _observation("rollout-engine-0", SERVING, at=base + timedelta(seconds=130), alive=False),
+        ]
+
+        assert views.compute_cells_not_seen_serving_after_last_injection(events, cell_type="rollout") == {
+            "rollout-engine-0": [SERVING.value]
+        }
+
     def test_a_serve_past_the_stale_window_clears_the_cell(self) -> None:
         """A reading older than the staleness bound is fresh, and it is the one that proves recovery."""
         base = datetime(2026, 8, 24, tzinfo=timezone.utc)
@@ -145,9 +158,11 @@ class TestStaleServingGrace:
         assert views.compute_cells_not_seen_serving_after_last_injection(events, cell_type="rollout") == {}
 
 
-def _observation(name: str, cell_state: state.ObservedCellState, *, at: datetime) -> state.ObservationsEvent:
+def _observation(
+    name: str, cell_state: state.ObservedCellState, *, at: datetime, alive: bool = True
+) -> state.ObservationsEvent:
     return state.ObservationsEvent(
-        timestamp=at, cell_infos={name: state.CellInfo(cell_type="rollout", state=cell_state, alive=True)}
+        timestamp=at, cell_infos={name: state.CellInfo(cell_type="rollout", state=cell_state, alive=alive)}
     )
 
 

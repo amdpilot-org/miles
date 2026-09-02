@@ -61,6 +61,7 @@ def compute_cells_not_seen_serving_after_last_injection(
             if (
                 name not in served
                 and info is not None
+                and info.alive
                 and info.state is ObservedCellState.SERVING
                 and (event.timestamp - injected_at).total_seconds() >= grace_seconds
             ):
