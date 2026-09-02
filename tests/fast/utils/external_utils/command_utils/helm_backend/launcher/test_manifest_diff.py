@@ -2,6 +2,7 @@ import copy
 from collections.abc import Callable
 from typing import Any
 
+import pytest
 import yaml
 
 from miles.utils.external_utils.command_utils.helm_backend.launcher import manifest_diff
@@ -449,6 +450,60 @@ class TestScalingIsLimitedToTheSupportedApi:
             before=_manifest([_foreign_leader_worker_set()]),
             after=_manifest([_foreign_leader_worker_set(replicas=6)]),
             allow_diff_object_keys=frozenset({_FOREIGN_KEY}),
+        )
+
+        assert diff.is_allowed
+
+
+def _stateful_set_in(namespace: str) -> dict[str, Any]:
+    document = copy.deepcopy(_stateful_set())
+    document["metadata"]["namespace"] = namespace
+    return document
+
+
+class TestAWhitelistKeyTwoObjectsShare:
+    def test_an_ambiguous_key_in_the_installed_release_stops_the_launch(self):
+        """The key waves a change through, and two objects behind it wave through one nobody named."""
+        ambiguous = _manifest([*_objects(), _stateful_set_in("other")])
+
+        with pytest.raises(AssertionError, match="objects keyed"):
+            manifest_diff.diff_manifests(
+                before=ambiguous, after=ambiguous, allow_diff_object_keys=frozenset({_ORCHESTRATOR_KEY})
+            )
+
+    def test_an_ambiguous_key_in_the_proposed_release_stops_the_launch(self):
+        """The proposal is where the second object first appears, and it is whitelisted before it is diffed."""
+        with pytest.raises(AssertionError, match="objects keyed"):
+            manifest_diff.diff_manifests(
+                before=_manifest(_objects()),
+                after=_manifest([*_objects(), _stateful_set_in("other")]),
+                allow_diff_object_keys=frozenset({_ORCHESTRATOR_KEY}),
+            )
+
+    def test_an_ambiguity_no_whitelist_key_names_is_not_this_check_business(self):
+        """Only the keys a hot restart exempts are resolved; every other object is compared by identity anyway."""
+        both = _manifest([*_objects(), _stateful_set_in("other")])
+
+        assert manifest_diff.diff_manifests(before=both, after=both).is_allowed
+
+    def test_a_whitelisted_key_no_object_carries_is_accepted(self):
+        """A trainer release carries no orchestrator, and exempting one it never installs changes nothing."""
+        diff = manifest_diff.diff_manifests(
+            before=_manifest(_objects()),
+            after=_manifest(_objects()),
+            allow_diff_object_keys=frozenset({ManifestObjectKey(kind=STATEFUL_SET_KIND, name="absent")}),
+        )
+
+        assert diff.is_allowed
+
+    def test_an_unambiguous_whitelisted_key_still_exempts_its_object(self):
+        """The check runs before every diff, so it must not refuse the releases a hot restart is meant for."""
+        diff = manifest_diff.diff_manifests(
+            before=_manifest(_objects()),
+            after=_manifest_after(
+                lambda objects: objects[2]["spec"]["template"]["spec"]["containers"][0].update(image="miles:other")
+            ),
+            allow_diff_object_keys=frozenset({_ORCHESTRATOR_KEY}),
         )
 
         assert diff.is_allowed
