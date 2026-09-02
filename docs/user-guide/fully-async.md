@@ -125,7 +125,7 @@ replaceable component with four methods:
 |---|---|---|
 | `put()` | The rollout worker, once per finished group | Store the group, or reject it |
 | `get()` | The trainer, once per group it needs | Return the next group to train on, waiting if none is available |
-| `get_metrics()` | The trainer, once per step | Report what the buffer did since the previous step |
+| `get_metrics(trainer_model_id)` | The trainer, once per step | Report what the buffer did since the previous step. The trainer model id is always passed, and is `None` in a run of one policy |
 | `dispose()` | The rollout worker, once, as it ends | Release whatever the buffer started; the default does nothing |
 
 Those four methods are the whole interface: the worker and the trainer see nothing
