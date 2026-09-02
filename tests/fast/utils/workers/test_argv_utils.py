@@ -21,6 +21,7 @@ from miles.utils.workers.argv_utils import (
     coerce_dict_to_args,
     config_to_argv,
     dataclass_to_values,
+    declared_arg_dests,
     parse_config_argv,
     parse_declared_args,
     render_cli_argv,
@@ -750,6 +751,8 @@ class TestCoerceDictToArgs:
         parser.add_argument("--lr", type=float)
         parser.add_argument("--megatron-to-hf-mode", choices=["raw", "bridge"])
         parser.add_argument("--disable-bias-linear", dest="add_bias_linear", action="store_false")
+        parser.add_argument("--spec", nargs="*")
+        parser.add_argument("--window-size", nargs=2, type=int)
         return parser
 
     def _coerce(self, values: dict, *, allowed: set[str] | None = None) -> dict:
@@ -800,6 +803,38 @@ class TestCoerceDictToArgs:
         """A yaml key with no value is a typo, not a request to unset the argument."""
         with pytest.raises(AssertionError, match="no value"):
             self._coerce({"lr": None})
+
+    def test_a_list_reaches_an_argument_taking_several_values(self):
+        """An argument taking several values arrives from yaml as a list, which used to be refused outright."""
+        assert self._coerce({"spec": ["miles_plugins.models.glm5.glm5", "get_glm5_spec"]}) == {
+            "spec": ["miles_plugins.models.glm5.glm5", "get_glm5_spec"]
+        }
+
+    def test_every_element_of_a_list_is_typed_by_the_declared_argument(self):
+        """--window-size takes a pair of ints, and an untyped overlay would hand the model two strings."""
+        assert self._coerce({"window_size": ["128", 0]}) == {"window_size": [128, 0]}
+
+    def test_a_list_written_where_a_single_value_is_declared_is_refused(self):
+        """The command line takes one value there, so the list could never be rendered back onto it."""
+        with pytest.raises(AssertionError, match="takes a single value"):
+            self._coerce({"num_layers": [12, 24]})
+
+
+class TestDeclaredArgDests:
+    def test_every_declared_argument_is_reported_under_its_destination(self):
+        """The whitelist is intersected with this, so a spelling rather than a destination admits nothing."""
+        parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument("--num-layers", type=int)
+        parser.add_argument("--disable-bias-linear", dest="add_bias_linear", action="store_false")
+
+        assert declared_arg_dests(parser) == frozenset({"num_layers", "add_bias_linear"})
+
+    def test_an_argument_this_parser_leaves_out_is_absent(self):
+        """A run whose parser never declares an argument cannot be asked to override it."""
+        parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument("--num-layers", type=int)
+
+        assert "num_experts" not in declared_arg_dests(parser)
 
 
 class TestParseDeclaredArgs:
