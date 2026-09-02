@@ -27,10 +27,10 @@ def _pod(name="trainer-0", uid="u", container_id="docker://a", previous_containe
 
 
 class FakeProcess:
-    def __init__(self, command: list[str], lines: list[str], blocking: bool) -> None:
+    def __init__(self, command: list[str], lines: list[str], blocking: bool, returncode: int = 0) -> None:
         self.command = command
         self.killed = False
-        self.returncode = 0
+        self.returncode = returncode
         self.stdout = self._lines(lines, blocking)
 
     def poll(self) -> int | None:
@@ -52,22 +52,23 @@ class FakeProcess:
 
 
 class FakeKubectl:
-    def __init__(self, monkeypatch, lines: list[str], blocking: bool) -> None:
+    def __init__(self, monkeypatch, lines: list[str], blocking: bool, returncode: int = 0) -> None:
         self.commands: list[list[str]] = []
         self.processes: list[FakeProcess] = []
         self._lines = lines
         self._blocking = blocking
+        self._returncode = returncode
         monkeypatch.setattr(log_follower.subprocess, "Popen", self._popen)
 
     def _popen(self, command, **kwargs) -> FakeProcess:
         self.commands.append(command)
-        process = FakeProcess(command, list(self._lines), self._blocking)
+        process = FakeProcess(command, list(self._lines), self._blocking, returncode=self._returncode)
         self.processes.append(process)
         return process
 
 
-def _followed(monkeypatch, pods, lines=(), blocking: bool = True) -> FakeKubectl:
-    fake = FakeKubectl(monkeypatch, list(lines), blocking)
+def _followed(monkeypatch, pods, lines=(), blocking: bool = True, returncode: int = 0) -> FakeKubectl:
+    fake = FakeKubectl(monkeypatch, list(lines), blocking, returncode=returncode)
     monkeypatch.setattr(log_follower, "selected_pods", lambda namespace, selector: pods)
     monkeypatch.setattr(log_follower.polling, "POLL_INTERVAL_SECONDS", 0.01)
     return fake
@@ -157,6 +158,50 @@ class TestWithLogFollowing:
                 time.sleep(0.1)
 
         assert not any("--previous" in command for command in fake.commands)
+
+    def test_picks_a_container_back_up_after_its_stream_failed(self, monkeypatch, caplog):
+        """One blink of the api server would otherwise hide the whole rest of that container's log."""
+        fake = _followed(monkeypatch, [_pod()], lines=["2026-08-10T00:00:00.1Z hello\n"], blocking=False, returncode=1)
+
+        with caplog.at_level(logging.INFO, logger=log_follower.__name__):
+            with log_follower.with_log_following(namespace="rl", selector="app=x"):
+                wait_for(lambda: len(fake.commands) >= 2)
+
+        assert len(fake.commands) >= 2
+
+    def test_says_a_failed_stream_dropped_rather_than_stopped(self, monkeypatch, caplog):
+        """A stream that is picked up again is not a stream that stopped, and the log has to say which it was."""
+        fake = _followed(monkeypatch, [_pod()], lines=["2026-08-10T00:00:00.1Z hello\n"], blocking=False, returncode=1)
+
+        with caplog.at_level(logging.INFO, logger=log_follower.__name__):
+            with log_follower.with_log_following(namespace="rl", selector="app=x"):
+                wait_for(lambda: "dropped" in caplog.text)
+
+        assert "[trainer-0/app] dropped" in caplog.text
+        assert "stopped:" not in caplog.text
+        assert fake.processes
+
+    def test_resumes_a_failed_stream_from_where_it_had_read_to(self, monkeypatch, caplog):
+        """Restarting from the beginning would reprint everything the user has already read."""
+        fake = _followed(monkeypatch, [_pod()], lines=["2026-08-10T00:00:00.1Z hello\n"], blocking=False, returncode=1)
+
+        with caplog.at_level(logging.INFO, logger=log_follower.__name__):
+            with log_follower.with_log_following(namespace="rl", selector="app=x"):
+                wait_for(lambda: len(fake.commands) >= 2)
+
+        assert "--since-time" in fake.commands[-1]
+        assert "2026-08-10T00:00:00.1Z" in fake.commands[-1]
+
+    def test_says_nothing_about_a_stream_the_caller_tore_down(self, monkeypatch, caplog):
+        """The launcher kills every stream on its way out, and every one of them exits non-zero for it."""
+        fake = _followed(monkeypatch, [_pod()], lines=["2026-08-10T00:00:00.1Z hello\n"], returncode=1)
+
+        with caplog.at_level(logging.INFO, logger=log_follower.__name__):
+            with log_follower.with_log_following(namespace="rl", selector="app=x"):
+                wait_for(lambda: "hello" in caplog.text)
+
+        assert all(process.killed for process in fake.processes)
+        assert "dropped" not in caplog.text
 
 
 class TestParseRfc3339:

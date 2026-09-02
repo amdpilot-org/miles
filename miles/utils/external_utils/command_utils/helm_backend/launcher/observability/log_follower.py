@@ -140,9 +140,8 @@ class _LogStream:
         process.wait()
 
         if process.returncode and not self._stopped:
-            self._stopped = True
             errors.seek(0)
-            logger.warning(f"{self._prefix} stopped: {errors.read()[-_ERROR_TAIL_CHARACTERS:].strip()}")
+            logger.warning(f"{self._prefix} dropped: {errors.read()[-_ERROR_TAIL_CHARACTERS:].strip()}")
         errors.close()
 
     def _emit(self, line: str) -> None:
