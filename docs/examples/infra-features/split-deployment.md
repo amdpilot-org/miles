@@ -44,6 +44,13 @@ helm uninstall miles-run-$MILES_SCRIPT_RUN_ID-inference-e1 -n $MILES_SCRIPT_NAME
 verifier demo the same way: one release per policy trainer, one per policy's engines, and the
 orchestration script last — five releases for two policies.
 
+Name this run once as well, so the example stands on its own:
+
+```bash
+export MILES_SCRIPT_RUN_ID=split-multi-policy-demo
+export MILES_SCRIPT_RUN_UUID=$(python -c 'from miles.utils.run_uuid import generate_run_uuid; print(generate_run_uuid())')
+```
+
 ```bash
 SCRIPT=examples.infra_features.split_deployment.run_solver_verifier_gsm8k_split
 
