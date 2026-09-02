@@ -495,12 +495,29 @@ def make_multi_buffer(*model_ids: str, max_staleness=None, paths_per_model=None)
     return buffer, unused
 
 
+class RefusingInner:
+    """An inner buffer whose put fails, standing in for whatever a custom per policy buffer raises."""
+
+    async def put(self, input):
+        raise ValueError("inner buffer refused the group")
+
+    async def get(self, **context):
+        await asyncio.Event().wait()
+
+
+async def put_multi_policy_group(buffer, group):
+    """A multi policy put only hands the group to the dispatchers; wait until they reach the buffers."""
+    await put_group(buffer, group)
+    for dispatcher in buffer._dispatchers.values():
+        await dispatcher._pending.join()
+
+
 class TestPerPolicyQueues:
     async def test_a_group_of_two_policies_lands_in_a_queue_of_each(self):
         """One generate call feeds both policies, and a shared queue would hand them each other's samples."""
         buffer, _ = make_multi_buffer("solver", "verifier")
 
-        await put_group(buffer, make_multi_policy_group(1, "solver", "verifier"))
+        await put_multi_policy_group(buffer, make_multi_policy_group(1, "solver", "verifier"))
 
         assert buffer.get_metrics("solver")["rollout/fully_async/queue_size"] == 1
         assert buffer.get_metrics("verifier")["rollout/fully_async/queue_size"] == 1
@@ -566,10 +583,41 @@ class TestPerPolicyQueues:
         assert buffer.get_metrics("solver")["rollout/fully_async/queue_size"] == 0
         assert buffer.get_metrics("verifier")["rollout/fully_async/queue_size"] == 0
 
+    async def test_a_put_that_fails_surfaces_on_the_next_get_of_that_policy(self):
+        """Nobody awaits the dispatcher task, so a failed put would otherwise leave the step waiting forever."""
+        buffer, _ = make_multi_buffer("solver", "verifier")
+        buffer._dispatchers["solver"].buffer = RefusingInner()
+
+        await put_group(buffer, make_multi_policy_group(1, "solver", "verifier"))
+
+        with pytest.raises(ValueError, match="inner buffer refused the group"):
+            await asyncio.wait_for(buffer.get(trainer_model_id="solver"), timeout=5)
+
+    async def test_a_put_that_fails_surfaces_on_the_next_put_of_that_policy(self):
+        """The producer keeps handing groups to a dispatcher that stopped delivering them otherwise."""
+        buffer, _ = make_multi_buffer("solver", "verifier")
+        buffer._dispatchers["solver"].buffer = RefusingInner()
+
+        await put_group(buffer, make_multi_policy_group(1, "solver", "verifier"))
+        await asyncio.sleep(0.01)
+
+        with pytest.raises(ValueError, match="inner buffer refused the group"):
+            await put_group(buffer, make_multi_policy_group(2, "solver", "verifier"))
+
+    async def test_disposing_the_buffer_ends_every_policy_dispatcher(self):
+        """A dispatcher left running past teardown holds the rollout event loop's last references alive."""
+        buffer, _ = make_multi_buffer("solver", "verifier")
+        await put_multi_policy_group(buffer, make_multi_policy_group(1, "solver", "verifier"))
+        tasks = [buffer._dispatchers[model_id]._task for model_id in ("solver", "verifier")]
+
+        await buffer.dispose()
+
+        assert [task.cancelled() for task in tasks] == [True, True]
+
     async def test_a_policy_reads_and_resets_only_its_own_metric_window(self):
         """Draining one policy used to read and clear every policy's counters, moving them onto the wrong curve."""
         buffer, _ = make_multi_buffer("solver", "verifier")
-        await put_group(buffer, make_multi_policy_group(1, "solver", "verifier"))
+        await put_multi_policy_group(buffer, make_multi_policy_group(1, "solver", "verifier"))
 
         solver_metrics = buffer.get_metrics("solver")
 
@@ -586,7 +634,7 @@ class TestPerPolicyQueues:
                 seen.append(context)
                 return "entry"
 
-        buffer._inners["solver"] = _RecordingInner()
+        buffer._dispatchers["solver"].buffer = _RecordingInner()
 
         assert await buffer.get(current_version=4, trainer_model_id="solver") == "entry"
         assert seen == [{"current_version": 4, "trainer_model_id": "solver"}]

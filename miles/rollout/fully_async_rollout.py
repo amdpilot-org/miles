@@ -100,7 +100,8 @@ class FullyAsyncRolloutFn(BaseRolloutFn):
     async def dispose(self) -> None:
         if (worker := self._worker) is None:
             return
-        await asyncio.wrap_future(asyncio.run_coroutine_threadsafe(_end_worker(worker), worker.get_loop()))
+        end = _end_worker(worker, self._output)
+        await asyncio.wrap_future(asyncio.run_coroutine_threadsafe(end, worker.get_loop()))
 
     async def _call_eval(self, input: RolloutFnEvalInput) -> RolloutFnOutput:
         if input.generate_state is not None:
@@ -224,6 +225,7 @@ class FullyAsyncRolloutFn(BaseRolloutFn):
         self.data_source.add_samples([prompt_group])
 
 
-async def _end_worker(worker: asyncio.Task) -> None:
+async def _end_worker(worker: asyncio.Task, output: DataBuffer) -> None:
     worker.cancel()
     await asyncio.wait({worker})
+    await output.dispose()

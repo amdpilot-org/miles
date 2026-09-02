@@ -119,15 +119,16 @@ The **data buffer** is the store of finished groups between the two loops, and e
 group-level decision lives in it. The producer puts each group in as it completes, the
 trainer takes groups back out one at a time, and everything in between — what to keep,
 what to discard, what to send back for regeneration — is the buffer's call. It is one
-replaceable component with three methods:
+replaceable component with four methods:
 
 | Method | Called by | Purpose |
 |---|---|---|
 | `put()` | The rollout worker, once per finished group | Store the group, or reject it |
 | `get()` | The trainer, once per group it needs | Return the next group to train on, waiting if none is available |
 | `get_metrics()` | The trainer, once per step | Report what the buffer did since the previous step |
+| `dispose()` | The rollout worker, once, as it ends | Release whatever the buffer started; the default does nothing |
 
-Those three methods are the whole interface: the worker and the trainer see nothing
+Those four methods are the whole interface: the worker and the trainer see nothing
 else, and everything inside the box below is the built-in `DefaultDataBuffer`.
 
 ```mermaid

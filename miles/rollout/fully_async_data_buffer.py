@@ -106,6 +106,10 @@ class DataBuffer(ABC):
     def get_metrics(self, trainer_model_id: str | None = None) -> dict[str, float]:
         """Report the metrics of one policy since its previous call (its window counters reset here)."""
 
+    async def dispose(self) -> None:
+        """Release whatever the buffer started, once the rollout worker it feeds has ended."""
+        logger.debug(f"{type(self).__name__} disposed")
+
 
 # ============================= one policy buffer ==============================
 
@@ -230,7 +234,9 @@ class DefaultMultiDataBuffer(DataBuffer):
     """One plain ``DefaultDataBuffer`` per policy model, composed.
 
     Each policy consumes at its own pace, so each gets its own capacity, staleness accounting and
-    metrics, and the single-policy buffer stays untouched.
+    metrics, and the single-policy buffer stays untouched. Each also gets its own dispatcher, so a
+    policy whose buffer is full (parked at a save or eval barrier, say) holds up neither the one
+    producer nor the policies still waiting for the groups that let them reach the same barrier.
     """
 
     def __init__(self, input: DataBufferConstructorInput):
@@ -240,27 +246,91 @@ class DefaultMultiDataBuffer(DataBuffer):
             f"{DATA_BUFFER_PATH_PER_MODEL_FLAG} names {unknown}, which train no policy of this run "
             f"({sorted(model_ids)})"
         )
-        self._inners: dict[str, DataBuffer] = {
-            model_id: (load_function(paths.get(model_id)) or DefaultDataBuffer)(input) for model_id in model_ids
+        self._dispatchers: dict[str, _PolicyDispatcher] = {
+            model_id: _PolicyDispatcher((load_function(paths.get(model_id)) or DefaultDataBuffer)(input))
+            for model_id in model_ids
         }
 
     async def put(self, input: DataBufferInput) -> None:
-        # TODO: a full inner blocks the one producer for every policy; give each policy its own dispatcher
         for trainer_model_id, entry in _split_by_trainer_model_id(input).items():
-            await self._inner_of(trainer_model_id).put(entry)
+            self._dispatcher_of(trainer_model_id).dispatch(entry)
 
     async def get(self, trainer_model_id: str | None = None, **context) -> DataBufferInput:
-        return await self._inner_of(trainer_model_id).get(trainer_model_id=trainer_model_id, **context)
+        return await self._dispatcher_of(trainer_model_id).get(trainer_model_id=trainer_model_id, **context)
 
     def get_metrics(self, trainer_model_id: str | None = None) -> dict[str, float]:
-        return self._inner_of(trainer_model_id).get_metrics()
+        return self._dispatcher_of(trainer_model_id).buffer.get_metrics()
 
-    def _inner_of(self, trainer_model_id: str | None) -> DataBuffer:
-        assert trainer_model_id in self._inners, (
-            f"trainer_model_id {trainer_model_id!r} trains no policy of this run ({sorted(self._inners)}), so "
-            f"its groups would queue up in a buffer nobody drains"
-        )
-        return self._inners[trainer_model_id]
+    async def dispose(self) -> None:
+        await asyncio.gather(*(dispatcher.dispose() for dispatcher in self._dispatchers.values()))
+
+    def _dispatcher_of(self, trainer_model_id: str | None) -> "_PolicyDispatcher":
+        assert (
+            trainer_model_id in self._dispatchers
+        ), f"trainer_model_id {trainer_model_id!r} trains no policy of this run ({sorted(self._dispatchers)})"
+        return self._dispatchers[trainer_model_id]
+
+
+class _PolicyDispatcher:
+    """One policy's pending groups and the task that hands them to that policy's buffer.
+
+    Nobody awaits that task, so a done callback parks whatever ended it here: the next dispatch or
+    get raises it right away, instead of waiting out a run whose groups stopped being delivered.
+    """
+
+    def __init__(self, buffer: DataBuffer) -> None:
+        self.buffer = buffer
+        self._pending: asyncio.Queue[DataBufferInput] = asyncio.Queue()
+        self._task: asyncio.Task | None = None
+        self._failure: BaseException | None = None
+        self._failed = asyncio.Event()
+
+    def dispatch(self, input: DataBufferInput) -> None:
+        self._raise_any_failure()
+        if self._task is None:
+            self._task = asyncio.create_task(self._run())
+            self._task.add_done_callback(self._record_failure)
+        self._pending.put_nowait(input)
+
+    async def get(self, **context) -> DataBufferInput:
+        got = asyncio.ensure_future(self.buffer.get(**context))
+        failed = asyncio.ensure_future(self._failed.wait())
+        try:
+            await asyncio.wait({got, failed}, return_when=asyncio.FIRST_COMPLETED)
+            self._raise_any_failure()
+            return got.result()
+        finally:
+            for task in (got, failed):
+                if not task.done():
+                    task.cancel()
+
+    async def dispose(self) -> None:
+        if (task := self._task) is None:
+            return
+        task.cancel()
+        await asyncio.wait({task})
+
+    async def _run(self) -> None:
+        while True:
+            input = await self._pending.get()
+            try:
+                await self.buffer.put(input)
+            finally:
+                self._pending.task_done()
+
+    def _record_failure(self, task: asyncio.Task) -> None:
+        self._failure = self._compute_failure(task)
+        self._failed.set()
+
+    def _raise_any_failure(self) -> None:
+        if self._failure is not None:
+            raise self._failure
+
+    @staticmethod
+    def _compute_failure(task: asyncio.Task) -> BaseException:
+        if task.cancelled():
+            return RuntimeError("a policy's data buffer dispatcher was cancelled")
+        return task.exception() or RuntimeError("a policy's data buffer dispatcher exited without an exception")
 
 
 # TODO: a policy absent from a trajectory shortens its group below n_samples_per_prompt, which the drain refuses
