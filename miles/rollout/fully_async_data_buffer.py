@@ -259,7 +259,7 @@ class DefaultMultiDataBuffer(DataBuffer):
         return await self._dispatcher_of(trainer_model_id).get(trainer_model_id=trainer_model_id, **context)
 
     def get_metrics(self, trainer_model_id: str | None = None) -> dict[str, float]:
-        return self._dispatcher_of(trainer_model_id).buffer.get_metrics()
+        return self._dispatcher_of(trainer_model_id).buffer.get_metrics(trainer_model_id=trainer_model_id)
 
     async def dispose(self) -> None:
         await asyncio.gather(*(dispatcher.dispose() for dispatcher in self._dispatchers.values()))
