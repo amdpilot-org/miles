@@ -12,6 +12,7 @@ from miles.utils.http_utils import wrap_ipv6
 from miles.utils.retry_utils import retry_until_deadline
 from miles.utils.workers.backend_capability.base import BackendCapability
 from miles.utils.workers.naming import compute_cell_id, compute_worker_name
+from miles.utils.workers.types import DeployComponent
 from miles.utils.workers.worker_info import WorkerInfo
 from miles.utils.workers.worker_provider.base import BaseWorkerProvider, CellInfo, CellReconcileFn, StopWatchFn
 from miles.utils.workers.worker_spec import HostAndPort, NamedHostAndPorts
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 DISCOVERY_TIMEOUT_SECONDS = 600.0
 
-_EXTERNAL_ENGINE_POOL_ID = "external-inference-engine-0"
+_EXTERNAL_ENGINE_POOL_ID_PREFIX = "external-inference-engine"
 _EXTERNAL_MODEL_ID = "default"
 
 
@@ -117,15 +118,16 @@ class _ExternalEngineInfo:
 
 
 def _compute_cells(*, args: Any, engines: list[_ExternalEngineInfo]) -> dict[str, _ExternalCell]:
+    pool_id = _compute_external_engine_pool_id(args)
     cells: dict[str, _ExternalCell] = {}
     gpu_offset = 0
     for cell_index, engine in enumerate(engines):
-        cell_id = compute_cell_id(pool_id=_EXTERNAL_ENGINE_POOL_ID, cell_index=cell_index)
-        worker_name = compute_worker_name(pool_id=_EXTERNAL_ENGINE_POOL_ID, cell_index=cell_index)
+        cell_id = compute_cell_id(pool_id=pool_id, cell_index=cell_index)
+        worker_name = compute_worker_name(pool_id=pool_id, cell_index=cell_index)
         cells[cell_id] = _ExternalCell(
             cell_info=CellInfo(
                 cell_id=cell_id,
-                pool_id=_EXTERNAL_ENGINE_POOL_ID,
+                pool_id=pool_id,
                 alive=True,
                 worker_names=[worker_name],
                 workers_hash=engine.url,
@@ -143,6 +145,11 @@ def _compute_cells(*, args: Any, engines: list[_ExternalEngineInfo]) -> dict[str
         )
         gpu_offset += engine.num_gpus
     return cells
+
+
+def _compute_external_engine_pool_id(args: Any) -> str:
+    segment = args.deploy_instance_id or DeployComponent(args.deploy_component).value
+    return f"{_EXTERNAL_ENGINE_POOL_ID_PREFIX}-{segment}-0"
 
 
 def _compute_engine_addrs(engine: _ExternalEngineInfo) -> NamedHostAndPorts:
