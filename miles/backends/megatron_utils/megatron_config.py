@@ -314,6 +314,7 @@ def compute_trainer_args(args: Namespace, trainer: MegatronTrainerConfig) -> Nam
     )
 
     ans = copy.deepcopy(args)
+    ans.trainer_id = trainer.trainer_id
     ans.trainer_model_id = trainer.model_id if resolve_megatron_config(args).is_multi_policy else None
 
     for key, value in trainer.overrides.items():
