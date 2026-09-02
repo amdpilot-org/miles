@@ -9,6 +9,7 @@ import yaml
 from sglang_router.launch_router import RouterArgs
 
 from miles.backends.megatron_utils.megatron_config import (
+    ACTOR_ROLE,
     CRITIC_ROLE,
     resolve_args_checkpoint_load,
     resolve_megatron_config,
@@ -2869,7 +2870,7 @@ def get_miles_extra_args_provider(add_custom_arguments=None):
                 "is a single policy run. Several policies require train_multi_policy.py."
             ),
         )
-        parser.set_defaults(trainer_model_id=None)
+        parser.set_defaults(trainer_id=ACTOR_ROLE, trainer_model_id=None)
         reset_arg(parser, "--padded-vocab-size", type=int, default=None)
 
         return parser
