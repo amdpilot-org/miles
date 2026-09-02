@@ -5,6 +5,7 @@ import logging
 from argparse import Namespace
 from typing import Any
 
+from miles.utils.misc import call_agent_abort_hook
 from miles.utils.retry_utils import retry_until_deadline
 from miles.utils.workers.rpc.client.misc import RETRYABLE_ERRORS, ServerRestartedError
 from miles.utils.workers.worker_handle import BaseWorkerHandle, WorkerUnreachableError
@@ -98,3 +99,5 @@ async def init_or_reset_inference_controller(inference_controller: BaseWorkerHan
 
     await asyncio.wait_for(inference_controller.abort_all(), timeout=TAKE_OVER_GATE_TIMEOUT_SECONDS)
     logger.info("Asked every engine of the fleet to abort the generations it was still running")
+
+    await asyncio.wait_for(call_agent_abort_hook(args), timeout=TAKE_OVER_GATE_TIMEOUT_SECONDS)
