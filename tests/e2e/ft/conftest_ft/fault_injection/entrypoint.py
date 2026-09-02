@@ -33,6 +33,7 @@ class FaultInjectorHandle:
         quiescent_polls_required: int = QUIESCENT_POLLS_REQUIRED,
     ) -> None:
         self.event_log = EventLog()
+        self.cell_fault_forms = cell_fault_forms
         self._base_url = base_url
         self._cell_types: set[str] = set(mean_interval_seconds_of_cell_type)
         self._get_virtual_cells: Callable[[], list[dict]] | None = get_virtual_cells

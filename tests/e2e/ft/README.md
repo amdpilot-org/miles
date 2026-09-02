@@ -386,6 +386,8 @@ Architecture (external fault injection, not inside the training loop):
 Per-kind schedules: exponential, mean that kind's --*-crash-interval-seconds
 
 Witnesses, counted per kind:
+  forms   -> every form the enabled components make available succeeded at least once, so a
+             soak that clears the injection floors on one form still has to draw the others
   train   -> >= 2 accepted actor injections, >= 2 healed cells across the
              CellReconfigureEvents, and every injected cell index paired with a healing of
              that same index - no debt left when training ends
@@ -404,6 +406,7 @@ membership is asserted.
 - **A form that leaves its cell running**: `BaseFaultForm.harms_the_cell` is false for it, so the draw is recorded without charging that cell a recovery; the reset quiescence streak alone paces the next injection.
 - **Why quiescence requires `Serving`, not just `Healthy`**: `Healthy` and even `Running` include a replacement that got weights but cannot answer requests yet, so a kind counting such a replica as recovered would be injected into mid-relaunch.
 - **Why quiescence counts replicas against the most ever seen**: a deleted pod vanishes from the listing instead of reading unhealthy, and the survivors all serve; only the missing replica says the kind is still recovering.
+- **Why every enabled form has to land**: the floors count injections, not the forms behind them, so a soak could clear them on `inject_fault:sigkill` alone and never once try `delete_pod`. The draw already prefers a form the log shows has never worked, and this witness is what makes that preference binding.
 - **Why the per-cell pairing**: a floor of ">= 2 healings" passes whenever the last crash never recovered. The default intervals are short enough that a soak reliably clears the floors.
 - **Why the rollout witness is one-sided**: the trainer witness reads the run's own CellReconfigureEvents, which miss nothing; the rollout witness reads sampled polls, which miss windows by construction. It therefore never demands seeing the down half of a recovery - it demands a Serving reading fresh enough (>= 120s after the cell's last injection, past the ~95s staleness) to prove the survivor really serves. Undercounting an intermediate recovery cannot fail the run; claiming one that never happened cannot pass it.
 - **Stopping the injector**: `stop_and_join` asserts the thread actually stopped, since a thread still mid-injection could crash a cell nothing will heal, and would race the witness being read.

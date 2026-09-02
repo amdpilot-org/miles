@@ -32,6 +32,7 @@ from tests.e2e.ft.conftest_ft.fault_injection.entrypoint import (
 )
 from tests.e2e.ft.conftest_ft.fault_injection.fault_forms import (
     ACTOR_CELL_TYPE,
+    CELL_TYPE_OF_FT_COMPONENT,
     ROLLOUT_CELL_TYPE,
     compute_mean_interval_seconds_of_cell_type,
     create_cell_fault_forms,
@@ -42,6 +43,7 @@ from tests.e2e.ft.conftest_ft.fault_injection.views import (
     compute_injected_cell_names,
     compute_num_injections,
     compute_states_of_cell_name,
+    compute_successful_form_names,
 )
 from tests.e2e.ft.conftest_ft.modes import FTTestMode, resolve_mode
 
@@ -158,6 +160,7 @@ def assert_healing(
     events = injector.event_log.events
 
     _assert_every_drawn_fault_form_worked(injector)
+    _assert_every_enabled_fault_form_worked(injector, ft_components=ft_components)
 
     if "train" in ft_components:
         assert_soak_reconfigure_events(
@@ -175,6 +178,19 @@ def assert_healing(
 def _assert_every_drawn_fault_form_worked(injector: FaultInjectorHandle) -> None:
     never_worked = compute_forms_drawn_but_never_successful(injector.event_log.events)
     assert not never_worked, f"Fault forms drawn but never once successful: {never_worked}"
+
+
+def _assert_every_enabled_fault_form_worked(injector: FaultInjectorHandle, *, ft_components: tuple[str, ...]) -> None:
+    events = injector.event_log.events
+    never_worked: list[tuple[str, str]] = []
+    for component in ft_components:
+        cell_type = CELL_TYPE_OF_FT_COMPONENT[component]
+        if (forms := injector.cell_fault_forms.get(cell_type)) is None:
+            continue
+        worked = compute_successful_form_names(events, cell_type=cell_type)
+        never_worked += [(cell_type, form.name) for form in forms if form.name not in worked]
+
+    assert not never_worked, f"fault forms this soak enabled but never injected successfully: {sorted(never_worked)}"
 
 
 def assert_every_trainer_injection_healed(injector: FaultInjectorHandle, *, event_dir: Path) -> None:

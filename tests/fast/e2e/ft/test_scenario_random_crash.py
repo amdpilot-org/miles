@@ -8,20 +8,34 @@ from miles.utils.audit_utils.event_logger.logger import EventLogger
 from miles.utils.audit_utils.event_logger.models import CellReconfigureEvent
 from miles.utils.audit_utils.process_identity import SimpleProcessIdentity
 from miles.utils.external_utils import command_utils
+from miles.utils.test_utils.fault_injector import FailureMode
 from miles.utils.workers.types import ClusterBackend
 
 _ROLLOUT_CELL_NAME = "rollout-engine-0"
 _ACTOR_CELL_NAME = "actor-0"
 
 
-def _injector(*, cell_types: tuple[str, ...]) -> entrypoint.FaultInjectorHandle:
-    config = command_utils.ExecuteTrainConfig(cluster_backend=ClusterBackend.RAY)
+def _injector(
+    *, cell_types: tuple[str, ...], cell_fault_forms: fault_forms.CellFaultForms | None = None
+) -> entrypoint.FaultInjectorHandle:
     return entrypoint.FaultInjectorHandle(
         base_url="http://control",
         seed=0,
         mean_interval_seconds_of_cell_type={cell_type: 1e9 for cell_type in cell_types},
-        cell_fault_forms=fault_forms.create_cell_fault_forms(base_url="http://control", config=config),
+        cell_fault_forms=cell_fault_forms if cell_fault_forms is not None else _sigkill_only_forms(cell_types),
     )
+
+
+def _sigkill_only_forms(cell_types: tuple[str, ...]) -> fault_forms.CellFaultForms:
+    return {
+        cell_type: [fault_forms.InjectFaultForm(base_url="http://control", failure_mode=FailureMode.SIGKILL)]
+        for cell_type in cell_types
+    }
+
+
+def _every_form_of_a_ray_run() -> fault_forms.CellFaultForms:
+    config = command_utils.ExecuteTrainConfig(cluster_backend=ClusterBackend.RAY)
+    return fault_forms.create_cell_fault_forms(base_url="http://control", config=config)
 
 
 def _actor_cell(name: str = _ACTOR_CELL_NAME) -> dict:
@@ -220,6 +234,35 @@ class TestAssertEveryDrawnFaultFormWorked:
         _note_form_attempts(injector, form_name=fault_forms.DELETE_POD_FORM_NAME, outcomes=[False, False, False, True])
 
         _assert_every_drawn_fault_form_worked(injector)
+
+
+class TestAssertEveryEnabledFaultFormWorked:
+    def test_a_form_the_soak_never_drew_fails_it(self, tmp_path: Path) -> None:
+        """Regression: a soak that cleared the injection floor with one form used to pass without trying the rest."""
+        _write_healing_events(tmp_path / "events", [[0]])
+        injector = _injector(cell_types=("actor",), cell_fault_forms=_every_form_of_a_ray_run())
+        _note_actor_injections(injector, 1)
+
+        with pytest.raises(AssertionError, match="never injected successfully"):
+            assert_healing(("train",), injector=injector, event_dir=tmp_path / "events", context="soak")
+
+    def test_a_soak_that_landed_every_enabled_form_passes(self, tmp_path: Path) -> None:
+        """The happy path has to stay reachable, or the refusal above proves nothing."""
+        _write_healing_events(tmp_path / "events", [[0], [0], [0]])
+        injector = _injector(cell_types=("actor",), cell_fault_forms=_every_form_of_a_ray_run())
+        for failure_mode in fault_forms.FAILURE_MODES:
+            _note_form_attempts(injector, form_name=f"inject_fault:{failure_mode.value}", outcomes=[True])
+
+        assert_healing(("train",), injector=injector, event_dir=tmp_path / "events", context="soak")
+
+    def test_forms_of_a_component_the_mode_did_not_enable_are_not_required(self, tmp_path: Path) -> None:
+        """A trainer-only soak must not be failed for never crashing an engine it was told to leave alone."""
+        _write_healing_events(tmp_path / "events", [[0], [0], [0]])
+        injector = _injector(cell_types=("actor", "rollout"), cell_fault_forms=_every_form_of_a_ray_run())
+        for failure_mode in fault_forms.FAILURE_MODES:
+            _note_form_attempts(injector, form_name=f"inject_fault:{failure_mode.value}", outcomes=[True])
+
+        assert_healing(("train",), injector=injector, event_dir=tmp_path / "events", context="soak")
 
 
 class TestTrainerHealingPairing:
