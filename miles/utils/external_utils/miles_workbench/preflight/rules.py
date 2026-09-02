@@ -23,6 +23,7 @@ NAMESPACE_KINDS = (
 UNSERVED_RESOURCE_MARKERS = ("doesn't have a resource type", "could not find the requested resource")
 CLUSTER_PROVIDED_RESOURCES = ("configmap/kube-root-ca.crt", "serviceaccount/default")
 DEFAULT_TOKEN_PREFIX = "secret/default-token-"
+HELM_RELEASE_RECORD_PREFIX = "secret/sh.helm.release.v1."
 
 CHART_RULES: dict[str, tuple[str, ...]] = {
     "configmaps": ("create", "delete", "get", "patch"),

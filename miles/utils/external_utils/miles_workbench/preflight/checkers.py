@@ -12,6 +12,7 @@ from miles.utils.external_utils.miles_workbench.preflight.rules import (
     AVAILABLE_CONDITION,
     CLUSTER_PROVIDED_RESOURCES,
     DEFAULT_TOKEN_PREFIX,
+    HELM_RELEASE_RECORD_PREFIX,
     LWS_API_GROUP,
     LWS_CONTROLLER_DEPLOYMENT,
     LWS_CONTROLLER_NAMESPACE,
@@ -123,10 +124,11 @@ class ResourcePresenceChecker(BaseChecker):
 
 
 class NamespaceListingChecker(BaseChecker):
-    def __init__(self, namespace: str, kind: str, selector: str) -> None:
+    def __init__(self, namespace: str, kind: str, selector: str, release: str) -> None:
         self.namespace = namespace
         self.kind = kind
         self.selector = selector
+        self.release = release
         self.foreign: tuple[str, ...] = ()
 
     def check(self) -> CheckResult:
@@ -143,7 +145,12 @@ class NamespaceListingChecker(BaseChecker):
                 f"(listing {self.kind} failed: {answer.output})",
             )
 
-        self.foreign = tuple(name for name in answer.output.split() if not _is_cluster_provided(name))
+        own_record_prefix = f"{HELM_RELEASE_RECORD_PREFIX}{self.release}."
+        self.foreign = tuple(
+            name
+            for name in answer.output.split()
+            if not _is_cluster_provided(name) and not name.startswith(own_record_prefix)
+        )
         return CheckResult(status=Status.PASS, message=message)
 
 

@@ -81,6 +81,8 @@ class TestPreflightChecks:
         foreign_path.write_text("")
         unmanaged_path = tmp_path / "unmanaged"
         unmanaged_path.write_text("")
+        release_records_path = tmp_path / "release-records"
+        release_records_path.write_text("")
         family_path = tmp_path / "family"
         family_path.write_text("")
         served_apis_path = tmp_path / "served-apis"
@@ -126,6 +128,10 @@ class TestPreflightChecks:
             "    exit 1\n"
             "  fi\n"
             f"  cat {identity_path}\n"
+            "  exit 0\n"
+            "fi\n"
+            'if [ "$1" = "get" ] && [ "$2" = "secret" ] && [[ "$*" == *"managed-by!=Helm"* ]]; then\n'
+            f"  cat {release_records_path}\n"
             "  exit 0\n"
             "fi\n"
             'if [ "$1" = "get" ] && [ "$2" = "all" ]; then\n'
@@ -217,6 +223,7 @@ class TestPreflightChecks:
             deny_all_path=deny_all_path,
             foreign_path=foreign_path,
             unmanaged_path=unmanaged_path,
+            release_records_path=release_records_path,
             family_path=family_path,
             served_apis_path=served_apis_path,
             controller_path=controller_path,
@@ -314,6 +321,18 @@ class TestPreflightChecks:
         assert result.returncode == 0, result.stdout + result.stderr
         assert "WARN" in result.stderr
         assert "hand-rolled" in result.stderr
+
+    def test_its_own_helm_release_record_is_not_a_foreign_object(self, fake_cluster):
+        """Helm stores a release under `owner=helm`, so reinstalling would otherwise report the workbench itself."""
+        fake_cluster["release_records_path"].write_text(
+            "secret/sh.helm.release.v1.miles-workbench-alice.v1\nsecret/sh.helm.release.v1.someone-else.v1\n"
+        )
+
+        result = self.run_preflight("-n", "rl")
+
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert "sh.helm.release.v1.miles-workbench-alice.v1" not in result.stderr
+        assert "sh.helm.release.v1.someone-else.v1" in result.stderr
 
     def test_a_live_miles_run_beside_the_workbench_passes(self, fake_cluster):
         """Reinstalling the workbench must not require tearing down the experiment it was installed to drive."""

@@ -50,7 +50,7 @@ def run_preflight_checks(args: InstallArgs) -> None:
         )
         raise SystemExit(1)
 
-    listings = _namespace_listing_checkers(namespace)
+    listings = _namespace_listing_checkers(namespace, release=args.release)
     verdict.absorb(
         parallel_execute_checkers(
             [
@@ -155,13 +155,17 @@ def _render_plan(args: InstallArgs, *, verdict: Verdict) -> RbacPlan:
     return rbac_plan_of(rendered.stdout)
 
 
-def _namespace_listing_checkers(namespace: str) -> list[NamespaceListingChecker]:
+def _namespace_listing_checkers(namespace: str, *, release: str) -> list[NamespaceListingChecker]:
     family = ",".join(CHART_FAMILY)
     selectors = [
         f"app.kubernetes.io/managed-by!={MANAGED_BY}",
         f"app.kubernetes.io/managed-by={MANAGED_BY},app.kubernetes.io/name notin ({family})",
     ]
-    return [NamespaceListingChecker(namespace, kind, selector) for kind in NAMESPACE_KINDS for selector in selectors]
+    return [
+        NamespaceListingChecker(namespace=namespace, kind=kind, selector=selector, release=release)
+        for kind in NAMESPACE_KINDS
+        for selector in selectors
+    ]
 
 
 def _warn_about_foreign_objects(namespace: str, listings: list[NamespaceListingChecker]) -> None:
