@@ -1,6 +1,7 @@
 import dataclasses
 import hashlib
 import shlex
+import shutil
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -260,6 +261,8 @@ def _driving_the_take_overs_of(
     release = compute_release_of_config(config)
     # TODO ad hoc hack: revert after the args refactor
     plan_path = compute_freeze_plan_path(dump_dir)
+
+    shutil.rmtree(dump_dir, ignore_errors=True)
 
     def relaunch(frozen_rollout_id: int | None) -> None:
         write_freeze_plan(plan_path, frozen_rollout_id=frozen_rollout_id)
