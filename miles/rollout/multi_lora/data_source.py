@@ -128,7 +128,10 @@ class MultiLoRAAsyncDataSource(DataSource):
 
     def load(self, rollout_id=None):
         if not self.sources:
-            logger.warning("this run serves no adapter, so no dataset state is restored")
+            logger.warning(
+                "no adapter has been reconciled into a data source yet, so no dataset state is restored; the "
+                "adapters this run was configured with are registered after the training models are created"
+            )
             return
 
         for source in self.sources.values():
