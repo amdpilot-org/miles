@@ -43,7 +43,7 @@ from miles.utils.external_utils.command_utils.helm_backend.launcher.launch_recor
 from miles.utils.external_utils.command_utils.helm_backend.launcher.manifest_types import Manifest, ManifestObjectKey
 from miles.utils.external_utils.command_utils.helm_backend.launcher.observability import farewell, with_observability
 from miles.utils.external_utils.command_utils.helm_backend.launcher.observability.diagnosis import collect_diagnosis
-from miles.utils.external_utils.command_utils.helm_backend.launcher.observability.pod_facts import pod_phase
+from miles.utils.external_utils.command_utils.helm_backend.launcher.observability.pod_facts import observed_pod
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values.builder import build_values
 from miles.utils.external_utils.command_utils.helm_backend.launcher.values.misc import (
     InfraInfo,
@@ -256,7 +256,7 @@ def _follow_until_finished(*, release: str, namespace: str, state_file: Path) ->
     with with_observability(namespace=namespace, selector=Kubectl.release_selector(release)):
         outcome = wait_for_run(
             state_file=state_file,
-            read_pod_phase=lambda: pod_phase(namespace, orchestrator_workload),
+            read_pod=lambda: observed_pod(namespace, orchestrator_workload),
             read_active_state_file=lambda: _active_state_file(release=release, namespace=namespace),
         )
 

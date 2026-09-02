@@ -24,6 +24,7 @@ from miles.utils.external_utils.command_utils.helm_backend.naming import (
     _orchestrator_state_path,
 )
 from miles.utils.external_utils.command_utils.helm_backend.orchestrator import observer
+from miles.utils.external_utils.command_utils.helm_backend.orchestrator.observer import ObservedPod
 from miles.utils.external_utils.command_utils.helm_backend.orchestrator.state import (
     STATE_FILE_FLAG,
     OrchestratorState,
@@ -127,7 +128,7 @@ class TestBackgroundLogOrdering:
         monkeypatch.setattr(cluster_info, "selected_pods", lambda namespace, selector: pods)
         monkeypatch.setattr(log_follower, "selected_pods", lambda namespace, selector: pods)
         monkeypatch.setattr(cluster_info, "pod_events", lambda *, namespace, pods: [])
-        monkeypatch.setattr(entrypoint, "pod_phase", lambda namespace, workload: "Running")
+        monkeypatch.setattr(entrypoint, "observed_pod", lambda namespace, workload: ObservedPod(phase="Running"))
         monkeypatch.setattr(entrypoint, "_active_state_file", lambda *, release, namespace: state_file)
         with pytest.raises(entrypoint.RunExitedError) as raised:
             entrypoint._follow_until_finished(release="myrun", namespace="myns", state_file=state_file)

@@ -190,13 +190,37 @@ class TestPodEvents:
         assert kubectl.calls == []
 
 
-class TestPodPhase:
+class TestObservedPod:
     def test_reads_the_phase_of_the_orchestrator_pod(self, kubectl):
         """The launcher decides a run lost its orchestrator from this, so it must read the real phase."""
         kubectl.answers["pod"] = _raw_pod("r-orchestrator-0", phase="Failed")
 
-        assert pod_facts.pod_phase("rl", "r-orchestrator") == "Failed"
+        assert pod_facts.observed_pod("rl", "r-orchestrator").phase == "Failed"
 
     def test_reports_a_pod_that_is_not_there_as_absent(self, kubectl):
         """A pod between deletion and recreation must read as gone, not as an error the launcher dies on."""
-        assert pod_facts.pod_phase("rl", "r-orchestrator") is None
+        assert pod_facts.observed_pod("rl", "r-orchestrator") is None
+
+    def test_reports_a_container_that_cannot_start(self, kubectl):
+        """A restartPolicy Always orchestrator never reaches Failed, so only the waiting reason says it broke."""
+        kubectl.answers["pod"] = _raw_pod(
+            "r-orchestrator-0",
+            phase="Pending",
+            containers=[
+                {"name": "orchestrator", "restartCount": 0, "state": {"waiting": {"reason": "CrashLoopBackOff"}}}
+            ],
+        )
+
+        assert pod_facts.observed_pod("rl", "r-orchestrator").startup_failure == "CrashLoopBackOff"
+
+    def test_reads_an_ordinary_wait_as_no_failure(self, kubectl):
+        """A container waiting on its image pull is a normal start, and ending the run there is wrong."""
+        kubectl.answers["pod"] = _raw_pod(
+            "r-orchestrator-0",
+            phase="Pending",
+            containers=[
+                {"name": "orchestrator", "restartCount": 0, "state": {"waiting": {"reason": "PodInitializing"}}}
+            ],
+        )
+
+        assert pod_facts.observed_pod("rl", "r-orchestrator").startup_failure is None

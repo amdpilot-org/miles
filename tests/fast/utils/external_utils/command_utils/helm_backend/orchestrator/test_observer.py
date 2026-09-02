@@ -18,6 +18,10 @@ def _state_file(tmp_path):
     return _orchestrator_state_path(tmp_path, "260101-000000-000001")
 
 
+def _observed(phase: str, *, startup_failure: str | None = None) -> observer.ObservedPod:
+    return observer.ObservedPod(phase=phase, startup_failure=startup_failure)
+
+
 class TestComputeRunOutcome:
     def test_keeps_waiting_while_the_run_is_healthy(self, tmp_path):
         """A running orchestrator has written started and its pod is Running."""
@@ -26,7 +30,11 @@ class TestComputeRunOutcome:
 
         assert (
             observer._compute_run_outcome(
-                state=OrchestratorState.read(path), phase="Running", missing_polls=0, dead_polls=0
+                state=OrchestratorState.read(path),
+                observed=_observed("Running"),
+                missing_polls=0,
+                dead_polls=0,
+                failing_polls=0,
             )
             is None
         )
@@ -37,7 +45,11 @@ class TestComputeRunOutcome:
         _write(path, OrchestratorStatus.EXITED, exit_code=7)
 
         outcome = observer._compute_run_outcome(
-            state=OrchestratorState.read(path), phase="Running", missing_polls=0, dead_polls=0
+            state=OrchestratorState.read(path),
+            observed=_observed("Running"),
+            missing_polls=0,
+            dead_polls=0,
+            failing_polls=0,
         )
 
         assert outcome.exit_code == 7
@@ -48,7 +60,11 @@ class TestComputeRunOutcome:
         _write(path, OrchestratorStatus.EXITED, exit_code=0)
 
         outcome = observer._compute_run_outcome(
-            state=OrchestratorState.read(path), phase="Failed", missing_polls=0, dead_polls=0
+            state=OrchestratorState.read(path),
+            observed=_observed("Failed"),
+            missing_polls=0,
+            dead_polls=0,
+            failing_polls=0,
         )
 
         assert outcome.exit_code == 0
@@ -60,9 +76,10 @@ class TestComputeRunOutcome:
 
         outcome = observer._compute_run_outcome(
             state=OrchestratorState.read(path),
-            phase="Failed",
+            observed=_observed("Failed"),
             missing_polls=0,
             dead_polls=observer._DEAD_POD_POLLS,
+            failing_polls=0,
         )
 
         assert outcome.exit_code == 1
@@ -75,9 +92,10 @@ class TestComputeRunOutcome:
 
         outcome = observer._compute_run_outcome(
             state=OrchestratorState.read(path),
-            phase=None,
+            observed=None,
             missing_polls=observer._MISSING_POD_POLLS,
             dead_polls=0,
+            failing_polls=0,
         )
 
         assert outcome.exit_code == 1
@@ -89,7 +107,7 @@ class TestComputeRunOutcome:
 
         assert (
             observer._compute_run_outcome(
-                state=OrchestratorState.read(path), phase=None, missing_polls=1, dead_polls=0
+                state=OrchestratorState.read(path), observed=None, missing_polls=1, dead_polls=0, failing_polls=0
             )
             is None
         )
@@ -103,7 +121,11 @@ class TestComputeRunOutcome:
         assert OrchestratorState.read(path) is None
         assert (
             observer._compute_run_outcome(
-                state=OrchestratorState.read(path), phase="Running", missing_polls=0, dead_polls=0
+                state=OrchestratorState.read(path),
+                observed=_observed("Running"),
+                missing_polls=0,
+                dead_polls=0,
+                failing_polls=0,
             )
             is None
         )
@@ -119,10 +141,46 @@ class TestComputeRunOutcome:
     def test_waits_out_the_gap_between_install_and_the_first_pod(self, tmp_path):
         """A missing pod before the run has started is scheduling, not failure."""
         outcome = observer._compute_run_outcome(
-            state=OrchestratorState.read(_state_file(tmp_path)), phase=None, missing_polls=0, dead_polls=0
+            state=OrchestratorState.read(_state_file(tmp_path)),
+            observed=None,
+            missing_polls=0,
+            dead_polls=0,
+            failing_polls=0,
         )
 
         assert outcome is None
+
+    def test_ends_the_run_when_the_container_cannot_start(self, tmp_path):
+        """A wrapper that never runs writes no verdict, and CrashLoopBackOff is neither Failed nor gone."""
+        path = _state_file(tmp_path)
+        _write(path, OrchestratorStatus.STARTED)
+
+        outcome = observer._compute_run_outcome(
+            state=OrchestratorState.read(path),
+            observed=_observed("Pending", startup_failure="ImagePullBackOff"),
+            missing_polls=0,
+            dead_polls=0,
+            failing_polls=observer._FAILING_POD_POLLS,
+        )
+
+        assert outcome.exit_code == 1
+        assert "ImagePullBackOff" in outcome.reason
+
+    def test_waits_out_a_container_that_has_only_just_backed_off(self, tmp_path):
+        """One backoff poll can be the first restart of a container the run goes on to survive."""
+        path = _state_file(tmp_path)
+        _write(path, OrchestratorStatus.STARTED)
+
+        assert (
+            observer._compute_run_outcome(
+                state=OrchestratorState.read(path),
+                observed=_observed("Pending", startup_failure="CrashLoopBackOff"),
+                missing_polls=0,
+                dead_polls=0,
+                failing_polls=1,
+            )
+            is None
+        )
 
     def test_keeps_waiting_through_a_pod_restart(self, tmp_path):
         """Pending covers image pulls and reschedules, which are normal before training begins."""
@@ -131,7 +189,11 @@ class TestComputeRunOutcome:
 
         assert (
             observer._compute_run_outcome(
-                state=OrchestratorState.read(path), phase="Pending", missing_polls=0, dead_polls=0
+                state=OrchestratorState.read(path),
+                observed=_observed("Pending"),
+                missing_polls=0,
+                dead_polls=0,
+                failing_polls=0,
             )
             is None
         )
@@ -152,7 +214,7 @@ class TestWaitForRun:
         monkeypatch.setattr(observer.time, "sleep", sleep)
         outcome = observer.wait_for_run(
             state_file=old_path,
-            read_pod_phase=lambda: "Running",
+            read_pod=lambda: _observed("Running"),
             read_active_state_file=lambda: next(active_paths),
         )
 
@@ -169,7 +231,7 @@ class TestWaitForRun:
         monkeypatch.setattr(observer.time, "sleep", lambda seconds: None)
         outcome = observer.wait_for_run(
             state_file=old_path,
-            read_pod_phase=lambda: "Failed",
+            read_pod=lambda: _observed("Failed"),
             read_active_state_file=lambda: next(active_paths),
         )
 
@@ -184,7 +246,7 @@ class TestWaitForRun:
         monkeypatch.setattr(observer.time, "sleep", lambda seconds: None)
         outcome = observer.wait_for_run(
             state_file=path,
-            read_pod_phase=lambda: phase_reads.append(True) or "Failed",
+            read_pod=lambda: phase_reads.append(True) or _observed("Failed"),
             read_active_state_file=lambda: path,
         )
 
@@ -199,7 +261,7 @@ class TestWaitForRun:
 
         outcome = observer.wait_for_run(
             state_file=path,
-            read_pod_phase=lambda: phase_reads.append(True) or "Failed",
+            read_pod=lambda: phase_reads.append(True) or _observed("Failed"),
             read_active_state_file=lambda: path,
         )
 
@@ -223,7 +285,7 @@ class TestWaitForRun:
         monkeypatch.setattr(observer.time, "sleep", lambda seconds: None)
         outcome = observer.wait_for_run(
             state_file=old_path,
-            read_pod_phase=lambda: "Running",
+            read_pod=lambda: _observed("Running"),
             read_active_state_file=read_active_state_file,
         )
 
@@ -243,7 +305,7 @@ class TestWaitForRun:
         monkeypatch.setattr(observer.time, "sleep", sleep)
         outcome = observer.wait_for_run(
             state_file=path,
-            read_pod_phase=lambda: "Running",
+            read_pod=lambda: _observed("Running"),
             read_active_state_file=lambda: path,
         )
 
@@ -265,7 +327,7 @@ class TestWaitForRun:
         monkeypatch.setattr(observer.time, "sleep", lambda seconds: None)
         outcome = observer.wait_for_run(
             state_file=path,
-            read_pod_phase=unreachable_until_the_run_finishes,
+            read_pod=unreachable_until_the_run_finishes,
             read_active_state_file=lambda: path,
         )
 
@@ -280,7 +342,7 @@ class TestWaitForRun:
         with caplog.at_level(logging.INFO, logger=observer.__name__):
             observer.wait_for_run(
                 state_file=path,
-                read_pod_phase=lambda: "Failed",
+                read_pod=lambda: _observed("Failed"),
                 read_active_state_file=lambda: path,
             )
 

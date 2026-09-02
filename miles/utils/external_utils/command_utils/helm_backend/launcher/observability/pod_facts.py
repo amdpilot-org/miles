@@ -3,10 +3,22 @@ from __future__ import annotations
 from typing import NamedTuple
 
 from miles.utils.external_utils.command_utils.helm_backend.launcher.command_wrapper import Kubectl
+from miles.utils.external_utils.command_utils.helm_backend.orchestrator.observer import ObservedPod
 from miles.utils.workers.k8s_types import Event, EventList, Pod, PodList
 
 _SCHEDULING_GATED_REASON = "SchedulingGated"
 _POD_WARNINGS_SELECTOR = "involvedObject.kind=Pod,type=Warning"
+_STARTUP_FAILURE_REASONS = frozenset(
+    {
+        "CrashLoopBackOff",
+        "ImagePullBackOff",
+        "ErrImagePull",
+        "InvalidImageName",
+        "CreateContainerConfigError",
+        "CreateContainerError",
+        "RunContainerError",
+    }
+)
 
 
 class ContainerKey(NamedTuple):
@@ -38,11 +50,11 @@ def pod_events(namespace: str, pods: list[Pod]) -> list[Event]:
     return [event for event in events if event.involved_object.name in wanted]
 
 
-def pod_phase(namespace: str, workload: str) -> str | None:
+def observed_pod(namespace: str, workload: str) -> ObservedPod | None:
     described = Kubectl.get_json("pod", return_type=Pod, name=f"{workload}-0", namespace=namespace)
     if described is None:
         return None
-    return phase_of_pod(described)
+    return ObservedPod(phase=phase_of_pod(described), startup_failure=startup_failure_of_pod(described))
 
 
 def status_changes(previous: list[Pod], current: list[Pod]) -> list[str]:
@@ -87,6 +99,17 @@ def is_pod_ready(pod: Pod) -> bool:
 
 def restarts_of_pod(pod: Pod) -> int:
     return sum(container.restart_count for container in pod.status.container_statuses)
+
+
+def startup_failure_of_pod(pod: Pod) -> str | None:
+    return next(
+        (
+            waiting.reason
+            for container in pod.status.container_statuses
+            if (waiting := container.state.waiting) is not None and waiting.reason in _STARTUP_FAILURE_REASONS
+        ),
+        None,
+    )
 
 
 def is_pod_scheduling_gated(pod: Pod) -> bool:
