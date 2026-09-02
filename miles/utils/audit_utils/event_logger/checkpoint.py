@@ -29,14 +29,15 @@ def snapshot(args: Namespace, iteration: int) -> None:
 
 
 def restore(args: Namespace) -> None:
-    if args.save_debug_event_data is None or args.load is None:
+    if args.save_debug_event_data is None or args.requested_load is None:
         return
 
-    iteration = read_checkpoint_tracker_iteration(Path(args.load))
+    requested_load = Path(args.requested_load)
+    iteration = read_checkpoint_tracker_iteration(requested_load)
     if iteration is None:
         return
 
-    src = _snapshot_dir(Path(args.load), iteration)
+    src = _snapshot_dir(requested_load, iteration)
     if not src.is_dir():
         return
 
