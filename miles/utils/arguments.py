@@ -37,6 +37,7 @@ from miles.utils.tracking_utils.ci_history import RECORD_DIR_ENV
 from miles.utils.workers.argv_utils import with_relax_parser_required_args
 from miles.utils.workers.naming import DEPLOY_INSTANCE_ID_MAX_LENGTH
 from miles.utils.workers.types import ClusterBackend, DeployComponent, WorkerCommBackend, resolve_worker_comm_backend
+from miles.utils.workers.worker_provider.static import parse_host_and_port
 
 logger = logging.getLogger(__name__)
 
@@ -3133,6 +3134,7 @@ def _validate_registration(args: argparse.Namespace, *, component: DeployCompone
             f"--deploy-component {component.value} deploys engines and nothing that drives them, so the one "
             f"inference controller of the run has to be named by --inference-controller-addr"
         )
+        parse_host_and_port(args.inference_controller_addr)
     else:
         assert args.inference_controller_addr is None, (
             f"--deploy-component {component.value} holds the one inference controller of the run, so it reaches it "

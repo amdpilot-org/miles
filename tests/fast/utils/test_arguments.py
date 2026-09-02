@@ -1080,6 +1080,34 @@ class TestEngineRegistrationArguments:
                 _parse_deploy_args(["--deploy-component", "inference", "--deploy-instance-id", "dc1"])
             )
 
+    def _parse_with_controller_addr(self, addr):
+        return _parse_deploy_args(
+            ["--deploy-component", "inference", "--deploy-instance-id", "dc1", "--inference-controller-addr", addr]
+        )
+
+    def test_refuses_a_controller_address_that_names_no_port(self):
+        """The reporter parses it inside the pods, so an unparseable one costs a whole installed release."""
+        with pytest.raises(AssertionError, match="host:port"):
+            _validate_deploy_component(self._parse_with_controller_addr("controller"))
+
+    def test_refuses_a_controller_address_that_names_no_host(self):
+        """A port on its own is dialable from nowhere, and the engines would register into nothing."""
+        with pytest.raises(AssertionError, match="no host"):
+            _validate_deploy_component(self._parse_with_controller_addr(":8000"))
+
+    def test_refuses_a_bare_ipv6_controller_address(self):
+        """Its own colons cannot be told from the port separator, which the reporter finds out too late."""
+        with pytest.raises(AssertionError, match="ipv6"):
+            _validate_deploy_component(self._parse_with_controller_addr("fd00::1:8000"))
+
+    def test_takes_a_bracketed_ipv6_controller_address(self):
+        """That is the spelling the reporter reads, and an engine deployment may well be given one."""
+        _validate_deploy_component(self._parse_with_controller_addr("[fd00::1]:8000"))
+
+    def test_takes_an_ordinary_host_and_port(self):
+        """The check has to leave the addresses that already work exactly as they were."""
+        _validate_deploy_component(self._parse_with_controller_addr("controller:8000"))
+
     @pytest.mark.parametrize("component", ["all", "primary", "trainer"])
     def test_only_an_engine_deployment_is_told_where_the_controller_is(self, component):
         """Every other component holds that controller in its own process, so an address contradicts it."""
