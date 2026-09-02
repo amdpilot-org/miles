@@ -18,6 +18,7 @@ _ModelT = TypeVar("_ModelT", bound=BaseModel)
 CI_LABEL = "miles.radixark.io/ci-run"
 _JOB_NAME_LABEL = "batch.kubernetes.io/job-name"
 _ALREADY_EXISTS = "AlreadyExists"
+_GET_REQUEST_TIMEOUT = "30s"
 
 
 class Helm:
@@ -168,6 +169,7 @@ class Kubectl:
         if name is not None:
             command.append(name)
         command += ["--namespace", namespace, "--output", "json", "--ignore-not-found"]
+        command += ["--request-timeout", _GET_REQUEST_TIMEOUT]
         if selector is not None:
             command += ["--selector", selector]
         if field_selector is not None:

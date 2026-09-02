@@ -6,7 +6,7 @@ from tests.fast.utils.external_utils.command_utils.helm_backend.launcher.observa
     wait_for,
 )
 
-from miles.utils.external_utils.command_utils.helm_backend.launcher.observability import cluster_info
+from miles.utils.external_utils.command_utils.helm_backend.launcher.observability import cluster_info, polling
 
 
 class TestPodSummary:
@@ -94,7 +94,7 @@ class TestWithClusterInfo:
         """A watcher that outlived its run would keep talking over whatever the user does next."""
         monkeypatch.setattr(cluster_info, "selected_pods", lambda namespace, selector: [make_pod(name="trainer-0")])
         monkeypatch.setattr(cluster_info, "pod_events", lambda *, namespace, pods: [])
-        monkeypatch.setattr(cluster_info.polling, "POLL_INTERVAL_SECONDS", 0.01)
+        monkeypatch.setattr(polling, "POLL_INTERVAL_SECONDS", 0.01)
 
         with caplog.at_level(logging.INFO, logger=cluster_info.__name__):
             with cluster_info.with_cluster_info(namespace="rl", selector="app=x"):
@@ -107,7 +107,7 @@ class TestWithClusterInfo:
         """A pending pod carries the same event every poll, and repeating it would scroll the rest away."""
         monkeypatch.setattr(cluster_info, "selected_pods", lambda namespace, selector: [make_pod(name="trainer-0")])
         monkeypatch.setattr(cluster_info, "pod_events", lambda *, namespace, pods: [make_event(pod_name="trainer-0")])
-        monkeypatch.setattr(cluster_info.polling, "POLL_INTERVAL_SECONDS", 0.01)
+        monkeypatch.setattr(polling, "POLL_INTERVAL_SECONDS", 0.01)
 
         with caplog.at_level(logging.INFO, logger=cluster_info.__name__):
             with cluster_info.with_cluster_info(namespace="rl", selector="app=x"):
@@ -127,7 +127,7 @@ class TestWithClusterInfo:
 
         monkeypatch.setattr(cluster_info, "selected_pods", flaky)
         monkeypatch.setattr(cluster_info, "pod_events", lambda *, namespace, pods: [])
-        monkeypatch.setattr(cluster_info.polling, "POLL_INTERVAL_SECONDS", 0.01)
+        monkeypatch.setattr(polling, "POLL_INTERVAL_SECONDS", 0.01)
 
         with caplog.at_level(logging.INFO, logger=cluster_info.__name__):
             with cluster_info.with_cluster_info(namespace="rl", selector="app=x"):

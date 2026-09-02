@@ -11,7 +11,7 @@ POLL_INTERVAL_SECONDS = 5.0
 
 
 @contextmanager
-def polling_in_background(step: Callable[[], None], *, description: str, join_timeout: float) -> Iterator[None]:
+def polling_in_background(step: Callable[[], None], *, description: str) -> Iterator[None]:
     stop = threading.Event()
     thread = threading.Thread(target=_poll_until_stopped, args=(step, description, stop), daemon=True)
     thread.start()
@@ -20,7 +20,7 @@ def polling_in_background(step: Callable[[], None], *, description: str, join_ti
         yield
     finally:
         stop.set()
-        thread.join(timeout=join_timeout)
+        thread.join()
 
 
 def _poll_until_stopped(step: Callable[[], None], description: str, stop: threading.Event) -> None:

@@ -4,7 +4,6 @@ import logging
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from miles.utils.external_utils.command_utils.helm_backend.launcher.observability import polling
 from miles.utils.external_utils.command_utils.helm_backend.launcher.observability.pod_facts import (
     is_pod_ready,
     is_pod_scheduling_gated,
@@ -26,11 +25,7 @@ _MANY_PODS = 100
 @contextmanager
 def with_cluster_info(*, namespace: str, selector: str) -> Iterator[None]:
     watcher = _ClusterInfoWatcher(namespace=namespace, selector=selector)
-    with polling_in_background(
-        watcher.report_changes,
-        description="read the pods of this run",
-        join_timeout=polling.POLL_INTERVAL_SECONDS,
-    ):
+    with polling_in_background(watcher.report_changes, description="read the pods of this run"):
         yield
 
 

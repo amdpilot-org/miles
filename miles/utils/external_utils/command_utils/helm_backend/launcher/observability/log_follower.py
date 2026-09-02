@@ -11,7 +11,6 @@ from datetime import datetime
 from typing import IO
 
 from miles.utils.external_utils.command_utils.helm_backend.launcher.command_wrapper import Kubectl
-from miles.utils.external_utils.command_utils.helm_backend.launcher.observability import polling
 from miles.utils.external_utils.command_utils.helm_backend.launcher.observability.pod_facts import (
     ContainerKey,
     ContainerRun,
@@ -32,11 +31,7 @@ _SUPPORTED_FRACTION_DIGITS = 6
 def with_log_following(*, namespace: str, selector: str) -> Iterator[None]:
     follower = _LogFollower(namespace=namespace, selector=selector)
     try:
-        with polling_in_background(
-            follower.reconcile,
-            description="look for pods to follow",
-            join_timeout=polling.POLL_INTERVAL_SECONDS + _STOP_GRACE_SECONDS,
-        ):
+        with polling_in_background(follower.reconcile, description="look for pods to follow"):
             yield
     finally:
         follower.stop_all_streams()

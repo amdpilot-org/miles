@@ -8,7 +8,7 @@ from tests.fast.utils.external_utils.command_utils.helm_backend.launcher.observa
 )
 
 from miles.utils.external_utils.command_utils.helm_backend.launcher.command_wrapper import Kubectl
-from miles.utils.external_utils.command_utils.helm_backend.launcher.observability import log_follower
+from miles.utils.external_utils.command_utils.helm_backend.launcher.observability import log_follower, polling
 
 
 def _pod(name="trainer-0", uid="u", container_id="docker://a", previous_container_id="", running=True):
@@ -70,7 +70,7 @@ class FakeKubectl:
 def _followed(monkeypatch, pods, lines=(), blocking: bool = True, returncode: int = 0) -> FakeKubectl:
     fake = FakeKubectl(monkeypatch, list(lines), blocking, returncode=returncode)
     monkeypatch.setattr(log_follower, "selected_pods", lambda namespace, selector: pods)
-    monkeypatch.setattr(log_follower.polling, "POLL_INTERVAL_SECONDS", 0.01)
+    monkeypatch.setattr(polling, "POLL_INTERVAL_SECONDS", 0.01)
     return fake
 
 
