@@ -57,7 +57,7 @@ class StaticInferenceEngineWorkerProvider(BaseWorkerProvider):
             for worker_name in cell.cell_info.worker_names
         }
 
-        logger.info(f"Discovered external inference engines: {self.cell_infos}")
+        logger.info(f"Discovered external inference engines: {_describe_cells(self._cells)}")
 
     @property
     def cell_infos(self) -> list[CellInfo]:
@@ -150,6 +150,19 @@ def _compute_engine_addrs(engine: _ExternalEngineInfo) -> NamedHostAndPorts:
     if engine.disaggregation_bootstrap_port is not None:
         addrs["disaggregation_bootstrap"] = HostAndPort(host=engine.host, port=engine.disaggregation_bootstrap_port)
     return addrs
+
+
+def _describe_cells(cells: dict[str, _ExternalCell]) -> list[dict[str, Any]]:
+    return [
+        dict(
+            cell_id=cell.cell_info.cell_id,
+            url=cell.cell_info.workers_hash,
+            worker_type=cell.cell_info.meta["worker_type"],
+            num_gpus_per_engine=cell.cell_info.meta["num_gpus_per_engine"],
+            gpu_offset=cell.cell_info.meta["gpu_offset"],
+        )
+        for cell in cells.values()
+    ]
 
 
 # ============================ address book parsing ============================
