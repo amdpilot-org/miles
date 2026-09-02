@@ -14,6 +14,7 @@ RESTART_AT_ANNOTATION = "miles.radixark.io/restart-at"
 PodWorkloadKind = Literal["StatefulSet", "LeaderWorkerSet", "Deployment", "DaemonSet", "ReplicaSet", "Job"]
 STATEFUL_SET_KIND: PodWorkloadKind = "StatefulSet"
 LEADER_WORKER_SET_KIND: PodWorkloadKind = "LeaderWorkerSet"
+_STATEFUL_SET_API_VERSION = "apps/v1"
 
 SpecT = TypeVar("SpecT")
 
@@ -186,13 +187,11 @@ class Manifest(FrozenStrictBaseModel):
         return Path(named) if named is not None else None
 
     def _container(self, *, stateful_set: str, container: str) -> Container | None:
-        named = [
-            described
-            for described in self.pod_workloads
-            if described.kind == STATEFUL_SET_KIND and described.metadata.name == stateful_set
-        ]
-        assert len(named) <= 1, (
-            f"this release holds {len(named)} StatefulSets named {stateful_set}, so reading a flag off one of them "
-            f"would answer for whichever rendered first"
+        identity = ObjectIdentity(
+            api_version=_STATEFUL_SET_API_VERSION,
+            kind=STATEFUL_SET_KIND,
+            namespace=self.namespace,
+            name=stateful_set,
         )
-        return named[0].container_named(container) if named else None
+        named = self.by_identity.get(identity)
+        return named.container_named(container) if named is not None else None

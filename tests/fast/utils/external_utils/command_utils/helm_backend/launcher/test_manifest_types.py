@@ -336,3 +336,33 @@ class TestAnnotationsThatAreNotStrings:
         manifest = _parse(_rendered(_stateful_set(name="orchestrator", annotations={"replicas": 3})))
 
         assert manifest.restart_at(object_name="orchestrator") is None
+
+
+class TestWhichStatefulSetAFlagIsReadOff:
+    def test_a_stateful_set_of_the_same_name_in_another_namespace_does_not_join_the_match(self):
+        """Two of them tripped the at-most-one assert, which aborted every relaunch of the run."""
+        manifest = _parse(
+            _rendered(
+                _stateful_set(command=["python", "--state-file", "/runs/a.state"]),
+                _stateful_set(command=["python", "--state-file", "/runs/b.state"], namespace="other"),
+            )
+        )
+
+        assert (
+            manifest.flag_value("--state-file", stateful_set=ORCHESTRATOR, container="orchestrator") == "/runs/a.state"
+        )
+
+    def test_a_stateful_set_of_another_api_group_answers_for_nothing(self):
+        """A crd may share the kind and the name, and its command line says nothing about this release."""
+        foreign = _stateful_set(command=["python", "--state-file", "/runs/foreign.state"])
+        foreign["apiVersion"] = "example.com/v1"
+
+        manifest = _parse(_rendered(foreign))
+
+        assert manifest.flag_value("--state-file", stateful_set=ORCHESTRATOR, container="orchestrator") is None
+
+    def test_the_stateful_set_this_release_installed_is_still_the_one_read(self):
+        """Narrowing the match must not stop the ordinary release from being found at all."""
+        manifest = _parse(_rendered(_stateful_set(command=["python", "--state-file", "/runs/a.state"])))
+
+        assert str(manifest.state_file(stateful_set=ORCHESTRATOR, container="orchestrator")) == "/runs/a.state"
