@@ -320,9 +320,7 @@ class TestTheCardReachesTheEngineByOneNameAndOneKey:
         """Three producers of two strings: drift in any one leaves the engine reading an empty base gpu id."""
         argv = _sub_node_engine_argv()
         env = _env_entry(colocated_engine_pod()["containers"][0], BASE_GPU_ID_ENV_VAR)
-        patch = release_patch(
-            node_name="gpu-3", base_gpu_id=4, gates=[_GATE_NAME], has_node_selector=False, annotations={"a": "b"}
-        )
+        patch = release_patch(node_name="gpu-3", base_gpu_id=4, gates=[_GATE_NAME], annotations={"a": "b"})
         annotation = DEFAULT_LABEL_KEYS.base_gpu_id_annotation
 
         assert argv[argv.index("--base-gpu-id") + 1] == f"$({BASE_GPU_ID_ENV_VAR})"

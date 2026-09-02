@@ -106,7 +106,6 @@ class PairingController:
                 node_name=node_name,
                 base_gpu_id=base_gpu_id,
                 gates=gate_names(inference_pod),
-                has_node_selector=bool(inference_pod.spec.node_selector),
                 annotations=inference_pod.metadata.annotations,
             ),
         )

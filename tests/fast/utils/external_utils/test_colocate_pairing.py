@@ -725,14 +725,12 @@ def _release_patch(
     node_name: str = "gpu-7",
     base_gpu_id: int = 0,
     gates: list[str] | None = None,
-    has_node_selector: bool = False,
     annotations: dict[str, str] | None = None,
 ) -> list[dict[str, Any]]:
     return pairing_pods.release_patch(
         node_name=node_name,
         base_gpu_id=base_gpu_id,
         gates=[pairing_pods._GATE_NAME] if gates is None else gates,
-        has_node_selector=has_node_selector,
         annotations=_POD_ANNOTATIONS if annotations is None else annotations,
     )
 
@@ -742,7 +740,19 @@ class TestReleasePatch:
         """Both in one patch, so a controller restart cannot leave a pinned pod still gated."""
         patch = _release_patch()
 
-        assert patch[0]["value"] == {"kubernetes.io/hostname": "gpu-7"}
+        assert patch[0] == {
+            "op": "add",
+            "path": "/spec/affinity",
+            "value": {
+                "nodeAffinity": {
+                    "requiredDuringSchedulingIgnoredDuringExecution": {
+                        "nodeSelectorTerms": [
+                            {"matchFields": [{"key": "metadata.name", "operator": "In", "values": ["gpu-7"]}]}
+                        ]
+                    }
+                }
+            },
+        }
         assert patch[2:] == [
             {"op": "test", "path": "/spec/schedulingGates/0/name", "value": pairing_pods._GATE_NAME},
             {"op": "remove", "path": "/spec/schedulingGates/0"},
@@ -776,15 +786,13 @@ class TestReleasePatch:
         with pytest.raises(AssertionError, match="carries no annotations"):
             _release_patch(base_gpu_id=3, annotations={})
 
-    def test_adds_one_key_when_the_pod_already_has_a_selector(self):
-        """Replacing the map would drop the run's own nodeSelector, and a gated pod may only gain keys."""
-        patch = _release_patch(has_node_selector=True)
+    def test_pins_by_node_name_rather_than_by_hostname_label(self):
+        """A node whose hostname label differs from its name would match no node at all."""
+        [term] = _release_patch()[0]["value"]["nodeAffinity"]["requiredDuringSchedulingIgnoredDuringExecution"][
+            "nodeSelectorTerms"
+        ]
 
-        assert patch[0] == {
-            "op": "add",
-            "path": "/spec/nodeSelector/kubernetes.io~1hostname",
-            "value": "gpu-7",
-        }
+        assert term == {"matchFields": [{"key": "metadata.name", "operator": "In", "values": ["gpu-7"]}]}
 
     def test_removes_only_its_own_gate(self):
         """Dropping the whole list would release a pod another controller is still deliberately holding back."""
@@ -1033,7 +1041,7 @@ class TestReconcile:
 
         asyncio.run(_attached(_controller(core_v1), pods).reconcile(_key(TRAINER_POOL_ID, 0)))
 
-        assert core_v1.patched[0][1][0]["path"].endswith("kubernetes.io~1hostname")
+        assert core_v1.patched[0][1][0]["path"] == "/spec/affinity"
 
     def test_waits_while_the_trainer_has_no_node(self):
         """Releasing now would let the scheduler put the inference anywhere, which is the bug gates prevent."""
