@@ -80,11 +80,8 @@ def save_debug_trajectory_data(
     rows = trajectory_rows(samples)
     if not rows:
         return  # no conversations: no file (the dashboard keys off its presence)
-    path = Path(
-        path_template.format(
-            rollout_id=_compute_dump_stem(rollout_id, evaluation=evaluation, trainer_model_id=trainer_model_id)
-        )
-    )
+    stem = _compute_dump_stem(rollout_id, evaluation=evaluation, trainer_model_id=trainer_model_id)
+    path = _format_dump_path(path_template, stem=stem)
     logger.info(f"Save trajectory dump to {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:
@@ -112,7 +109,7 @@ def save_debug_rollout_data(
     # TODO to be refactored (originally Buffer._set_data)
     if (path_template := args.save_debug_rollout_data) is not None:
         stem = _compute_dump_stem(rollout_id, evaluation=evaluation, trainer_model_id=trainer_model_id)
-        path = Path(path_template.format(rollout_id=stem))
+        path = _format_dump_path(path_template, stem=stem)
         logger.info(f"Save debug rollout data to {path}")
         path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -123,6 +120,13 @@ def save_debug_rollout_data(
         # TODO may improve the format
         dump_data = dict(samples=[sample.to_dict() for sample in samples])
         torch.save(dict(rollout_id=rollout_id, metadata=metadata or {}, **dump_data), path)
+
+
+def _format_dump_path(path_template: str, *, stem: str) -> Path:
+    assert (
+        "{rollout_id}" in path_template
+    ), f"Debug dump path template {path_template!r} must contain the {{rollout_id}} placeholder"
+    return Path(path_template.format(rollout_id=stem))
 
 
 def _compute_dump_stem(rollout_id, *, evaluation: bool, trainer_model_id: str | None) -> str:
