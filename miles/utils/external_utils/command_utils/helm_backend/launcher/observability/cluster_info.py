@@ -39,7 +39,7 @@ class _ClusterInfoWatcher:
         self._namespace = namespace
         self._selector = selector
         self._pods: list[Pod] = []
-        self._reported_events: set[tuple[str | None, str | None]] = set()
+        self._reported_events: set[tuple[str | None, str | None, str | None]] = set()
         self._reported_summary = ""
         self._hinted = False
 
@@ -105,5 +105,5 @@ def _warning_lines(events: list[Event]) -> list[str]:
     return lines
 
 
-def _event_key(event: Event) -> tuple[str | None, str | None]:
-    return event.involved_object.name, event.reason
+def _event_key(event: Event) -> tuple[str | None, str | None, str | None]:
+    return event.involved_object.uid, event.involved_object.name, event.reason

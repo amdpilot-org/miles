@@ -39,7 +39,7 @@ def selected_pods(namespace: str, selector: str) -> list[Pod]:
 
 
 def pod_events(namespace: str, pods: list[Pod]) -> list[Event]:
-    wanted = {pod.metadata.name for pod in pods}
+    wanted = {pod.metadata.uid for pod in pods}
     if not wanted:
         return []
 
@@ -47,7 +47,7 @@ def pod_events(namespace: str, pods: list[Pod]) -> list[Event]:
         "events", return_type=EventList, namespace=namespace, field_selector=_POD_WARNINGS_SELECTOR
     )
     events = listed.items if listed is not None else []
-    return [event for event in events if event.involved_object.name in wanted]
+    return [event for event in events if event.involved_object.uid in wanted]
 
 
 def observed_pod(namespace: str, workload: str) -> ObservedPod | None:

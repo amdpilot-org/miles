@@ -106,9 +106,11 @@ def _raw_pod(name: str, *, phase="Running", ready=True, containers=()) -> dict:
     }
 
 
-def _raw_event(pod_name: str, reason="FailedScheduling", message="no node", count=1, event_type="Warning") -> dict:
+def _raw_event(
+    pod_name: str, reason="FailedScheduling", message="no node", count=1, event_type="Warning", uid=None
+) -> dict:
     return {
-        "involvedObject": {"name": pod_name, "kind": "Pod"},
+        "involvedObject": {"name": pod_name, "kind": "Pod", "uid": uid or f"uid-{pod_name}"},
         "reason": reason,
         "message": message,
         "count": count,
@@ -156,7 +158,7 @@ class TestPodEvents:
         """The launcher watches one release, and another run's failures would be a false alarm."""
         kubectl.answers["events"] = {"items": [_raw_event("mine-0"), _raw_event("someone-elses-0")]}
 
-        events = pod_facts.pod_events(namespace="rl", pods=[make_pod(name="mine-0")])
+        events = pod_facts.pod_events(namespace="rl", pods=[make_pod(name="mine-0", uid="uid-mine-0")])
 
         assert [event.involved_object.name for event in events] == ["mine-0"]
 
@@ -164,7 +166,7 @@ class TestPodEvents:
         """A namespace also records node and job events, none of which explain a pod that will not start."""
         kubectl.answers["events"] = {"items": [_raw_event("mine-0")]}
 
-        pod_facts.pod_events(namespace="rl", pods=[make_pod(name="mine-0")])
+        pod_facts.pod_events(namespace="rl", pods=[make_pod(name="mine-0", uid="uid-mine-0")])
 
         assert kubectl.calls[0]["field_selector"] == "involvedObject.kind=Pod,type=Warning"
 
@@ -172,7 +174,7 @@ class TestPodEvents:
         """A reason without its message says a pod failed but not what a user has to fix."""
         kubectl.answers["events"] = {"items": [_raw_event("mine-0", reason="Failed", message="denied", count=3)]}
 
-        event = pod_facts.pod_events(namespace="rl", pods=[make_pod(name="mine-0")])[0]
+        event = pod_facts.pod_events(namespace="rl", pods=[make_pod(name="mine-0", uid="uid-mine-0")])[0]
 
         assert (event.reason, event.message, event.count, event.type) == ("Failed", "denied", 3, "Warning")
 
@@ -180,7 +182,7 @@ class TestPodEvents:
         """A freshly created event has no count yet, and a crash here would hide the pod it describes."""
         kubectl.answers["events"] = {"items": [_raw_event("mine-0", count=None)]}
 
-        event = pod_facts.pod_events(namespace="rl", pods=[make_pod(name="mine-0")])[0]
+        event = pod_facts.pod_events(namespace="rl", pods=[make_pod(name="mine-0", uid="uid-mine-0")])[0]
 
         assert event.count == 1
 
@@ -188,6 +190,12 @@ class TestPodEvents:
         """Before the scheduler acts there is nothing to explain, and the call would only cost a round trip."""
         assert pod_facts.pod_events(namespace="rl", pods=[]) == []
         assert kubectl.calls == []
+
+    def test_leaves_out_the_warning_of_a_pod_that_was_replaced(self, kubectl):
+        """A StatefulSet rebuilds a pod under its ordinal name, and the old instance's failure is not the new one's."""
+        kubectl.answers["events"] = {"items": [_raw_event("mine-0", uid="uid-old")]}
+
+        assert pod_facts.pod_events(namespace="rl", pods=[make_pod(name="mine-0")]) == []
 
 
 class TestObservedPod:

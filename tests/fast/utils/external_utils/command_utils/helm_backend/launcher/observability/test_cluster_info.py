@@ -80,6 +80,15 @@ class TestScaleHint:
         assert "200 pods" in hint
 
 
+class TestEventKey:
+    def test_tells_two_pods_of_one_name_apart(self):
+        """A pod rebuilt under its ordinal name is a different pod, and its warning has not been reported."""
+        old = make_event(pod_name="trainer-0", uid="uid-old")
+        new = make_event(pod_name="trainer-0", uid="uid-new")
+
+        assert cluster_info._event_key(old) != cluster_info._event_key(new)
+
+
 class TestWithClusterInfo:
     def test_reports_what_it_finds_and_stops_when_the_caller_leaves(self, monkeypatch, caplog):
         """A watcher that outlived its run would keep talking over whatever the user does next."""

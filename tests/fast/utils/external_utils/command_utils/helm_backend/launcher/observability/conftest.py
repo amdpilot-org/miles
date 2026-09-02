@@ -36,9 +36,9 @@ def make_pod(name="p", uid="u", phase="Running", ready=True, restarts=0, schedul
     )
 
 
-def make_event(pod_name="p", reason="FailedScheduling", message="no node", count=1, event_type="Warning"):
+def make_event(pod_name="p", reason="FailedScheduling", message="no node", count=1, event_type="Warning", uid=None):
     return Event(
-        involved_object=ObjectReference(name=pod_name, kind="Pod"),
+        involved_object=ObjectReference(name=pod_name, kind="Pod", uid=uid or f"uid-{pod_name}"),
         reason=reason,
         message=message,
         count=count,
