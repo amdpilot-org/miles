@@ -229,12 +229,24 @@ def coerce_dict_to_args(
     dest_of_option_name = _compute_dest_of_option_names(parser)
     arg_specs = _compute_arg_specs(parser)
     allowed_dests = frozenset(dest_of_option_name.get(name, name) for name in allowed_names)
+
+    dest_of_name = {name: dest_of_option_name.get(name, name) for name in values}
+    aliased = {dest: names for dest, names in _invert_dict(dest_of_name).items() if len(names) > 1}
+    assert not aliased, f"{context} names one argument twice: {aliased}; only the last of each group survives"
+
     return {
-        (dest := dest_of_option_name.get(name, name)): _coerce_value(
+        (dest := dest_of_name[name]): _coerce_value(
             value, dest=dest, spec=arg_specs.get(dest), allowed_dests=allowed_dests, context=context
         )
         for name, value in values.items()
     }
+
+
+def _invert_dict(mapping: dict[str, str]) -> dict[str, list[str]]:
+    inverted: dict[str, list[str]] = {}
+    for key, value in mapping.items():
+        inverted.setdefault(value, []).append(key)
+    return inverted
 
 
 def _coerce_value(
