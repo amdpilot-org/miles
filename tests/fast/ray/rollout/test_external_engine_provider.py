@@ -11,8 +11,10 @@ from miles.ray.rollout import external_engine_provider as external_engine_provid
 from miles.ray.rollout.external_engine_provider import (
     _EXTERNAL_ENGINE_POOL_ID,
     StaticInferenceEngineWorkerProvider,
+    _assert_engines_match_args,
     _compute_external_engine_urls,
     _discover_external_engine,
+    _ExternalEngineInfo,
     _fetch_server_info_with_retry,
     static_inference_engine_provider,
 )
@@ -395,3 +397,38 @@ class TestStaticInferenceEngineWorkerProvider:
             "http://host1:8000",
         )
         assert meta.worker_name == info.worker_names[0]
+
+
+def _engine(*, url: str, num_gpus: int) -> _ExternalEngineInfo:
+    return _ExternalEngineInfo(
+        url=url,
+        host=url.removeprefix("http://").split(":")[0],
+        port=8000,
+        worker_type="regular",
+        num_gpus=num_gpus,
+        disaggregation_bootstrap_port=None,
+    )
+
+
+class TestARaggedExternalFleet:
+    def test_engines_that_do_not_each_report_the_per_engine_argument_are_refused(self):
+        """Engines of unequal size cannot each hold --rollout-num-gpus-per-engine gpus."""
+        args = _make_args(["host1:8000", "host2:8000"], num_gpus_per_engine=2, rollout_num_gpus=6)
+        engines = [_engine(url="http://host1:8000", num_gpus=4), _engine(url="http://host2:8000", num_gpus=2)]
+
+        with pytest.raises(AssertionError, match="rollout-num-gpus-per-engine"):
+            _assert_engines_match_args(args, engines=engines)
+
+    async def test_a_fleet_of_unequal_engines_is_refused_before_the_run_is_handed_an_engine(self, monkeypatch):
+        """Discovery refuses the fleet, so nothing downstream ever sees it."""
+        args = _make_args(["host1:8000", "host2:8000"], num_gpus_per_engine=2, rollout_num_gpus=6)
+        payloads = {
+            "http://host1:8000": _regular_payload(num_gpus=4),
+            "http://host2:8000": _regular_payload(num_gpus=2),
+        }
+
+        _install_payloads(monkeypatch, payloads)
+        provider = StaticInferenceEngineWorkerProvider(args=args)
+
+        with pytest.raises(AssertionError, match="rollout-num-gpus-per-engine"):
+            await provider.init()
