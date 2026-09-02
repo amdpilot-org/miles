@@ -46,8 +46,9 @@ Steps: 3 rollouts
 Releases: TRAINER solver-actor / verifier-actor, INFERENCE solver / verifier, PRIMARY last
 
 1. Install the five releases via the example, one command per part
-2. Assert: every rank trained with its own policy's args; every policy reported a training reward
-   inside TRAIN_REWARD_BOUNDS; the leader reported every rollout; finite nonzero grad_norm/loss
+2. Assert: every rank trained with its own policy's args; the leader reported every rollout;
+   finite nonzero grad_norm/loss. Three rollouts say nothing about learning, so whether a policy
+   improves is gated by tests/e2e/long/test_multi_policy_solver_verifier_gsm8k.py instead
 3. Assert per policy: train_rollout_logprob_abs_diff <= 0.1 (the cheapest wiring bug - a
    trainer scoring another engine's tokens - shows up here)
 ```
