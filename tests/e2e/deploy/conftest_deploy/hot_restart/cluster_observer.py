@@ -81,6 +81,8 @@ class ClusterObserver:
     snapshots: list[ClusterSnapshot] = field(default_factory=list)
     attempts: int = 0
     failures: int = 0
+    _settled_workloads: frozenset[str] | None = field(default=None, init=False)
+    _topology_read_before: tuple[frozenset[str], frozenset[str]] | None = field(default=None, init=False)
 
     def observe_once_or_warn(self) -> None:
         try:
@@ -111,7 +113,32 @@ class ClusterObserver:
                 f"workload(s), which is a release being uninstalled rather than a run whose pods were replaced"
             )
             return
+        if not self._describes_the_release_this_run_settled_into(snapshot):
+            return
         self.snapshots.append(snapshot)
+
+    def _describes_the_release_this_run_settled_into(self, snapshot: ClusterSnapshot) -> bool:
+        workload_names = frozenset(snapshot.workload_names)
+        pod_names = frozenset(one.name for one in snapshot.pods)
+        if self._settled_workloads is None:
+            if (workload_names, pod_names) != self._topology_read_before:
+                self._topology_read_before = (workload_names, pod_names)
+                logger.warning(
+                    f"Observed {self.release} holding {sorted(workload_names)} over {sorted(pod_names)}, which no "
+                    f"read before it had seen, so the release is still being installed rather than being watched"
+                )
+                return False
+            self._settled_workloads = workload_names
+            logger.info(f"{self.release} settled into {sorted(self._settled_workloads)}; recording from here on")
+            return True
+
+        if missing := self._settled_workloads - workload_names:
+            logger.warning(
+                f"Observing {self.release} listed neither {sorted(missing)} nor a release that is gone, so this is "
+                f"a partial listing rather than a run whose workloads were removed"
+            )
+            return False
+        return True
 
 
 @contextmanager

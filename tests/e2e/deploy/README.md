@@ -65,6 +65,9 @@ Timing: exact - the run parks at the scheduled step boundary (sleep-forever acti
 Plan: a file under the base dump dir, not under either side's, which each run deletes (argv
         stays byte-identical across relaunches; a pod's command carries it)
 Gate: the parked run writes a sentinel beside the plan; the driver waits for it
+Observation: the cluster observer records a snapshot only once two consecutive reads agree on the
+        release's workloads and pods, and afterwards drops any listing missing a settled
+        workload, so a topology still being installed is never taken for a run losing pods
 Modes: checkpointed  - --save-interval 2 (saves after 1, 3, 5), 2 restarts: restart 1 frozen
                        between steps 2 and 3 (resumes save 1), restart 2 frozen between steps
                        4 and 5 (resumes save 3)
@@ -110,6 +113,7 @@ Terminal lifecycle: the form reads progress from the same dump directory as chec
         free of new take-overs
 Landing signal: both replaced workloads (orchestrator, rollout-executor) carry a stamp other
         than the one they carried at the draw - rewritten, not added
+Observation: as in scenario_hot_restart_deterministic - snapshots start after the release settles
 Load-bearing: adds --save/--load and --save-interval 3 (bounds one take-over's cost); mean draw
         interval 600s (--hot-restart-interval-seconds)
 

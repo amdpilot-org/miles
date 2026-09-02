@@ -173,15 +173,17 @@ class TestClusterObserver:
             monkeypatch,
             [
                 cluster_snapshot(pods=[], workloads=[workload_fact(TRAINER)], reads_missing=(POD_KIND,)),
-                cluster_snapshot(pods=[pod_fact(f"{TRAINER}-0", uid="uid-t")], workloads=[workload_fact(TRAINER)]),
+                _settled_snapshot(),
+                _settled_snapshot(),
             ],
         )
 
         observer.observe_once()
         observer.observe_once()
+        observer.observe_once()
 
         assert len(observer.snapshots) == 1
-        assert (observer.attempts, observer.failures) == (2, 1)
+        assert (observer.attempts, observer.failures) == (3, 1)
 
     def test_a_pods_read_that_failed_is_a_failed_read_and_not_a_vanished_release(self, monkeypatch):
         """These used to be the same thing, which left the "reads missing" branch unreachable."""
@@ -216,6 +218,59 @@ class TestClusterObserver:
         observer.observe_once()
 
         assert observer.snapshots == []
+
+    def test_a_release_still_being_installed_is_not_recorded_as_a_settled_run(self, monkeypatch):
+        """A first workload and pod are non-empty, and reading only those loses every pod not created yet."""
+        observer = _observer()
+        self._install_reader(
+            monkeypatch,
+            [
+                cluster_snapshot(pods=[pod_fact(f"{TRAINER}-0", uid="uid-t")], workloads=[workload_fact(TRAINER)]),
+                _settled_snapshot(),
+                _settled_snapshot(),
+            ],
+        )
+
+        for _ in range(3):
+            observer.observe_once()
+
+        assert observer.snapshots == [_settled_snapshot()]
+        assert observer._settled_workloads == frozenset({ORCHESTRATOR, TRAINER})
+
+    def test_a_partial_listing_of_a_settled_release_is_not_recorded(self, monkeypatch):
+        """A missing workload leaves an empty pod set, which reads as a healthy pod having been replaced."""
+        observer = _observer()
+        self._install_reader(
+            monkeypatch,
+            [
+                _settled_snapshot(),
+                _settled_snapshot(),
+                cluster_snapshot(pods=[pod_fact(f"{TRAINER}-0", uid="uid-t")], workloads=[workload_fact(TRAINER)]),
+            ],
+        )
+
+        for _ in range(3):
+            observer.observe_once()
+
+        assert observer.snapshots == [_settled_snapshot()]
+
+    def test_a_settled_release_whose_pods_were_replaced_is_recorded(self, monkeypatch):
+        """A take-over replacing pods is the one event these snapshots exist to catch."""
+        observer = _observer()
+        replaced = _settled_snapshot(orchestrator_uid="uid-o-2")
+        self._install_reader(monkeypatch, [_settled_snapshot(), _settled_snapshot(), replaced])
+
+        for _ in range(3):
+            observer.observe_once()
+
+        assert observer.snapshots == [_settled_snapshot(), replaced]
+
+
+def _settled_snapshot(*, orchestrator_uid: str = "uid-o-1") -> ClusterSnapshot:
+    return cluster_snapshot(
+        pods=[pod_fact(f"{ORCHESTRATOR}-0", uid=orchestrator_uid), pod_fact(f"{TRAINER}-0", uid="uid-t")],
+        workloads=[workload_fact(ORCHESTRATOR), workload_fact(TRAINER)],
+    )
 
 
 def _raise_boom(**_kwargs) -> None:
