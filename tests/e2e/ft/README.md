@@ -171,7 +171,8 @@ Steps: 2 (NUM_STEPS)
 Compare: dumps rel <= 0.0085; metrics rtol=1e-2, atol=1e-8
 
 1. Baseline: normal DP on debug rollout data (real engines in a real-rollout mode)
-2. Target: the same arguments plus --use-fault-tolerance
+2. Target: the same arguments plus get_ft_args(mode), which is --use-fault-tolerance
+   --ft-components <the mode's ft_components> --api-server-port 0
 3. Compare:
    - Tensor-level: compare_dumps (weights, grads via dumper & sglang comparator)
    - Metric-level: compare_metrics (MetricEvent, requires train/grad_norm and train/loss)
