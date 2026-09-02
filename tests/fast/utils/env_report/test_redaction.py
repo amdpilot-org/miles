@@ -1,6 +1,6 @@
 import pytest
 
-from miles.utils.env_report.redaction import _redact, redact_argv, redact_env_vars, redact_server_info
+from miles.utils.env_report.redaction import _redact, redact_arg, redact_argv, redact_env_vars, redact_server_info
 
 
 class TestRedactArgv:
@@ -36,6 +36,28 @@ class TestRedactArgv:
 
         assert "hunter2" not in argv[2]
         assert "INFO" in argv[2]
+
+    def test_hides_the_credentials_of_a_proxy_url(self) -> None:
+        """An authenticated proxy carries a password, and --http-proxy is not a secret flag by name."""
+        argv = redact_argv(["train.py", "--http-proxy", "http://alice:hunter2@proxy:7897"])
+
+        assert "hunter2" not in argv[2] and "alice" not in argv[2]
+        assert argv[2].endswith("@proxy:7897")
+
+    def test_keeps_a_proxy_url_without_credentials_unchanged(self) -> None:
+        """The host and port are the part an audit reads back, and no secret is hiding in them."""
+        assert redact_argv(["train.py", "--http-proxy=http://proxy:7897"]) == [
+            "train.py",
+            "--http-proxy=http://proxy:7897",
+        ]
+
+
+class TestRedactArg:
+    def test_hides_the_credentials_the_structured_args_carry(self) -> None:
+        """process.args is persisted next to process.argv, so redacting one alone leaks the other."""
+        redacted = redact_arg("http_proxy", "http://alice:hunter2@proxy:7897")
+
+        assert "hunter2" not in redacted and redacted.endswith("@proxy:7897")
 
 
 class TestRedact:
