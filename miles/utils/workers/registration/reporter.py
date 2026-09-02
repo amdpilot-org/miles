@@ -40,6 +40,7 @@ class RegistrationReporter:
     _sequence_number: int = field(init=False, default=0)
 
     async def run(self) -> None:
+        await self.worker_provider.init()
         await self.hub_endpoint.wait_ready(timeout=HUB_READY_TIMEOUT_SECONDS)
         stop_watch = await self.worker_provider.watch_cells(self._observe)
 

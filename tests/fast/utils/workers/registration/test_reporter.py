@@ -236,6 +236,54 @@ class TestReporterWorker:
         assert collect_rpc_method_specs(RegistrationReporterWorker) == {}
 
 
+class _RecordingProvider(_FakeEngineProvider):
+    def __init__(self, events: list[str], **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.events = events
+
+    async def init(self) -> None:
+        self.events.append("init")
+
+    async def watch_cells(self, reconcile: CellReconcileFn) -> StopWatchFn:
+        self.events.append("watch")
+        return await super().watch_cells(reconcile)
+
+
+class _InitRequiringProvider(_FakeEngineProvider):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.initialized = False
+
+    async def init(self) -> None:
+        self.initialized = True
+
+    async def watch_cells(self, reconcile: CellReconcileFn) -> StopWatchFn:
+        assert self.initialized, "the engines this provider serves only exist once init() discovered them"
+        return await super().watch_cells(reconcile)
+
+
+class _RecordingHub(_FakeHub):
+    def __init__(self, events: list[str]) -> None:
+        super().__init__()
+        self.events = events
+
+    async def wait_ready(self, *, timeout: float) -> None:
+        self.events.append("wait_ready")
+        await super().wait_ready(timeout=timeout)
+
+
+async def _run_until_watching(reporter: RegistrationReporter, provider: _FakeEngineProvider) -> None:
+    run = asyncio.create_task(reporter.run())
+    for _ in range(100):
+        await asyncio.sleep(0)
+        if provider.reconcile is not None:
+            break
+
+    run.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await run
+
+
 class TestReporterLifecycle:
     async def test_it_waits_for_the_hub_before_it_watches_its_own_cells(self):
         """The hub_endpoint comes up with the run, and a snapshot into nothing is a wasted period."""
@@ -253,6 +301,34 @@ class TestReporterLifecycle:
 
         assert hub_endpoint.ready_timeouts
         assert provider.stopped
+
+    async def test_it_initializes_the_worker_provider_before_anything_else(self):
+        """InferenceController.init() does the same, and a provider is not usable before it."""
+        events: list[str] = []
+        provider = _RecordingProvider(events, cell_indices=[0])
+
+        await _run_until_watching(_reporter(provider=provider, hub_endpoint=_RecordingHub(events)), provider)
+
+        assert events[:3] == ["init", "wait_ready", "watch"]
+
+    async def test_a_provider_whose_cells_init_discovers_is_watched_without_tripping_its_own_check(self):
+        """The static external-engine provider asserted this and took the whole reporter down with it."""
+        provider = _InitRequiringProvider(cell_indices=[0])
+
+        await _run_until_watching(_reporter(provider=provider, hub_endpoint=_FakeHub()), provider)
+
+        assert provider.reconcile is not None
+
+    async def test_the_cells_init_discovered_reach_the_hub(self):
+        """A split run on --rollout-external-engine-addrs registered no engine at all, and then timed out."""
+        provider = _InitRequiringProvider(cell_indices=[0])
+        hub_endpoint = _FakeHub()
+        reporter = _reporter(provider=provider, hub_endpoint=hub_endpoint)
+
+        await _run_until_watching(reporter, provider)
+        await reporter._send_once()
+
+        assert [cell.info.cell_id for cell in hub_endpoint.snapshots[-1].cells] == [_cell_id(0)]
 
 
 def _trigger(*, interval_seconds: float = 0.05, jitter_ratio: float = 0.0, debounce_seconds: float = 0.0):
