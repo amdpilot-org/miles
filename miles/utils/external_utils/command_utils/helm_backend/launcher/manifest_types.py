@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, Generic, Literal, NamedTuple, TypeVar
 
 import yaml
 from pydantic import Field
@@ -10,7 +10,12 @@ from miles.utils.external_utils.command_utils.helm_backend.orchestrator.state im
 from miles.utils.pydantic_utils import FrozenOpenBaseModel, FrozenStrictBaseModel
 
 RESTART_AT_ANNOTATION = "miles.radixark.io/restart-at"
-STATEFUL_SET_KIND = "StatefulSet"
+
+PodWorkloadKind = Literal["StatefulSet", "LeaderWorkerSet", "Deployment", "DaemonSet", "ReplicaSet", "Job"]
+STATEFUL_SET_KIND: PodWorkloadKind = "StatefulSet"
+LEADER_WORKER_SET_KIND: PodWorkloadKind = "LeaderWorkerSet"
+
+SpecT = TypeVar("SpecT")
 
 
 class ManifestObjectKey(FrozenStrictBaseModel):
@@ -42,7 +47,7 @@ class PodTemplate(FrozenOpenBaseModel):
     spec: PodSpec | None = None
 
 
-class ObjectSpec(FrozenOpenBaseModel):
+class WorkloadSpec(FrozenOpenBaseModel):
     replicas: int | None = None
     template: PodTemplate | None = None
 
@@ -66,11 +71,11 @@ class ObjectIdentity(NamedTuple):
         return ManifestObjectKey(kind=self.kind, name=self.name)
 
 
-class ManifestObject(FrozenOpenBaseModel):
+class _ManifestObjectBase(FrozenOpenBaseModel, Generic[SpecT]):
     api_version: str = Field(default="", alias="apiVersion")
     kind: str
     metadata: ObjectMetadata
-    spec: ObjectSpec | None = None
+    spec: SpecT | None = None
 
     def identity(self, *, default_namespace: str) -> ObjectIdentity:
         return ObjectIdentity(
@@ -81,24 +86,27 @@ class ManifestObject(FrozenOpenBaseModel):
         )
 
     @property
+    def body(self) -> dict[str, Any]:
+        return self.model_dump(exclude_unset=True, by_alias=True)
+
+
+class PodWorkloadObject(_ManifestObjectBase[WorkloadSpec]):
+    kind: PodWorkloadKind
+
+    @property
     def replicas(self) -> int | None:
         return self.spec.replicas if self.spec is not None else None
 
     @property
     def restart_at(self) -> str | None:
-        if self.spec is None or self.spec.template is None or self.spec.template.metadata is None:
+        template = self._pod_template
+        if template is None or template.metadata is None:
             return None
-        return self.spec.template.metadata.annotations.get(RESTART_AT_ANNOTATION)
-
-    @property
-    def body(self) -> dict[str, Any]:
-        return self.model_dump(exclude_unset=True, by_alias=True)
+        return template.metadata.annotations.get(RESTART_AT_ANNOTATION)
 
     @property
     def containers(self) -> list[Container]:
-        if self.spec is None or self.spec.template is None:
-            return []
-        pod = self.spec.template.spec
+        pod = template.spec if (template := self._pod_template) is not None else None
         return list(pod.containers) if pod is not None else []
 
     def container_named(self, container: str) -> Container | None:
@@ -107,6 +115,17 @@ class ManifestObject(FrozenOpenBaseModel):
             len(found) <= 1
         ), f"{self.kind}/{self.metadata.name} declares {len(found)} containers named {container!r}"
         return found[0] if found else None
+
+    @property
+    def _pod_template(self) -> PodTemplate | None:
+        return self.spec.template if self.spec is not None else None
+
+
+class GeneralManifestObject(_ManifestObjectBase[dict[str, Any]]):
+    pass
+
+
+ManifestObject = PodWorkloadObject | GeneralManifestObject
 
 
 class Manifest(FrozenStrictBaseModel):
@@ -129,6 +148,10 @@ class Manifest(FrozenStrictBaseModel):
             identified[identity] = described
         return identified
 
+    @property
+    def pod_workloads(self) -> list[PodWorkloadObject]:
+        return [described for described in self.objects if isinstance(described, PodWorkloadObject)]
+
     def object_keyed(self, *, key: ManifestObjectKey) -> ManifestObject | None:
         matched = [described for identity, described in self.by_identity.items() if identity.key == key]
         assert len(matched) <= 1, (
@@ -137,8 +160,12 @@ class Manifest(FrozenStrictBaseModel):
         )
         return matched[0] if matched else None
 
+    def pod_workload_keyed(self, *, key: ManifestObjectKey) -> PodWorkloadObject | None:
+        described = self.object_keyed(key=key)
+        return described if isinstance(described, PodWorkloadObject) else None
+
     def restart_at(self, *, object_name: str) -> str | None:
-        described = self.object_keyed(key=ManifestObjectKey(kind=STATEFUL_SET_KIND, name=object_name))
+        described = self.pod_workload_keyed(key=ManifestObjectKey(kind=STATEFUL_SET_KIND, name=object_name))
         return described.restart_at if described is not None else None
 
     def flag_value(self, flag: str, *, stateful_set: str, container: str) -> str | None:
@@ -161,7 +188,7 @@ class Manifest(FrozenStrictBaseModel):
     def _container(self, *, stateful_set: str, container: str) -> Container | None:
         named = [
             described
-            for described in self.objects
+            for described in self.pod_workloads
             if described.kind == STATEFUL_SET_KIND and described.metadata.name == stateful_set
         ]
         assert len(named) <= 1, (

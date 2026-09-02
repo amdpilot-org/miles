@@ -43,7 +43,7 @@ class LaunchRecord(FrozenStrictBaseModel):
 
 
 def installed_launch_record_file(*, manifest: Manifest) -> str | None:
-    for described in manifest.objects:
+    for described in manifest.pod_workloads:
         for found in described.containers:
             for entry in found.env:
                 if entry.name == LAUNCHER_REPORT_ENV_VAR:

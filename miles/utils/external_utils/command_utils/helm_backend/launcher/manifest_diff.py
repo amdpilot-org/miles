@@ -3,14 +3,16 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from miles.utils.external_utils.command_utils.helm_backend.launcher.manifest_types import (
+    LEADER_WORKER_SET_KIND,
     Manifest,
     ManifestObject,
     ManifestObjectKey,
     ObjectIdentity,
+    PodWorkloadObject,
 )
 from miles.utils.pydantic_utils import FrozenStrictBaseModel
 
-_SCALABLE_KINDS = frozenset({"LeaderWorkerSet"})
+_SCALABLE_KINDS = frozenset({LEADER_WORKER_SET_KIND})
 _REPLICAS_PATH = ("spec", "replicas")
 
 
@@ -93,7 +95,7 @@ def _compute_change(
         old, new, identity=identity, path=path, allow_diff_object_keys=allow_diff_object_keys
     )
     if allowed_by is not None and path == _REPLICAS_PATH:
-        description = f"{identity}: replicas {old.replicas} -> {new.replicas}"
+        description = f"{identity}: replicas {_replicas(old)} -> {_replicas(new)}"
     else:
         description = f"{identity}: {_describe_path(path)}"
     return ManifestChange(identity=identity, path=path, allowed_by=allowed_by, description=description)
@@ -117,7 +119,11 @@ def _compute_allowed_by(
 def _is_scaling(old: ManifestObject, new: ManifestObject, *, path: tuple[str, ...]) -> bool:
     if old.kind not in _SCALABLE_KINDS or path != _REPLICAS_PATH:
         return False
-    return old.replicas is not None and new.replicas is not None
+    return _replicas(old) is not None and _replicas(new) is not None
+
+
+def _replicas(described: ManifestObject) -> int | None:
+    return described.replicas if isinstance(described, PodWorkloadObject) else None
 
 
 def _describe_path(path: tuple[str, ...]) -> str:

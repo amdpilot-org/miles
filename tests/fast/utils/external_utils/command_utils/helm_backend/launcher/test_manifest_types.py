@@ -6,8 +6,10 @@ import yaml
 from miles.utils.external_utils.command_utils.helm_backend.launcher.manifest_types import (
     RESTART_AT_ANNOTATION,
     STATEFUL_SET_KIND,
+    GeneralManifestObject,
     Manifest,
     ManifestObjectKey,
+    PodWorkloadObject,
 )
 
 ORCHESTRATOR = "myrun-miles-run-orchestrator"
@@ -60,11 +62,14 @@ class TestParse:
         assert len(manifest.objects) == 1
 
     def test_reads_the_replica_count_a_resize_moves(self):
-        """The upgrade check compares this number, and a kind that has none must not read as zero."""
+        """The upgrade check compares this number, and a kind that carries no pod must not answer for it at all."""
         manifest = _parse(_rendered(_stateful_set(), {"kind": "ConfigMap", "metadata": {"name": "values"}}))
 
-        assert manifest.by_identity[("apps/v1", "StatefulSet", NAMESPACE, ORCHESTRATOR)].replicas == 1
-        assert manifest.by_identity[("", "ConfigMap", NAMESPACE, "values")].replicas is None
+        stateful_set = manifest.by_identity[("apps/v1", "StatefulSet", NAMESPACE, ORCHESTRATOR)]
+        config_map = manifest.by_identity[("", "ConfigMap", NAMESPACE, "values")]
+
+        assert isinstance(stateful_set, PodWorkloadObject) and stateful_set.replicas == 1
+        assert isinstance(config_map, GeneralManifestObject)
 
 
 class TestIdentity:
@@ -186,7 +191,7 @@ class TestKindsItDoesNotModel:
             _rendered({"kind": "Service", "metadata": {"name": "engine"}, "spec": {"clusterIP": "None"}})
         )
 
-        assert manifest.objects[0].replicas is None
+        assert manifest.pod_workloads == []
 
     def test_finds_no_container_in_a_workload_it_does_not_model(self):
         """The state file flag means the orchestrator's container, and every other pod runs the same image."""
@@ -215,6 +220,33 @@ class TestKindsItDoesNotModel:
         )
 
         assert manifest.state_file(stateful_set="engine", container="orchestrator") is None
+
+    def test_keeps_a_custom_resource_whose_spec_is_shaped_like_no_pod(self):
+        """An extra manifest is any object the user hands the chart, and validating it as a workload rejects it."""
+        document = {
+            "apiVersion": "monitoring.coreos.com/v1",
+            "kind": "PrometheusRule",
+            "metadata": {"name": "alerts"},
+            "spec": {"groups": [{"name": "run", "rules": [{"alert": "Down", "expr": "up == 0"}]}]},
+        }
+
+        manifest = _parse(_rendered(document))
+
+        described = manifest.objects[0]
+
+        assert not isinstance(described, PodWorkloadObject)
+        assert described.spec == document["spec"]
+        assert described.body == document
+
+    def test_decodes_a_workload_kind_as_the_object_that_carries_a_pod(self):
+        """Only the variant that models a pod may answer for replicas and containers, so the kind has to pick it."""
+        manifest = _parse(_rendered(_stateful_set(command=["python", "train.py"])))
+
+        described = manifest.objects[0]
+
+        assert isinstance(described, PodWorkloadObject)
+        assert described.replicas == 1
+        assert [found.name for found in described.containers] == ["orchestrator"]
 
 
 _STAMP = "2026-08-12T09:00:00+00:00"
