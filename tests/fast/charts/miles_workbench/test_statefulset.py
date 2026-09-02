@@ -20,6 +20,11 @@ def _volume(objects: list[dict], name: str) -> dict:
     return next(volume for volume in volumes if volume["name"] == name)
 
 
+def _infra_checksum(objects: list[dict]) -> str:
+    annotations = single_object_of_kind(objects, "StatefulSet")["spec"]["template"]["metadata"]["annotations"]
+    return annotations["checksum/infra-values"]
+
+
 @requires_helm
 class TestWorkbenchStatefulSet:
     def test_a_single_pod_idles_on_the_training_image(self):
@@ -32,6 +37,14 @@ class TestWorkbenchStatefulSet:
         assert container(objects)["image"] == "radixark/miles:dev"
         assert container(objects)["imagePullPolicy"] == "Always"
         assert container(objects)["command"] == ["sleep", "infinity"]
+
+    def test_the_pod_template_carries_the_infra_config_checksum(self):
+        """A ConfigMap-only edit must roll the pod, otherwise a finished install still serves the old infra.yaml."""
+        default = _infra_checksum(render())
+        changed = _infra_checksum(render("--set", "infra.paths.runsRoot=/elsewhere/miles_data"))
+
+        assert len(default) == 64
+        assert default != changed
 
     def test_the_selector_is_the_stable_label_subset(self):
         """A selector is immutable after creation and must be a subset of the template labels."""

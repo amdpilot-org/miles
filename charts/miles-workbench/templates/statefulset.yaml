@@ -13,6 +13,8 @@ spec:
       {{- include "miles-workbench.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      annotations:
+        checksum/infra-values: {{ include (print $.Template.BasePath "/infra-configmap.yaml") . | sha256sum | quote }}
       labels:
         {{- include "miles-workbench.labels" . | nindent 8 }}
     spec:
