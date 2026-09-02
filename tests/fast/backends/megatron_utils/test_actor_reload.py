@@ -63,6 +63,8 @@ def _args(tmp_path: Path, **overrides) -> Namespace:
         no_load_optim=False,
         no_load_rng=False,
         finetune=False,
+        megatron_to_hf_mode="core",
+        ref_update_interval=None,
         lora_rank=0,
         lora_adapter_path=None,
         multi_lora=False,
@@ -71,8 +73,10 @@ def _args(tmp_path: Path, **overrides) -> Namespace:
         non_persistent_ckpt_type=None,
         fp16=False,
         use_precision_aware_optimizer=False,
+        optimizer="adam",
         optimizer_cpu_offload=False,
         offload_optimizer_states=False,
+        chunked_optimizer_state_offload=False,
         debug_rollout_only=False,
         async_save=False,
         offload_train=False,
@@ -284,7 +288,9 @@ class TestAReloadThatFindsNothingItSaved:
         monkeypatch.setattr(
             actor_module,
             "reset_optimizer_state",
-            lambda optimizer, *, stream_optimizer_state_to_disk: reset.append(optimizer),
+            lambda optimizer, *, stream_optimizer_state_to_disk, chunked_optimizer_state_offload: reset.append(
+                optimizer
+            ),
         )
 
         actor.load_state()
