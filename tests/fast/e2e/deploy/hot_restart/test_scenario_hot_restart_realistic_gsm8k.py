@@ -1,4 +1,7 @@
 import shlex
+import shutil
+import uuid
+from collections.abc import Iterable
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -10,6 +13,9 @@ from tests.e2e.deploy.conftest_deploy.hot_restart.fault_form import HotRestartFa
 from tests.e2e.ft.conftest_ft import scenario_realistic_gsm8k
 from tests.e2e.ft.conftest_ft.fault_injection.state import InjectionEvent
 
+from miles.utils.audit_utils.event_logger.logger import EVENTS_DIRNAME, EventLogger
+from miles.utils.audit_utils.event_logger.models import MetricEvent
+from miles.utils.audit_utils.process_identity import SimpleProcessIdentity
 from miles.utils.external_utils.command_utils.base_backend import ExecuteTrainConfig
 from miles.utils.external_utils.command_utils.common import ArgvManipulator
 
@@ -217,3 +223,91 @@ class TestWhatEachTakeOverCost:
 
 def _record(*, index: int, saved: int | None, finished: int) -> HotRestartRecord:
     return HotRestartRecord(index=index, saved_iteration_at_trigger=saved, frozen_rollout_id=finished)
+
+
+def _records(count: int) -> list[HotRestartRecord]:
+    return [_record(index=index, saved=0, finished=0) for index in range(count)]
+
+
+def _write_finished_steps(events_dir: Path, rollout_ids: Iterable[int]) -> None:
+    for rollout_id in rollout_ids:
+        logger = EventLogger(
+            log_dir=events_dir, file_name=f"step-{rollout_id}.jsonl", source=SimpleProcessIdentity(component="main")
+        )
+        logger.log(MetricEvent, {"rollout_id": rollout_id, "metrics": {"train/grad_norm": 1.0}}, print_log=False)
+
+
+def _replace_the_log(dump_dir: Path, *, rolled_aside_at: str, kept: Iterable[int]) -> None:
+    events_dir = dump_dir / EVENTS_DIRNAME
+    replaced = dump_dir / f".trash_{rolled_aside_at}_{uuid.uuid4().hex[:8]}"
+    shutil.move(str(events_dir), str(replaced))
+    events_dir.mkdir(parents=True)
+    for rollout_id in kept:
+        shutil.copy(replaced / f"step-{rollout_id}.jsonl", events_dir / f"step-{rollout_id}.jsonl")
+
+
+class TestAssertEveryTakeOverResumedWithinASaveInterval:
+    def test_a_take_over_that_redid_only_what_its_checkpoint_missed_passes(self, tmp_path):
+        """What a take-over cost is the log it replaced minus the prefix the run that followed kept."""
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(4))
+        _replace_the_log(tmp_path, rolled_aside_at="20260902_120000", kept=range(2))
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(2, 6))
+
+        scenario.assert_every_take_over_resumed_within_a_save_interval(str(tmp_path), records=_records(1))
+
+    def test_a_take_over_that_resumed_further_back_than_a_save_interval_fails(self, tmp_path):
+        """Measuring the resume point off the trigger's tracker would pass a run that reloaded an older save."""
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(6))
+        _replace_the_log(tmp_path, rolled_aside_at="20260902_120000", kept=[])
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(6))
+
+        with pytest.raises(AssertionError, match="redid 6 step"):
+            scenario.assert_every_take_over_resumed_within_a_save_interval(str(tmp_path), records=_records(1))
+
+    def test_a_take_over_that_left_no_rolled_back_log_fails(self, tmp_path):
+        """A take-over whose log is missing hides the very steps this assertion counts."""
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(4))
+
+        with pytest.raises(AssertionError, match="rolls the log it replaced aside"):
+            scenario.assert_every_take_over_resumed_within_a_save_interval(str(tmp_path), records=_records(1))
+
+    def test_a_take_over_that_carried_a_hole_over_fails(self, tmp_path):
+        """A run resumes from one checkpoint, so what survives a take-over is a prefix and never a hole."""
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(4))
+        _replace_the_log(tmp_path, rolled_aside_at="20260902_120000", kept=[0, 2])
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(3, 6))
+
+        with pytest.raises(AssertionError, match="carried the steps"):
+            scenario.assert_every_take_over_resumed_within_a_save_interval(str(tmp_path), records=_records(1))
+
+    def test_a_take_over_fired_during_the_catch_up_is_read_off_the_log_it_rolled_aside(self, tmp_path):
+        """A take-over during the catch-up leaves a log reaching a lower step than the log before it."""
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(10))
+        _replace_the_log(tmp_path, rolled_aside_at="20260902_120000", kept=range(8))
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, [8])
+        _replace_the_log(tmp_path, rolled_aside_at="20260902_120100", kept=range(7))
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(7, 12))
+
+        scenario.assert_every_take_over_resumed_within_a_save_interval(str(tmp_path), records=_records(2))
+
+    def test_a_take_over_fired_during_the_catch_up_is_measured_against_its_own_log(self, tmp_path):
+        """Ordering the rolled-aside logs by how far they trained blames the wrong take-over for the redone steps."""
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(10))
+        _replace_the_log(tmp_path, rolled_aside_at="20260902_120000", kept=range(8))
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, [8])
+        _replace_the_log(tmp_path, rolled_aside_at="20260902_120100", kept=range(2))
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(2, 12))
+
+        with pytest.raises(AssertionError, match="take-over 1 replaced a log that had reached step 8"):
+            scenario.assert_every_take_over_resumed_within_a_save_interval(str(tmp_path), records=_records(2))
+
+    def test_two_take_overs_that_rolled_their_logs_aside_in_the_same_second_fail(self, tmp_path):
+        """Which log a take-over replaced is read off when it was rolled aside, so a tie leaves it unpinned."""
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(4))
+        _replace_the_log(tmp_path, rolled_aside_at="20260902_120000", kept=range(2))
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(2, 5))
+        _replace_the_log(tmp_path, rolled_aside_at="20260902_120000", kept=range(3))
+        _write_finished_steps(tmp_path / EVENTS_DIRNAME, range(3, 6))
+
+        with pytest.raises(AssertionError, match="same second"):
+            scenario.assert_every_take_over_resumed_within_a_save_interval(str(tmp_path), records=_records(2))

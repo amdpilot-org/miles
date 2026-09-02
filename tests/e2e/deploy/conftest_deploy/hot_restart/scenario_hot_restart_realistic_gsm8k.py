@@ -1,9 +1,15 @@
+import re
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Annotated
 
 import typer
 from examples.infra_features.split_deployment.address_book import DEFAULT_TRAINER_ID
 from tests.e2e.deploy.conftest_deploy.common.utils import assert_the_cluster_can_deploy_runs
+from tests.e2e.deploy.conftest_deploy.hot_restart.assert_redone_from_checkpoint import (
+    read_discarded_event_dirs,
+    read_step_events,
+)
 from tests.e2e.deploy.conftest_deploy.hot_restart.assert_workloads import (
     assert_the_take_overs_replaced_only_the_script,
 )
@@ -23,6 +29,7 @@ from tests.e2e.ft.conftest_ft.scenario_realistic_gsm8k import (
     run_realistic_gsm8k,
 )
 
+from miles.utils.audit_utils.event_logger.logger import EVENTS_DIRNAME
 from miles.utils.external_utils import command_utils
 from miles.utils.misc import MutableBox
 
@@ -105,6 +112,7 @@ def run_ci(
         minimum_restarts=MIN_HOT_RESTARTS,
     )
     assert_no_take_over_threw_away_more_than_a_save_interval(evidence.records)
+    assert_every_take_over_resumed_within_a_save_interval(outcome.run.dump_dir, records=evidence.records)
 
     print(f"Hot restart realistic gsm8k test PASSED (seed={seed}, rollouts={num_rollout})")
 
@@ -137,6 +145,55 @@ def assert_no_take_over_threw_away_more_than_a_save_interval(records: Sequence[H
             f"from the last checkpoint and a run saving every {SAVE_INTERVAL} step(s) cannot owe more than "
             f"{MAX_REDONE_STEPS_PER_TAKE_OVER}"
         )
+
+
+def assert_every_take_over_resumed_within_a_save_interval(
+    dump_dir: str, *, records: Sequence[HotRestartRecord]
+) -> None:
+    logs = _read_the_log_every_take_over_replaced(dump_dir, num_take_overs=len(records))
+
+    for record, log, later_log in zip(records, logs, logs[1:], strict=True):
+        frozen_rollout_id = max(log, default=-1)
+        survived = sorted(rollout_id for rollout_id, event in log.items() if later_log.get(rollout_id) == event)
+        resumed_from = max(survived, default=-1)
+
+        assert survived == list(
+            range(resumed_from + 1)
+        ), f"take-over {record.index} carried the steps {survived} over, expected {list(range(resumed_from + 1))}"
+        redone = frozen_rollout_id - resumed_from
+        assert 0 <= redone <= MAX_REDONE_STEPS_PER_TAKE_OVER, (
+            f"take-over {record.index} replaced a log that had reached step {frozen_rollout_id} and resumed at "
+            f"step {resumed_from}, so it redid {redone} step(s), more than {MAX_REDONE_STEPS_PER_TAKE_OVER}"
+        )
+
+
+def _read_the_log_every_take_over_replaced(dump_dir: str, *, num_take_overs: int) -> list[dict[int, str]]:
+    discarded_dirs = read_discarded_event_dirs(dump_dir)
+    assert len(discarded_dirs) == num_take_overs, (
+        f"every take-over rolls the log it replaced aside, but {num_take_overs} of them left "
+        f"{[one.name for one in discarded_dirs]} under {dump_dir}"
+    )
+
+    rolled_aside_at = [_read_when_a_take_over_rolled_a_log_aside(one) for one in discarded_dirs]
+    assert (
+        sorted(set(rolled_aside_at)) == rolled_aside_at
+    ), f"the take-overs under {dump_dir} rolled their logs aside at {rolled_aside_at}, two in the same second"
+
+    replaced = [_read_the_steps_a_log_finished(one) for one in discarded_dirs]
+    return [*replaced, _read_the_steps_a_log_finished(Path(dump_dir) / EVENTS_DIRNAME)]
+
+
+def _read_when_a_take_over_rolled_a_log_aside(events_dir: Path) -> str:
+    matched = re.fullmatch(r"\.trash_(\d{8}_\d{6})_[0-9a-f]+", events_dir.name)
+    assert matched is not None, f"{events_dir.name} does not name the moment the log was rolled aside"
+    return matched.group(1)
+
+
+def _read_the_steps_a_log_finished(events_dir: Path) -> dict[int, str]:
+    logged = read_step_events(events_dir)
+    repeated = {rollout_id: len(events) for rollout_id, events in logged.items() if len(events) != 1}
+    assert not repeated, f"{events_dir} describes the step(s) {repeated} more than once"
+    return {rollout_id: events[0] for rollout_id, events in logged.items()}
 
 
 def create_hot_restart_forms(run: Gsm8kRun, *, max_allowed_rollout_id: int) -> CellFaultForms:
