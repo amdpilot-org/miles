@@ -90,11 +90,15 @@ def assert_every_metric_is_classified(dump_dir: str, *, compared: tuple[str, ...
 
 
 def read_rollout_completion_times(dump_dir: str) -> list[tuple[int, datetime]]:
-    events = _keep_only_final_attempt(_read_metric_events(Path(dump_dir)))
+    events = _read_metric_events(Path(dump_dir))
     return sorted(
-        ((event.rollout_id, event.timestamp) for event in events if event.rollout_id is not None),
+        ((event.rollout_id, event.timestamp) for event in events if _is_rollout_completion(event)),
         key=lambda one: one[1],
     )
+
+
+def _is_rollout_completion(event: MetricEvent) -> bool:
+    return event.rollout_id is not None and event.source.component == "rollout_executor"
 
 
 def _check_events_line_up(baseline_events: list[MetricEvent], target_events: list[MetricEvent]) -> list[str]:

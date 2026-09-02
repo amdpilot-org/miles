@@ -93,6 +93,16 @@ def is_event_logger_initialized() -> bool:
     return _event_logger is not None
 
 
+@contextmanager
+def maybe_event_logger_context(ctx: dict[str, Any]) -> Generator[None, None, None]:
+    if not is_event_logger_initialized():
+        yield
+        return
+
+    with get_event_logger().with_context(ctx):
+        yield
+
+
 def event_logger_context(ctx_fn: Callable[..., dict[str, Any]]) -> Callable:
     """Decorator that wraps a method with EventLogger.with_context if initialized.
 
