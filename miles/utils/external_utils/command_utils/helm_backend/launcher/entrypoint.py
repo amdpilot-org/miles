@@ -17,6 +17,7 @@ from miles.ray.specs.train import (
     specs_trainer_controller,
 )
 from miles.utils.arguments import parse_args
+from miles.utils.env_report.launcher_report import LAUNCHER_REPORT_ENV_VAR
 from miles.utils.external_utils.command_utils.base_backend import (
     CLUSTER_BACKEND_FLAG,
     ExecuteTrainConfig,
@@ -306,6 +307,7 @@ def _compute_train_argv(
 
     with override_argv(argv), override_env(env):
         args = parse_args()
+    assert LAUNCHER_REPORT_ENV_VAR not in args.train_env_vars
 
     # TODO: remove after args refactor handles wandb ids
     if args.use_wandb and args.wandb_run_id is None:
