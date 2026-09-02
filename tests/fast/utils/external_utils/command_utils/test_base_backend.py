@@ -167,3 +167,65 @@ class TestExecuteTrainConfigSelection:
 
         with pytest.raises(AssertionError, match="ExecuteTrainConfig"):
             backend.execute_train(train_args="--train-backend fsdp", num_gpus_per_node=8, megatron_model_type=None)
+
+
+def _launched_train_argv(monkeypatch, *, train_args: str, config: ExecuteTrainConfig) -> list[str]:
+    recorded: list[ExecuteTrainRequest] = []
+    monkeypatch.setattr(
+        RayCommandBackend, "_execute_train_inner", lambda self, *, request, config: recorded.append(request)
+    )
+
+    config.create_backend().execute_train(train_args=train_args, num_gpus_per_node=8, megatron_model_type=None)
+
+    return recorded[0].train_args.split()
+
+
+class TestTheRunUuidALaunchDrives:
+    def test_the_configured_run_uuid_reaches_the_pods(self, monkeypatch):
+        """Only --deploy-component and --deploy-instance-id were appended, so an unsplit run minted a second uuid."""
+        argv = _launched_train_argv(
+            monkeypatch,
+            train_args="--train-backend fsdp",
+            config=ExecuteTrainConfig(run_uuid="0123456789abcdef"),
+        )
+
+        assert argv[argv.index("--run-uuid") + 1] == "0123456789abcdef"
+
+    def test_a_launch_that_names_no_run_leaves_the_arguments_alone(self, monkeypatch):
+        """Every existing ray launch names none, and an empty flag would be worse than no flag."""
+        argv = _launched_train_argv(monkeypatch, train_args="--train-backend fsdp", config=ExecuteTrainConfig())
+
+        assert "--run-uuid" not in argv
+
+    def test_train_arguments_that_already_name_this_run_are_accepted(self, monkeypatch):
+        """The helm launcher sets the flag itself, and a launch agreeing with it is not a conflict."""
+        argv = _launched_train_argv(
+            monkeypatch,
+            train_args="--train-backend fsdp --run-uuid 0123456789abcdef",
+            config=ExecuteTrainConfig(run_uuid="0123456789abcdef"),
+        )
+
+        assert argv.count("--run-uuid") == 2
+
+    def test_refuses_train_arguments_that_name_another_run(self, monkeypatch):
+        """The uuid is what joins the parts of a split run, so two of them are two runs."""
+        with pytest.raises(AssertionError, match="--run-uuid"):
+            _launched_train_argv(
+                monkeypatch,
+                train_args="--train-backend fsdp --run-uuid fedcba9876543210",
+                config=ExecuteTrainConfig(run_uuid="0123456789abcdef"),
+            )
+
+    def test_the_component_and_instance_flags_are_still_appended_beside_it(self, monkeypatch):
+        """The run uuid joins a split run, and these two are what tell its halves apart."""
+        argv = _launched_train_argv(
+            monkeypatch,
+            train_args="--train-backend fsdp",
+            config=ExecuteTrainConfig(
+                run_uuid="0123456789abcdef", deploy_component=DeployComponent.TRAINER, deploy_instance_id="actor"
+            ),
+        )
+
+        assert argv[argv.index("--deploy-component") + 1] == "trainer"
+        assert argv[argv.index("--deploy-instance-id") + 1] == "actor"
+        assert argv[argv.index("--run-uuid") + 1] == "0123456789abcdef"
