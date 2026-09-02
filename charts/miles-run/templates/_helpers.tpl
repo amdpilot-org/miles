@@ -49,6 +49,10 @@ affinity:
 {{- define "miles-run.podDefaultsWithAntiAffinity" -}}
 {{- $context := .context -}}
 {{- $scheduling := $context.Values.infra.scheduling | default dict -}}
+{{- $affinity := deepCopy ($scheduling.affinity | default dict) -}}
+{{- $antiAffinity := $affinity.podAntiAffinity | default dict -}}
+{{- $required := concat (.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | default list) ($antiAffinity.requiredDuringSchedulingIgnoredDuringExecution | default list) -}}
+{{- $_ := set $affinity "podAntiAffinity" (set $antiAffinity "requiredDuringSchedulingIgnoredDuringExecution" $required) -}}
 enableServiceLinks: false
 {{- with include "miles-common.imagePullSecrets" $context }}
 {{ . }}
@@ -62,7 +66,7 @@ tolerations:
   {{- toYaml . | nindent 2 }}
 {{- end }}
 affinity:
-  {{- toYaml (merge (dict "podAntiAffinity" .podAntiAffinity) (deepCopy ($scheduling.affinity | default dict))) | nindent 2 }}
+  {{- toYaml $affinity | nindent 2 }}
 {{- end }}
 
 {{- /* Every container of the release: the run's own identity, from which a worker that has to
