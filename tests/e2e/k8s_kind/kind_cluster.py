@@ -1,6 +1,7 @@
 # doc-dev: docs/developer/reconcile-loop.md
 from __future__ import annotations
 
+import hashlib
 import logging
 import platform
 import shutil
@@ -17,6 +18,12 @@ _READY_TIMEOUT = "180s"
 
 _KIND_VERSION = "v0.32.0"
 _KIND_CACHE_DIR = Path.home() / ".cache" / "miles" / "bin"
+_KIND_SHA256 = {
+    "linux-amd64": "50030de23cf40a18505f20426f6a8506bedf13c6e509244bd1fa9463721b0f54",
+    "linux-arm64": "b92cd615e97585de8ddade28ed5cd7feb4248d717c233eea5b03c37298900f5d",
+    "darwin-amd64": "295ac6d0d634c9819c9907df45e3017d1f13166bd13c3404c45e79f7faa47498",
+    "darwin-arm64": "dca67911095a110c2b5c36e26df6cac860c602033e456c0db47be498cdef1ebb",
+}
 
 
 @dataclass(frozen=True)
@@ -48,12 +55,18 @@ def _resolve_kind_binary() -> str:
 
 
 def _download_kind(destination: Path) -> None:
-    url = f"https://kind.sigs.k8s.io/dl/{_KIND_VERSION}/kind-{_host_os()}-{_host_arch()}"
+    platform_key = f"{_host_os()}-{_host_arch()}"
+    expected_digest = _KIND_SHA256[platform_key]
+    url = f"https://kind.sigs.k8s.io/dl/{_KIND_VERSION}/kind-{platform_key}"
     logger.warning(f"kind is not installed, downloading it once {url=} {destination=}")
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     partial = destination.with_suffix(".partial")
     urllib.request.urlretrieve(url, partial)
+    actual_digest = hashlib.sha256(partial.read_bytes()).hexdigest()
+    assert (
+        actual_digest == expected_digest
+    ), f"downloaded kind does not match its pinned digest {url=} {expected_digest=} {actual_digest=}"
     partial.chmod(0o755)
     partial.replace(destination)
 
