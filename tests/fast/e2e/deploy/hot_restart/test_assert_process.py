@@ -1,6 +1,7 @@
 import pytest
 from tests.e2e.deploy.conftest_deploy.hot_restart.assert_process import (
     _compute_trainer_boot_uuids,
+    assert_a_baseline_was_read_before_the_first_take_over,
     assert_the_run_was_watched_closely_enough,
     assert_the_trainer_never_rebooted,
 )
@@ -80,6 +81,39 @@ class TestAssertTheRunWasWatchedCloselyEnough:
         assert_the_run_was_watched_closely_enough(
             evidence_of(snapshots=two_restarts(), records=[], observation_attempts=0)
         )
+
+
+class TestAssertABaselineWasReadBeforeTheFirstTakeOver:
+    def test_an_unstamped_snapshot_carrying_the_trainer_uuid_passes(self):
+        """The identity a take-over must preserve is only known from before it landed."""
+        assert_a_baseline_was_read_before_the_first_take_over(evidence_of(snapshots=two_restarts(), records=[]))
+
+    def test_a_run_first_observed_after_a_take_over_fails(self):
+        """Counting from the first take-over's snapshot makes the identity it installed the baseline."""
+        snapshots = [restarted_snapshot(stamp="t1", uid_suffix="2"), restarted_snapshot(stamp="t2", uid_suffix="3")]
+
+        with pytest.raises(AssertionError, match="before the first take-over"):
+            assert_a_baseline_was_read_before_the_first_take_over(evidence_of(snapshots=snapshots, records=[]))
+
+    def test_a_baseline_whose_trainer_was_never_reached_fails(self):
+        """A baseline without the trainer uuid cannot say the trainer outlived the first script."""
+        snapshots = [
+            quiet_run_snapshot().model_copy(update={"trainer_boot_uuid": None}),
+            restarted_snapshot(stamp="t1", uid_suffix="2"),
+        ]
+
+        with pytest.raises(AssertionError, match="before the first take-over"):
+            assert_a_baseline_was_read_before_the_first_take_over(evidence_of(snapshots=snapshots, records=[]))
+
+    def test_a_baseline_read_from_a_release_nothing_could_list_fails(self):
+        """A read that failed looks exactly like a release whose workloads were not there yet."""
+        snapshots = [
+            quiet_run_snapshot().model_copy(update={"reads_missing": (POD_KIND,)}),
+            restarted_snapshot(stamp="t1", uid_suffix="2"),
+        ]
+
+        with pytest.raises(AssertionError, match="before the first take-over"):
+            assert_a_baseline_was_read_before_the_first_take_over(evidence_of(snapshots=snapshots, records=[]))
 
 
 class TestComputeTrainerBootUuids:

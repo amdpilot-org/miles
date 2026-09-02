@@ -75,7 +75,8 @@ Entries: test_hot_restart_checkpointed.py, test_hot_restart_no_checkpoint.py
 2. Assert workloads: only orchestrator + rollout-executor rolled (pod uid / restartCount / stamps);
    compare canonical PodTemplate fingerprints for every workload because a controller may advance the generation of
    an unchanged custom resource
-3. Assert process: one trainer rpc boot uuid throughout, answering the take-over's fresh client
+3. Assert process: one trainer rpc boot uuid throughout, answering the take-over's fresh client, and
+   read once off a whole-release snapshot taken before the first take-over stamped anything
 4. Assert redo, measured off the logs, per mode:
    - checkpointed: one .trash_* per restart; resume point == the pinned save (the snapshot
      beside that checkpoint), so the run resumed there, not at step 0; the redone steps are
@@ -113,7 +114,8 @@ Load-bearing: adds --save/--load and --save-interval 3 (bounds one take-over's c
 3. Assert: >= MIN_HOT_RESTARTS take-overs landed; no injection attempt failed; every relaunch
    thread finished without raising (where the run's own metric verdict surfaces); each landed
    take-over stamped orchestrator and rollout-executor once; no other workload rolled or lost a
-   pod; one trainer boot uuid throughout; no take-over threw away more than one save interval
+   pod; one trainer boot uuid throughout, first read before any take-over stamped a workload; no
+   take-over threw away more than one save interval
 4. Artifact: per take-over cost (index, checkpoint held, step reached) in
    <dump_dir>/hot_restart/evidence.json
 

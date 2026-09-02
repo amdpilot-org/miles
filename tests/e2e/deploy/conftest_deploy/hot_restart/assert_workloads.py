@@ -1,6 +1,7 @@
 from collections.abc import Iterable, Sequence
 
 from tests.e2e.deploy.conftest_deploy.hot_restart.assert_process import (
+    assert_a_baseline_was_read_before_the_first_take_over,
     assert_the_run_was_watched_closely_enough,
     assert_the_trainer_never_rebooted,
 )
@@ -23,6 +24,7 @@ def assert_the_take_overs_replaced_only_the_script(
     )
 
     assert_the_run_was_watched_closely_enough(evidence)
+    assert_a_baseline_was_read_before_the_first_take_over(evidence)
     assert_only_the_orchestration_side_restarted(evidence, num_restarts=num_restarts)
     assert_the_trainer_never_rebooted(evidence)
 

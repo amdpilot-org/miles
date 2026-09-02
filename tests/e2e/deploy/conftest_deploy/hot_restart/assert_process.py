@@ -24,6 +24,20 @@ def assert_the_run_was_watched_closely_enough(evidence: HotRestartEvidence) -> N
         )
 
 
+def assert_a_baseline_was_read_before_the_first_take_over(evidence: HotRestartEvidence) -> None:
+    stamped_at = min(
+        _compute_first_snapshot_index_of_stamp(evidence.snapshots).values(), default=len(evidence.snapshots)
+    )
+
+    assert any(
+        one.describes_the_whole_release and one.workloads and one.trainer_boot_uuid is not None
+        for one in evidence.snapshots[:stamped_at]
+    ), (
+        f"none of the {stamped_at} observation(s) before the first take-over read the whole release and reached "
+        f"the trainer's rpc server"
+    )
+
+
 def assert_the_trainer_never_rebooted(evidence: HotRestartEvidence) -> None:
     boot_uuids = _compute_trainer_boot_uuids(evidence.snapshots)
     assert boot_uuids, (
