@@ -5,6 +5,7 @@ import logging
 import threading
 import traceback
 from collections.abc import Awaitable, Callable, Coroutine, Sequence
+from contextlib import AsyncExitStack
 from typing import Any, TypeVar
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,7 @@ __all__ = [
     "eager_create_task",
     "gather_and_raise_first",
     "maybe_await",
+    "with_exit_stack",
 ]
 
 _T = TypeVar("_T")
@@ -166,3 +168,8 @@ async def gather_and_raise_first(
 
 async def maybe_await(value: Awaitable[_T] | _T) -> _T:
     return await value if inspect.isawaitable(value) else value
+
+
+async def with_exit_stack(fn: Callable[..., Awaitable[_T]], *args: Any, **kwargs: Any) -> _T:
+    async with AsyncExitStack() as disposer:
+        return await fn(*args, disposer=disposer, **kwargs)

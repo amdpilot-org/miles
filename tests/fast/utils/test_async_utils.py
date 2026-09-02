@@ -5,6 +5,7 @@ import concurrent.futures
 import logging
 import threading
 import time
+from contextlib import AsyncExitStack
 
 import pytest
 
@@ -15,6 +16,7 @@ from miles.utils.async_utils import (
     eager_create_task,
     maybe_await,
     wait_cancelling_pending_on_first_completion,
+    with_exit_stack,
 )
 
 
@@ -637,6 +639,37 @@ class TestGetAsyncLoop:
         first = async_utils.get_async_loop()
 
         assert async_utils.get_async_loop() is first
+
+
+class TestWithExitStack:
+    async def test_what_the_body_registered_is_released_in_reverse_once_it_returns(self):
+        """The later object was built on the earlier one, so releasing it first is the only safe order."""
+        events: list[str] = []
+
+        async def body(label: str, *, disposer: AsyncExitStack, suffix: str) -> str:
+            async def release(name: str) -> None:
+                events.append(name)
+
+            disposer.callback(events.append, "first")
+            disposer.push_async_callback(release, "second")
+            events.append("body")
+            return label + suffix
+
+        assert await with_exit_stack(body, "driver", suffix="!") == "driver!"
+        assert events == ["body", "second", "first"]
+
+    async def test_what_the_body_registered_is_released_when_the_body_raises(self):
+        """The exit path nobody wrote code for is the one that used to leave the whole run behind."""
+        events: list[str] = []
+
+        async def body(*, disposer: AsyncExitStack) -> None:
+            disposer.callback(events.append, "released")
+            raise ValueError("training failed")
+
+        with pytest.raises(ValueError, match="training failed"):
+            await with_exit_stack(body)
+
+        assert events == ["released"]
 
 
 class TestMaybeAwait:
