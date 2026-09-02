@@ -688,3 +688,53 @@ class TestMaybeAwait:
 
         assert await maybe_await(dispose()) == "done"
         assert finished
+
+
+class _ErrorWithoutAddNote(Exception):
+    def __getattribute__(self, name: str):
+        if name == "add_note":
+            raise AttributeError(name)
+        return super().__getattribute__(name)
+
+
+class TestKeepingASecondaryFailureWhereNotesDoNotExist:
+    def test_a_secondary_failure_is_logged_when_the_primary_cannot_carry_notes(self, caplog):
+        """On 3.10 the annotation raised AttributeError from the error path and replaced the failure it described."""
+        primary = _ErrorWithoutAddNote("training failed")
+
+        with caplog.at_level(logging.ERROR):
+            async_utils._exception_add_note_or_log(primary, "RuntimeError: cleanup")
+
+        assert "RuntimeError: cleanup" in caplog.text
+
+    def test_a_primary_that_can_carry_notes_is_annotated_rather_than_logged(self, caplog):
+        """On 3.11 and later the note travels with the exception, which is where a caller reads it."""
+        primary = ValueError("training failed")
+
+        with caplog.at_level(logging.ERROR):
+            async_utils._exception_add_note_or_log(primary, "RuntimeError: cleanup")
+
+        assert any("RuntimeError: cleanup" in note for note in primary.__notes__)
+        assert caplog.text == ""
+
+    async def test_the_primary_failure_still_reaches_the_caller_unreplaced(self, caplog):
+        """Annotating the failure must never be able to become the failure the run reports."""
+
+        async def cleanup_failure():
+            try:
+                await asyncio.sleep(30)
+            except asyncio.CancelledError:
+                raise RuntimeError("cleanup exploded") from None
+
+        async def primary_failure():
+            await asyncio.sleep(0.01)
+            raise _ErrorWithoutAddNote("training failed")
+
+        with caplog.at_level(logging.ERROR):
+            with pytest.raises(_ErrorWithoutAddNote, match="training failed"):
+                await wait_cancelling_pending_on_first_completion(
+                    [asyncio.create_task(cleanup_failure()), asyncio.create_task(primary_failure())]
+                )
+
+        assert "Additional task failure while cancelling peers" in caplog.text
+        assert "RuntimeError: cleanup exploded" in caplog.text
