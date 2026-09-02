@@ -1,5 +1,5 @@
 {{- if .Values.rbac.create }}
-{{- $name := .Values.uninstaller.serviceAccount }}
+{{- $name := include "miles-common.uninstallerServiceAccountName" . }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:

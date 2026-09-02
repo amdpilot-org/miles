@@ -14,6 +14,13 @@
 {{- default (include "miles-workbench.fullname" .) .Values.serviceAccount.name }}
 {{- end }}
 
+{{- define "miles-workbench.assertServiceAccountNameIsFree" -}}
+{{- $uninstaller := include "miles-common.uninstallerServiceAccountName" . -}}
+{{- if and .Values.rbac.create (eq (include "miles-workbench.serviceAccountName" .) $uninstaller) }}
+{{- fail (printf "serviceAccount.name is %s, which is the fixed name of the account a finished run uninstalls itself as: two ServiceAccounts of that one name cannot both be created, and the workbench account must outlive the runs it launches" $uninstaller) }}
+{{- end }}
+{{- end }}
+
 {{- define "miles-workbench.roleRules" -}}
 - apiGroups: [""]
   resources: ["configmaps", "secrets", "serviceaccounts", "services"]

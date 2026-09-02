@@ -9,6 +9,7 @@ from tests.fast.charts.utils import (
     objects_of_kind,
     pod_spec,
     render,
+    render_error,
     render_run,
     requires_helm,
 )
@@ -145,6 +146,19 @@ class TestRbacTemplates:
         assert named_object(objects, "RoleBinding", UNINSTALLER_SERVICE_ACCOUNT)["roleRef"]["name"] == (
             UNINSTALLER_SERVICE_ACCOUNT
         )
+
+    def test_the_workbench_account_may_not_take_the_uninstaller_name(self):
+        """One name cannot be two ServiceAccounts, and the uninstaller has to outlive the release that made it."""
+        error = render_error("--set", f"serviceAccount.name={UNINSTALLER_SERVICE_ACCOUNT}")
+
+        assert UNINSTALLER_SERVICE_ACCOUNT in error
+
+    def test_a_precreated_account_may_carry_both_roles_when_the_chart_creates_none(self):
+        """With rbac.create=false the chart creates no account, so one administrator-owned account can serve both."""
+        objects = render("--set", "rbac.create=false", "--set", f"serviceAccount.name={UNINSTALLER_SERVICE_ACCOUNT}")
+
+        assert objects_of_kind(objects, "ServiceAccount") == []
+        assert pod_spec(objects)["serviceAccountName"] == UNINSTALLER_SERVICE_ACCOUNT
 
     def test_the_uninstaller_covers_every_kind_a_run_release_owns(self):
         """helm uninstall stops at the first kind it may not delete, and leaves the release half removed."""

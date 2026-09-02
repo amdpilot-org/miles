@@ -48,7 +48,6 @@ run:
   env: {}
   autoUninstall:
     enabled: true
-    serviceAccount: miles-uninstaller
   mooncake:
     enabled: false
     rpcPort: 50051

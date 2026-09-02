@@ -142,13 +142,14 @@ class TestUninstallerAccountName:
 
         assert run_default["enabled"] is True
 
-    def test_both_charts_default_to_the_one_name_python_knows(self):
-        """The workbench creates that account and a run's job runs as it, so a drift would 403 every uninstall."""
-        run_default = yaml.safe_load((RUN_CHART_DIR / "values.yaml").read_text())["run"]["autoUninstall"]
-        workbench_default = yaml.safe_load((CHART_DIR / "values.yaml").read_text())["uninstaller"]
-
-        assert run_default["serviceAccount"] == UNINSTALLER_SERVICE_ACCOUNT
-        assert workbench_default["serviceAccount"] == UNINSTALLER_SERVICE_ACCOUNT
+    @requires_helm
+    def test_neither_chart_lets_values_move_that_name(self):
+        """The workbench creates that account and a run's job runs as it, so a values-only drift would 403 it."""
+        assert (
+            "serviceAccount" not in yaml.safe_load((RUN_CHART_DIR / "values.yaml").read_text())["run"]["autoUninstall"]
+        )
+        assert "uninstaller" not in yaml.safe_load((CHART_DIR / "values.yaml").read_text())
+        assert _rendered_job()["spec"]["template"]["spec"]["serviceAccountName"] == UNINSTALLER_SERVICE_ACCOUNT
 
     def test_the_tests_and_the_code_agree_on_that_name(self):
         """Every assertion here is written against the constant the launcher and the charts actually use."""

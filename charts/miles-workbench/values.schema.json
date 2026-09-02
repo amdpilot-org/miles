@@ -37,9 +37,6 @@
     },
     "serviceAccount": {
       "$ref": "#/definitions/ServiceAccountSection"
-    },
-    "uninstaller": {
-      "$ref": "#/definitions/Uninstaller"
     }
   },
   "definitions": {
@@ -269,18 +266,6 @@
         "name": {
           "maxLength": 253,
           "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)?$",
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "Uninstaller": {
-      "additionalProperties": false,
-      "properties": {
-        "serviceAccount": {
-          "maxLength": 63,
-          "minLength": 1,
-          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
           "type": "string"
         }
       },

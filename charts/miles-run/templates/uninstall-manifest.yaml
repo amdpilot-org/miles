@@ -25,7 +25,7 @@ data:
             miles.radixark.io/uninstall-of: {{ .Release.Name | quote }}
         spec:
           {{- include "miles-run.podDefaults" . | nindent 10 }}
-          serviceAccountName: {{ .Values.run.autoUninstall.serviceAccount | quote }}
+          serviceAccountName: {{ include "miles-common.uninstallerServiceAccountName" . | quote }}
           restartPolicy: Never
           containers:
             - name: uninstall

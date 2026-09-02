@@ -97,7 +97,6 @@ class ObjectNames(ValuesModel):
 
 class AutoUninstallSection(ValuesModel):
     enabled: bool
-    service_account: _ObjectName | None = None
 
 
 class OrchestratorSection(ValuesModel):
@@ -250,10 +249,6 @@ class ServiceAccountSection(ValuesModel):
     name: Annotated[str, Field(max_length=_KUBERNETES_NAME_MAX, pattern=_OPTIONAL_DNS_SUBDOMAIN)] | None = None
 
 
-class Uninstaller(ValuesModel):
-    service_account: _ObjectName | None = None
-
-
 class WorkbenchResources(ValuesModel):
     requests: dict[str, str | float] | None = None
     limits: dict[str, str | float] | None = None
@@ -272,4 +267,3 @@ class MilesWorkbenchChartValues(ValuesModel):
     resources: WorkbenchResources | None = None
     rbac: RbacSection | None = None
     service_account: ServiceAccountSection | None = None
-    uninstaller: Uninstaller | None = None
