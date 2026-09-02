@@ -325,6 +325,21 @@ def _compute_arg_spec(action: argparse.Action) -> _ArgSpec:
 
 
 @contextlib.contextmanager
+def with_suppressed_parser_help(parser: argparse.ArgumentParser) -> Iterator[None]:
+    suppressed = {
+        option: action
+        for option, action in parser._option_string_actions.items()
+        if isinstance(action, argparse._HelpAction)
+    }
+    for option in suppressed:
+        del parser._option_string_actions[option]
+    try:
+        yield
+    finally:
+        parser._option_string_actions.update(suppressed)
+
+
+@contextlib.contextmanager
 def with_relax_parser_required_args(parser: argparse.ArgumentParser) -> Iterator[None]:
     required = [action for action in parser._actions if action.required]
     for action in required:
