@@ -8,6 +8,19 @@ import signal
 import sys
 from types import FrameType
 
+_FORWARDED_SIGNALS = (signal.SIGTERM, signal.SIGINT)
+
+
+def _exit_before_anything_was_spawned(signum: int, frame: FrameType | None) -> None:
+    notice = f"[process_supervisor] Received {signal.Signals(signum).name} before any subprocess was spawned\n"
+    os.write(sys.stderr.fileno(), notice.encode())
+    os._exit(128 + signum)
+
+
+if __name__ == "__main__":
+    for _forwarded_signal in _FORWARDED_SIGNALS:
+        signal.signal(_forwarded_signal, _exit_before_anything_was_spawned)
+
 from torch.distributed.elastic.multiprocessing import DefaultLogsSpecs, Std, start_processes
 from torch.distributed.elastic.multiprocessing.api import RunProcsResult, SignalException
 
@@ -16,7 +29,6 @@ from miles.utils.workers.env_vars import SUBPROCESS_INDEX_ENV_VAR
 logger = logging.getLogger(__name__)
 
 _DEFAULT_TERMINATION_GRACE_PERIOD_SECONDS = 20.0
-_FORWARDED_SIGNALS = (signal.SIGTERM, signal.SIGINT)
 _SIGNALS_TO_HANDLE_ENV_VAR = "TORCHELASTIC_SIGNALS_TO_HANDLE"
 _SUPERVISED_SUBPROCESS_NAME = "miles_supervised_subprocess"
 

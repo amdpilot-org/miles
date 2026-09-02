@@ -1051,5 +1051,84 @@ def _sleep_forever() -> None:
         time.sleep(3600)
 
 
+BLOCKED_TORCH_SCRIPT = """
+import runpy
+import sys
+import time
+from importlib.abc import MetaPathFinder
+from pathlib import Path
+
+
+class _BlockTorch(MetaPathFinder):
+    def find_spec(self, name, path=None, target=None):
+        if name == "torch" or name.startswith("torch."):
+            Path(sys.argv[1]).touch()
+            time.sleep(3600)
+        return None
+
+
+sys.meta_path.insert(0, _BlockTorch())
+runpy.run_module("miles.utils.workers.process_supervisor", run_name="__main__")
+"""
+
+
+def _signal_the_supervisor_before_torch(tmp_path: Path, sent_signal: signal.Signals) -> tuple[int, str]:
+    script = tmp_path / "blocked_supervisor.py"
+    script.write_text(BLOCKED_TORCH_SCRIPT)
+    marker = tmp_path / "importing-torch"
+
+    process = subprocess.Popen(
+        [sys.executable, str(script), str(marker)],
+        cwd=REPO_ROOT,
+        env=_repo_environment(),
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        wait_until(marker.exists, message="the supervisor to reach its torch import")
+        process.send_signal(sent_signal)
+        _, errors = process.communicate(timeout=SUPERVISOR_EXIT_TIMEOUT_SECONDS)
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.communicate()
+
+    return process.returncode, errors
+
+
+class TestASignalThatArrivesBeforeTorchIsImported:
+    @pytest.mark.parametrize("sent_signal", [signal.SIGTERM, signal.SIGINT])
+    def test_the_supervisor_exits_rather_than_waiting_for_the_kubelet_to_kill_it(self, tmp_path, sent_signal):
+        """Importing torch, parsing arguments and configuring logging all happen before torch handles signals."""
+        returncode, _ = _signal_the_supervisor_before_torch(tmp_path, sent_signal)
+
+        assert returncode == 128 + sent_signal
+
+    def test_it_says_which_signal_ended_it_and_that_nothing_had_been_spawned(self, tmp_path):
+        """A pod that vanished in its first seconds leaves nothing else to explain why."""
+        _, errors = _signal_the_supervisor_before_torch(tmp_path, signal.SIGTERM)
+
+        assert "[process_supervisor] Received SIGTERM before any subprocess was spawned" in errors
+
+    def test_the_handler_answers_both_signals_a_stopped_pod_is_sent(self):
+        """SIGTERM is what the kubelet sends and SIGINT is what a terminal sends; either has to be answered."""
+        assert supervisor_module._FORWARDED_SIGNALS == (signal.SIGTERM, signal.SIGINT)
+
+    def test_the_handler_exits_with_the_code_the_signal_names(self, monkeypatch, capfd):
+        """128 plus the signal number is what a shell reads back as death by that signal."""
+        exits: list[int] = []
+        monkeypatch.setattr(supervisor_module.os, "_exit", lambda code: exits.append(code))
+
+        supervisor_module._exit_before_anything_was_spawned(signal.SIGINT, None)
+
+        assert exits == [128 + signal.SIGINT]
+        assert "Received SIGINT" in capfd.readouterr().err
+
+    def test_importing_the_supervisor_touches_nobody_elses_signal_dispositions(self):
+        """This module is imported by tests and tools that install handlers of their own."""
+        for forwarded in (signal.SIGTERM, signal.SIGINT):
+            assert signal.getsignal(forwarded) is not supervisor_module._exit_before_anything_was_spawned
+
+
 if __name__ == "__main__":
     sys.exit(_child_main())
