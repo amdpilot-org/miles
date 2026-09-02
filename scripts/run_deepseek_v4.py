@@ -290,7 +290,7 @@ def _prepare_mxfp8(args: ScriptArgs):
     U = args.create_backend()
     if not args.rollout_mxfp8:
         return
-    assert U.GENERATION_HARDWARE[args.hardware] == "Blackwell", "rollout_mxfp8 requires Blackwell"
+    assert command_utils.GENERATION_HARDWARE[args.hardware] == "Blackwell", "rollout_mxfp8 requires Blackwell"
     U.exec_command_gpu(
         f"python tools/convert_hf_to_mxfp8.py "
         f"--model-dir {args.model_dir}/{args.bf16_name} "
@@ -445,7 +445,7 @@ def _get_parallel_config(args: ScriptArgs) -> str:
 def _train(args: ScriptArgs):
     U = args.create_backend()
     if args.train_mxfp8 or args.rollout_mxfp8:
-        assert U.GENERATION_HARDWARE[args.hardware] == "Blackwell", "MXFP8 requires Blackwell"
+        assert command_utils.GENERATION_HARDWARE[args.hardware] == "Blackwell", "MXFP8 requires Blackwell"
     if not args.rollout_fp8 or args.hf_checkpoint is None or args.model_name in _MXFP4_MODEL_NAMES:
         rollout_checkpoint = f"{args.model_local_dir}/{args.rollout_name}"
         if args.hf_checkpoint != rollout_checkpoint:
