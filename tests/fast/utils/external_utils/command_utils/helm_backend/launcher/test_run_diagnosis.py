@@ -99,3 +99,33 @@ class TestTheSelectorItDescribesWith:
     def test_stays_an_equality_for_an_unsplit_run(self):
         """An all-in-one run has one release, and the plain selector is what its snapshots already carry."""
         assert Kubectl.releases_selector([PRIMARY]) == Kubectl.release_selector(PRIMARY)
+
+
+# Legal for helm, but not for miles: the run id is one character longer than the naming rules allow.
+UNPARSABLE_NEIGHBOUR = "miles-run-" + "a" * 34 + "-all"
+
+
+class TestAReleaseTheMilesRulesCannotRead:
+    def test_it_belongs_to_no_run(self):
+        """ReleaseName.parse builds a validated model, so such a name raised out of the candidate loop."""
+        assert entrypoint._belongs_to_run(UNPARSABLE_NEIGHBOUR, run_id=RUN_ID) is False
+
+    def test_a_release_of_another_naming_scheme_belongs_to_no_run(self):
+        """A namespace holds releases of other charts, and none of them is part of this run."""
+        assert entrypoint._belongs_to_run("someone-elses-release", run_id=RUN_ID) is False
+
+    def test_a_release_of_this_run_still_belongs_to_it(self):
+        """Reading an unreadable name as belonging to nothing may not cost the readable ones."""
+        assert entrypoint._belongs_to_run(PRIMARY, run_id=RUN_ID) is True
+
+    def test_such_a_neighbour_does_not_replace_the_diagnosis_of_the_failed_run(self, monkeypatch):
+        """That loop runs outside both try blocks, so one neighbour replaced the diagnosis with a traceback."""
+        _helm_listing(monkeypatch, [PRIMARY, TRAINER, UNPARSABLE_NEIGHBOUR])
+
+        assert entrypoint._releases_of_run(release=PRIMARY, namespace="rl") == sorted([PRIMARY, TRAINER])
+
+    def test_such_a_neighbour_is_not_diagnosed_as_part_of_the_run(self, monkeypatch):
+        """Describing someone else's pods reads an experiment this run has nothing to do with."""
+        _helm_listing(monkeypatch, [PRIMARY, UNPARSABLE_NEIGHBOUR])
+
+        assert UNPARSABLE_NEIGHBOUR not in entrypoint._releases_of_run(release=PRIMARY, namespace="rl")
