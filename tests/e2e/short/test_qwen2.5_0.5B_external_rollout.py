@@ -82,7 +82,7 @@ def _external_engines(config: command_utils.ExecuteTrainConfig) -> _ExternalEngi
         case ClusterBackend.RAY:
             return _engines_started_beside_the_trainer()
         case ClusterBackend.KUBERNETES:
-            return _engines_installed_beside_the_run(config.helm_values)
+            return _engines_installed_beside_the_run(config)
 
 
 def _object_store_args(config: command_utils.ExecuteTrainConfig) -> str:
@@ -192,11 +192,12 @@ def _engines_started_beside_the_trainer() -> _ExternalEngines:
     )
 
 
-def _engines_installed_beside_the_run(helm_values: tuple[str, ...]) -> _ExternalEngines:
+def _engines_installed_beside_the_run(config: command_utils.ExecuteTrainConfig) -> _ExternalEngines:
+    object_name = f"{ENGINE_OBJECT_NAME}-{config.run_id}"
     return _ExternalEngines(
-        addrs=[f"{ENGINE_OBJECT_NAME}-{index}.{ENGINE_OBJECT_NAME}:{ENGINE_PORT}" for index in range(NUM_ENGINES)],
+        addrs=[f"{object_name}-{index}.{object_name}:{ENGINE_PORT}" for index in range(NUM_ENGINES)],
         prepare_cmd={},
-        extra_manifests=[_engine_manifests(_infra_values(helm_values))],
+        extra_manifests=[_engine_manifests(_infra_values(config.helm_values), object_name=object_name)],
     )
 
 
@@ -239,7 +240,7 @@ def _engine_argv(port: int) -> list[str]:
 # ===== Kubernetes manifests for those engines =====
 
 
-def _engine_manifests(infra: InfraValues) -> str:
+def _engine_manifests(infra: InfraValues, *, object_name: str) -> str:
     scheduling = infra.scheduling
 
     pod_fields: dict[str, Any] = {
@@ -259,11 +260,11 @@ def _engine_manifests(infra: InfraValues) -> str:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {ENGINE_OBJECT_NAME}
+  name: {object_name}
 spec:
   clusterIP: "None"
   selector:
-    app: {ENGINE_OBJECT_NAME}
+    app: {object_name}
   ports:
     - name: http
       port: {ENGINE_PORT}
@@ -272,18 +273,18 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {ENGINE_OBJECT_NAME}
+  name: {object_name}
 spec:
   replicas: {NUM_ENGINES}
-  serviceName: {ENGINE_OBJECT_NAME}
+  serviceName: {object_name}
   podManagementPolicy: Parallel
   selector:
     matchLabels:
-      app: {ENGINE_OBJECT_NAME}
+      app: {object_name}
   template:
     metadata:
       labels:
-        app: {ENGINE_OBJECT_NAME}
+        app: {object_name}
     spec:
 {_yaml_block(pod_fields, indent=6)}\
       containers:
