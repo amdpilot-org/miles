@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.fast.fixtures.megatron_config_fixtures import encode_megatron_config
+
 from miles.utils.audit_utils.event_logger import checkpoint as event_logger_checkpoint
 
 
@@ -14,12 +16,14 @@ def _args(
     save: Path | None = None,
     load: Path | None = None,
     requested_load: Path | None = None,
+    megatron_config: str | None = None,
 ) -> Namespace:
     return Namespace(
         save_debug_event_data=str(event_dir) if event_dir else None,
         save=str(save) if save else None,
         load=str(load) if load else None,
         requested_load=str(one) if (one := requested_load or load) else None,
+        megatron_config=megatron_config,
     )
 
 
@@ -45,6 +49,21 @@ class TestSnapshotRestoreRoundtrip:
 
         assert (events / "main.jsonl").read_text() == "committed\n"
         assert not (events / "straggler.jsonl").exists()
+
+    def test_a_named_trainer_restores_from_the_tracker_in_its_own_namespace(self, tmp_path: Path) -> None:
+        """Such a run writes every trainer's checkpoints, tracker included, under `<save>/trainers/<trainer_id>/`."""
+        ckpt = tmp_path / "ckpt"
+        events = tmp_path / "events"
+        events.mkdir()
+        (events / "main.jsonl").write_text("committed\n")
+        config = encode_megatron_config("policy")
+        event_logger_checkpoint.snapshot(_args(event_dir=events, save=ckpt, megatron_config=config), iteration=3)
+
+        (events / "main.jsonl").write_text("committed\nrewound-future\n")
+        _write_tracker(ckpt / "trainers" / "policy-actor", "3")
+        event_logger_checkpoint.restore(_args(event_dir=events, load=ckpt, megatron_config=config))
+
+        assert (events / "main.jsonl").read_text() == "committed\n"
 
     def test_snapshot_overwrites_previous_snapshot_of_same_iteration(self, tmp_path: Path) -> None:
         """Re-saving the same iteration replaces its snapshot."""
@@ -104,6 +123,21 @@ class TestNoOpCases:
         (events / "main.jsonl").write_text("keep\n")
 
         event_logger_checkpoint.restore(_args(event_dir=events, load=ckpt))
+
+        assert (events / "main.jsonl").read_text() == "keep\n"
+
+    def test_restore_of_a_named_trainer_ignores_a_tracker_left_at_the_root(self, tmp_path: Path) -> None:
+        """The cursor such a run rewinds to is its own, so a root tracker is some other layout's."""
+        ckpt = tmp_path / "ckpt"
+        _write_tracker(ckpt, "3")
+        events = tmp_path / "events"
+        events.mkdir()
+        (events / "main.jsonl").write_text("keep\n")
+        (ckpt / "iter_0000003" / "debug_events").mkdir(parents=True)
+
+        event_logger_checkpoint.restore(
+            _args(event_dir=events, load=ckpt, megatron_config=encode_megatron_config("policy"))
+        )
 
         assert (events / "main.jsonl").read_text() == "keep\n"
 
