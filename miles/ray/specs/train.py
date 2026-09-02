@@ -131,6 +131,7 @@ def _compute_spec_trainer_controller(
                 run_uuid=args.run_uuid,
                 deploy_component=args.deploy_component,
                 deploy_instance_id=args.deploy_instance_id,
+                trainer_id=trainer_id,
             ),
             trainer_id=trainer_id,
             role=config.role,
