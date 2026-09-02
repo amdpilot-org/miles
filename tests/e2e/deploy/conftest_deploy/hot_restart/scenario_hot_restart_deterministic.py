@@ -1,6 +1,7 @@
 import dataclasses
 import hashlib
 import shlex
+import shutil
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -261,6 +262,8 @@ def _driving_the_take_overs_of(
     # TODO ad hoc hack: revert after the args refactor
     plan_path = compute_freeze_plan_path(dump_dir)
 
+    _discard_dumps_of_previous_run(dump_dir)
+
     def relaunch(frozen_rollout_id: int | None) -> None:
         write_freeze_plan(plan_path, frozen_rollout_id=frozen_rollout_id)
         relaunch_with_hot_restart(
@@ -282,6 +285,10 @@ def _driving_the_take_overs_of(
         yield
 
     driver.assert_every_restart_happened()
+
+
+def _discard_dumps_of_previous_run(dump_dir: str) -> None:
+    shutil.rmtree(dump_dir, ignore_errors=True)
 
 
 # ========================= comparison and assertions ==========================
