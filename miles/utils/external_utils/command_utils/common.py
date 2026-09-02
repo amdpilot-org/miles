@@ -11,7 +11,7 @@ import shlex
 import socket
 import subprocess
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from miles.utils.external_utils.model_args_utils import load_model_args
 from miles.utils.file_arg_utils import PSEUDO_FILE_PREFIX
@@ -135,17 +135,19 @@ def get_env_enable_infinite_run():
     return get_bool_env_var("MILES_TEST_ENABLE_INFINITE_RUN", "false")
 
 
+class _ArgvDeclaration(NamedTuple):
+    index: int
+    value: str
+
+
 class ArgvManipulator:
     @staticmethod
     def get(argv: list[str], flag: str) -> list[str]:
-        values: list[str] = []
-        for index, token in enumerate(argv):
-            if token == flag:
-                assert index + 1 < len(argv), f"{flag} is the last argument, so it names no value"
-                values.append(argv[index + 1])
-            elif token.startswith(f"{flag}="):
-                values.append(token.split("=", maxsplit=1)[1])
-        return values
+        return [declaration.value for declaration in _argv_declarations(argv, flag)]
+
+    @staticmethod
+    def get_effective(argv: list[str], flag: str) -> str | None:
+        return values[-1] if (values := ArgvManipulator.get(argv, flag)) else None
 
     @staticmethod
     def is_defined(argv: list[str], flag: str) -> bool:
@@ -153,12 +155,28 @@ class ArgvManipulator:
 
     @staticmethod
     def set(argv: list[str], flag: str, value: str) -> list[str]:
-        if not ArgvManipulator.is_defined(argv, flag):
+        declarations = _argv_declarations(argv, flag)
+        if not declarations:
             return [*argv, flag, value]
-        assert flag in argv, f"{flag} is written as {flag}=..., so there is no value token of it to replace"
+
+        last_index = declarations[-1].index
         rewritten = list(argv)
-        rewritten[rewritten.index(flag) + 1] = value
+        if rewritten[last_index] == flag:
+            rewritten[last_index + 1] = value
+        else:
+            rewritten[last_index] = f"{flag}={value}"
         return rewritten
+
+
+def _argv_declarations(argv: list[str], flag: str) -> list[_ArgvDeclaration]:
+    declarations: list[_ArgvDeclaration] = []
+    for index, token in enumerate(argv):
+        if token == flag:
+            assert index + 1 < len(argv), f"{flag} is the last argument, so it names no value"
+            declarations.append(_ArgvDeclaration(index=index, value=argv[index + 1]))
+        elif token.startswith(f"{flag}="):
+            declarations.append(_ArgvDeclaration(index=index, value=token.split("=", maxsplit=1)[1]))
+    return declarations
 
 
 MOONCAKE_MASTER_METRICS_PORT = 0

@@ -147,7 +147,7 @@ class BaseCommandBackend(ABC):
             train_script = f"{repo_base_dir}/{train_script}"
 
         train_argv = shlex.split(train_args)
-        train_backend_fsdp = "fsdp" in ArgvManipulator.get(train_argv, "--train-backend")
+        train_backend_fsdp = ArgvManipulator.get_effective(train_argv, "--train-backend") == "fsdp"
         assert train_backend_fsdp == (megatron_model_type is None)
         _assert_train_args_name_no_other_backend(train_argv, cluster_backend=config.cluster_backend.value)
         _assert_train_args_name_no_other_deploy_component(train_argv, deploy_component=config.deploy_component.value)
