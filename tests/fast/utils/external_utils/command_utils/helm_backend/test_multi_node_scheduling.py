@@ -63,6 +63,16 @@ class TestTheNodesACommandAsksFor:
 
         assert completions == [1]
 
+    def test_refuses_a_command_that_never_says_how_many_nodes_it_wants(self, monkeypatch):
+        """Ray reads that as every alive node; a Job would silently run a multi-node command on one node."""
+        completions = _record_completions(monkeypatch)
+        backend = _backend(())
+
+        with pytest.raises(AssertionError, match="pass num_nodes explicitly"):
+            backend.exec_command_multi_node("torchrun --nnodes={{nnodes}}", num_gpus_per_node=1)
+
+        assert completions == []
+
     def test_runs_a_multi_node_command_when_no_host_is_pinned(self, monkeypatch):
         """Without a host pin the backend keeps letting the scheduler place every completion."""
         completions = _record_completions(monkeypatch)
