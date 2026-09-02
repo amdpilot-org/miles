@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 
-from miles.utils.external_utils.miles_workbench.naming import object_name
 from miles.utils.external_utils.miles_workbench.options import InstallArgs
 from miles.utils.external_utils.miles_workbench.preflight.checkers import (
     BaseChecker,
@@ -81,35 +80,34 @@ def run_preflight_checks(args: InstallArgs) -> None:
     verdict.observe(grant_outcomes)
 
     if plan.creates_role:
-        _judge_the_grant(args, verdict=verdict, denied=_denied(grant_outcomes))
+        _judge_the_grant(args, plan=plan, verdict=verdict, denied=_denied(grant_outcomes))
 
     verdict.announce()
     if verdict.failed:
         raise SystemExit(1)
 
 
-def _judge_the_grant(args: InstallArgs, *, verdict: Verdict, denied: list[CheckOutcome]) -> None:
+def _judge_the_grant(args: InstallArgs, *, plan: RbacPlan, verdict: Verdict, denied: list[CheckOutcome]) -> None:
     message = f"may grant the workbench its Role in namespace {args.namespace}"
     if not denied:
         verdict.absorb_result(CheckResult(status=Status.PASS, message=message))
         return
 
     entries = _denied_entries(denied)
-    delegation = parallel_execute_checkers(
-        [RoleDelegationChecker(args.namespace, verb, object_name(args.release)) for verb in ("escalate", "bind")]
-    )
-    if all(outcome.result.status is Status.PASS for outcome in delegation):
+    undelegated = _roles_lacking_delegation(args.namespace, plan=plan, denied=denied)
+    if not undelegated:
         warn(
-            f"you do not hold every rule the chart grants (denied: {', '.join(entries)}), but you have "
-            "escalate and bind on roles, which is what Kubernetes checks when creating the Role and "
-            "its RoleBinding"
+            f"you do not hold every rule the chart grants (denied: {', '.join(entries)}), but for every Role "
+            "whose rules you lack you have escalate and bind on that Role, which is what Kubernetes checks "
+            "when creating it and its RoleBinding"
         )
         return
 
     verdict.absorb_result(
         CheckResult(
             status=Status.FAIL,
-            message=f"{message} (denied: {', '.join(entries)}; escalate and bind on roles would also do)",
+            message=f"{message} (denied: {', '.join(entries)}; escalate and bind on "
+            f"{', '.join(undelegated)} would also do)",
         )
     )
     if any("leaderworkersets" in outcome.checker.resource for outcome in denied):
@@ -117,6 +115,31 @@ def _judge_the_grant(args: InstallArgs, *, verdict: Verdict, denied: list[CheckO
             "A cluster admin must install the LWS CRDs and grant you the LeaderWorkerSet rights "
             "before this chart can grant them to the workbench"
         )
+
+
+def _roles_lacking_delegation(namespace: str, *, plan: RbacPlan, denied: list[CheckOutcome]) -> list[str]:
+    denied_verbs: dict[str, set[str]] = {}
+    for outcome in denied:
+        denied_verbs.setdefault(outcome.checker.resource, set()).add(outcome.checker.verb)
+
+    lacking = [
+        name
+        for name, rules in plan.granted_rules_by_role.items()
+        if any(verb in denied_verbs.get(resource, set()) for resource, verbs in rules.items() for verb in verbs)
+    ]
+    delegation = parallel_execute_checkers(
+        [
+            RoleDelegationChecker(namespace=namespace, verb=verb, role=role)
+            for role in lacking
+            for verb in ("escalate", "bind")
+        ]
+    )
+    delegated = {
+        role
+        for role in lacking
+        if all(outcome.result.status is Status.PASS for outcome in delegation if outcome.checker.role == role)
+    }
+    return [role for role in lacking if role not in delegated]
 
 
 def _render_plan(args: InstallArgs, *, verdict: Verdict) -> RbacPlan:

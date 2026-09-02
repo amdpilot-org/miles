@@ -3,6 +3,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -17,7 +18,15 @@ from miles.utils.pydantic_utils import FrozenStrictBaseModel
 
 class RbacPlan(FrozenStrictBaseModel):
     creates_role: bool
-    granted_rules: dict[str, tuple[str, ...]] = {}
+    granted_rules_by_role: dict[str, dict[str, tuple[str, ...]]] = {}
+
+    @property
+    def role_names(self) -> tuple[str, ...]:
+        return tuple(self.granted_rules_by_role)
+
+    @property
+    def granted_rules(self) -> dict[str, tuple[str, ...]]:
+        return _merged_rules(self.granted_rules_by_role.values())
 
     @property
     def grants_leader_worker_sets(self) -> bool:
@@ -47,12 +56,21 @@ def rbac_plan_of(rendered: str) -> RbacPlan:
         for document in yaml.safe_load_all(rendered)
         if isinstance(document, dict) and document.get("kind") == "Role"
     ]
-    granted: dict[str, tuple[str, ...]] = {}
-    for role in roles:
-        for rule in role.get("rules") or []:
-            for resource, verbs in _rule_entries(rule).items():
-                granted[resource] = tuple(sorted({*granted.get(resource, ()), *verbs}))
-    return RbacPlan(creates_role=bool(roles), granted_rules=granted)
+    return RbacPlan(
+        creates_role=bool(roles),
+        granted_rules_by_role={
+            role["metadata"]["name"]: _merged_rules(_rule_entries(rule) for rule in role.get("rules") or [])
+            for role in roles
+        },
+    )
+
+
+def _merged_rules(rule_sets: Iterable[dict[str, tuple[str, ...]]]) -> dict[str, tuple[str, ...]]:
+    merged: dict[str, tuple[str, ...]] = {}
+    for entries in rule_sets:
+        for resource, verbs in entries.items():
+            merged[resource] = tuple(sorted({*merged.get(resource, ()), *verbs}))
+    return merged
 
 
 def _rule_entries(rule: dict[str, Any]) -> dict[str, tuple[str, ...]]:

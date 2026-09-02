@@ -178,7 +178,7 @@ class RoleDelegationChecker(BaseChecker):
         self.role = role
 
     def check(self) -> CheckResult:
-        message = f"may {self.verb} roles in namespace {self.namespace}"
+        message = f"may {self.verb} role {self.role} in namespace {self.namespace}"
         for target in (ROLES_RESOURCE, f"{ROLES_RESOURCE}/{self.role}"):
             if _query("auth", "can-i", self.verb, target, "-n", self.namespace).ok:
                 return CheckResult(status=Status.PASS, message=message)

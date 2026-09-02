@@ -7,6 +7,7 @@ from tests.fast.charts.utils import (
     LWS_RESOURCE,
     NAMESPACE,
     RELEASE_NAME,
+    UNINSTALLER_SERVICE_ACCOUNT,
     can_i_queries,
     merged_rules,
     named_object,
@@ -22,6 +23,7 @@ from miles.utils.external_utils.miles_workbench.render import rbac_plan_of
 _FAKE_VERBS = ["get", "list", "watch"]
 _FAKE_GRANTED_RULES = {"configmaps": tuple(_FAKE_VERBS), "pods/log": tuple(_FAKE_VERBS)}
 _FAKE_GRANTED_LWS_RULES = {cli.LWS_RESOURCE: tuple(_FAKE_VERBS)}
+_FAKE_UNINSTALLER_RULES = {"jobs.batch": tuple(_FAKE_VERBS)}
 
 
 def _fake_role_rules(*, lws: bool) -> list[dict]:
@@ -31,9 +33,29 @@ def _fake_role_rules(*, lws: bool) -> list[dict]:
     return rules
 
 
+def _fake_uninstaller_role_rules() -> list[dict]:
+    return [{"apiGroups": ["batch"], "resources": ["jobs"], "verbs": _FAKE_VERBS}]
+
+
+def _fake_roles_yaml(*, lws: bool) -> str:
+    return "---\n".join(
+        yaml.safe_dump({"kind": "Role", "metadata": {"name": name}, "rules": rules})
+        for name, rules in (
+            (RELEASE_ROLE, _fake_role_rules(lws=lws)),
+            (UNINSTALLER_SERVICE_ACCOUNT, _fake_uninstaller_role_rules()),
+        )
+    )
+
+
 ROLES = "roles.rbac.authorization.k8s.io"
+RELEASE_ROLE = "miles-workbench-alice"
+_NO_UNINSTALLER_DELEGATION = " ".join(
+    f"{verb}:{target}" for verb in ("escalate", "bind") for target in (ROLES, f"{ROLES}/{UNINSTALLER_SERVICE_ACCOUNT}")
+)
 NO_DELEGATION = " ".join(
-    f"{verb}:{ROLES}{suffix}" for verb in ("escalate", "bind") for suffix in ("", "/miles-workbench-alice")
+    f"{verb}:{ROLES}{suffix}"
+    for verb in ("escalate", "bind")
+    for suffix in ("", f"/{RELEASE_ROLE}", f"/{UNINSTALLER_SERVICE_ACCOUNT}")
 )
 
 
@@ -157,9 +179,9 @@ class TestPreflightChecks:
             "exit 0\n"
         )
         role_path = tmp_path / "role.yaml"
-        role_path.write_text(yaml.safe_dump({"kind": "Role", "rules": _fake_role_rules(lws=False)}))
+        role_path.write_text(_fake_roles_yaml(lws=False))
         role_lws_path = tmp_path / "role-lws.yaml"
-        role_lws_path.write_text(yaml.safe_dump({"kind": "Role", "rules": _fake_role_rules(lws=True)}))
+        role_lws_path.write_text(_fake_roles_yaml(lws=True))
 
         (bin_dir / "helm").write_text(
             "#!/usr/bin/env bash\n"
@@ -219,6 +241,7 @@ class TestPreflightChecks:
                 cli.CHART_RBAC_RULES,
                 _FAKE_GRANTED_RULES,
                 _FAKE_GRANTED_LWS_RULES,
+                _FAKE_UNINSTALLER_RULES,
             )
         )
 
@@ -349,8 +372,7 @@ class TestPreflightChecks:
     def test_escalate_without_bind_is_still_a_failure(self, fake_cluster):
         """The Role would be created and its RoleBinding refused, leaving a token that grants nothing."""
         (fake_cluster["denied_path"]).write_text(
-            "configmaps bind:roles.rbac.authorization.k8s.io"
-            " bind:roles.rbac.authorization.k8s.io/miles-workbench-alice"
+            f"configmaps bind:{ROLES} bind:{ROLES}/{RELEASE_ROLE} bind:{ROLES}/{UNINSTALLER_SERVICE_ACCOUNT}"
         )
 
         result = self.run_preflight("-n", "rl")
@@ -366,6 +388,25 @@ class TestPreflightChecks:
 
         assert result.returncode == 1
         assert "may grant the workbench its Role" in result.stderr
+
+    def test_delegation_on_the_release_role_alone_is_a_failure(self, fake_cluster):
+        """The chart also renders the uninstaller Role, and Kubernetes checks the delegation for that one too."""
+        (fake_cluster["denied_path"]).write_text(f"jobs.batch {_NO_UNINSTALLER_DELEGATION}")
+
+        result = self.run_preflight("-n", "rl")
+
+        assert result.returncode == 1
+        assert "may grant the workbench its Role" in result.stderr
+        assert UNINSTALLER_SERVICE_ACCOUNT in result.stderr
+
+    def test_only_the_roles_whose_rules_the_installer_lacks_need_delegation(self, fake_cluster):
+        """Kubernetes asks for escalate and bind on a Role only when the creator does not hold its rules already."""
+        (fake_cluster["denied_path"]).write_text(f"configmaps {_NO_UNINSTALLER_DELEGATION}")
+
+        result = self.run_preflight("-n", "rl")
+
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert "you do not hold every rule the chart grants" in result.stderr
 
     def test_missing_leaderworkerset_rights_name_the_admin_prerequisite(self, fake_cluster):
         """LWS rights come from a cluster admin, so that denial must point there rather than at the user."""
