@@ -73,6 +73,9 @@ A path that is on none of them is the most common way a run fails.
 
 - Every path your script names — `/root/models`, `/root/datasets` — has to be under one of the
   mounts, and so does `infra.paths.runsRoot`, where the launcher keeps each run's directory.
+- `infra.paths.runsRoot` has to be under a volume every pod shares — a `hostPath` on shared storage
+  or a read-write-many claim. An `emptyDir` there is rejected: each pod would get its own copy, and
+  the verdict one pod writes is a file no other pod can read.
 - Copying a file into a pod is pointless: pods come and go, the mount survives.
 - To run your own branch instead of the image's copy, mount it at the platform-owned source root:
   `/root/miles`, `/root/Megatron-LM`, or `/sgl-workspace/sglang`. The chart injects these canonical
