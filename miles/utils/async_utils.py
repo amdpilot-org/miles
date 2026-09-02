@@ -112,10 +112,16 @@ async def wait_cancelling_pending_on_first_completion(
         primary_error = task_errors[primary_index][1]
         for index, (_, error) in enumerate(task_errors):
             if index != primary_index:
-                primary_error.add_note(
-                    "Additional task failure while cancelling peers:\n" + "".join(traceback.format_exception(error))
-                )
+                note = "Additional task failure while cancelling peers:\n" + "".join(traceback.format_exception(error))
+                _exception_add_note_or_log(primary_error, note)
         raise primary_error
+
+
+def _exception_add_note_or_log(e: BaseException, msg: str) -> None:
+    if hasattr(e, "add_note"):
+        e.add_note(msg)
+    else:
+        logger.error(msg)
 
 
 def _compute_task_error(task: asyncio.Task) -> BaseException | None:
