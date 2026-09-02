@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import NamedTuple
 
@@ -83,13 +84,26 @@ class PairingController:
             )
             return
 
-        for inference_pod, base_gpu_id in gated_pods_and_base_gpu_ids:
-            await self._release(
-                inference_pod,
-                node_name=trainer_node_name,
-                base_gpu_id=base_gpu_id,
-                trainer_key=trainer_coord.key,
-            )
+        outcomes = await asyncio.gather(
+            *(
+                self._release(
+                    inference_pod,
+                    node_name=trainer_node_name,
+                    base_gpu_id=base_gpu_id,
+                    trainer_key=trainer_coord.key,
+                )
+                for inference_pod, base_gpu_id in gated_pods_and_base_gpu_ids
+            ),
+            return_exceptions=True,
+        )
+        for (inference_pod, _), outcome in zip(gated_pods_and_base_gpu_ids, outcomes, strict=True):
+            if isinstance(outcome, BaseException):
+                logger.error(
+                    "Releasing %s failed; the next reconcile of %s tries it again",
+                    inference_pod.metadata.name,
+                    trainer_coord.key,
+                    exc_info=outcome,
+                )
 
     async def _release(self, inference_pod: Pod, *, node_name: str, base_gpu_id: int, trainer_key: str) -> None:
         logger.info(
