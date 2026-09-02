@@ -1060,6 +1060,35 @@ class TestInitExpectedNumCells:
                 _parse_deploy_args([*_PRIMARY_ARGS, *_SHARED_STORE_ARGS, "--init-expected-num-cells", "0"])
             )
 
+    def test_a_split_trainer_deployment_is_refused_the_flag(self):
+        """It instantiates no inference controller, so the number it was given is dropped on the floor."""
+        with pytest.raises(AssertionError, match="--init-expected-num-cells"):
+            _validate_deploy_component(
+                _parse_deploy_args(
+                    ["--deploy-component", "trainer", *_SHARED_STORE_ARGS, "--init-expected-num-cells", "2"]
+                )
+            )
+
+    def test_an_unsplit_run_is_refused_the_flag(self):
+        """It deploys every engine it waits for, so the fleet it starts on is not something to be told."""
+        with pytest.raises(AssertionError, match="--init-expected-num-cells"):
+            _validate_deploy_component(_parse_deploy_args(["--init-expected-num-cells", "2"]))
+
+    def test_the_refusal_names_the_deployment_that_does_take_the_flag(self):
+        """Whoever launched the wrong half has to be told which half to move the flag to."""
+        with pytest.raises(AssertionError, match="primary"):
+            _validate_deploy_component(
+                _parse_deploy_args(
+                    ["--deploy-component", "trainer", *_SHARED_STORE_ARGS, "--init-expected-num-cells", "2"]
+                )
+            )
+
+    def test_the_primary_deployment_still_takes_the_flag(self):
+        """It is the one that waits for registrations, and nothing else can derive how many to wait for."""
+        _validate_deploy_component(
+            _parse_deploy_args([*_PRIMARY_ARGS, *_SHARED_STORE_ARGS, "--init-expected-num-cells", "4"])
+        )
+
 
 class TestEngineRegistrationArguments:
     def test_a_fully_told_engine_deployment_validates(self):
