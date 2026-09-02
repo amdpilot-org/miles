@@ -89,7 +89,7 @@ def _ensure_namespace(namespace: str) -> None:
 def _probe_namespace_from_inside(namespace: str) -> None:
     result = Kubectl.run_raw("get", "serviceaccounts", "-n", namespace, "-o", "name")
     output = (result.stdout + result.stderr).strip()
-    if result.returncode == 0:
+    if result.returncode == 0 and result.stdout.strip():
         return
 
     if "(NotFound)" in output:
@@ -100,8 +100,9 @@ def _probe_namespace_from_inside(namespace: str) -> None:
         raise SystemExit(1)
 
     logger.warning(
-        "WARN  this account may not read namespace %s itself, so nothing here says whether it exists; "
-        "continuing on the namespaced rights it does hold (%s)",
+        "WARN  nothing here says whether namespace %s exists, because this account may not read the namespace "
+        "itself and listing inside it named no service account either; continuing on the namespaced rights it "
+        "does hold (%s)",
         namespace,
         output,
     )

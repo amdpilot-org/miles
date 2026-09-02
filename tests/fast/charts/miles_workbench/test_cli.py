@@ -21,6 +21,8 @@ def fake_tools(tmp_path, monkeypatch):
     refused_path.write_text("")
     pods_path = tmp_path / "pods"
     pods_path.write_text("")
+    service_accounts_path = tmp_path / "service-accounts"
+    service_accounts_path.write_text("")
 
     for binary in ("helm", "kubectl"):
         (bin_dir / binary).write_text(
@@ -50,12 +52,21 @@ def fake_tools(tmp_path, monkeypatch):
             f"  done < {pods_path}\n"
             '  [ -n "$items" ] && echo "{\\"items\\":[$items]}"\n'
             "fi\n"
+            f'if [ "{binary} $1 $2" = "kubectl get serviceaccounts" ]; then\n'
+            f"  cat {service_accounts_path}\n"
+            "fi\n"
             "exit 0\n"
         )
         (bin_dir / binary).chmod(0o755)
     monkeypatch.setenv("PATH", f"{bin_dir}:/usr/bin:/bin")
 
-    return dict(calls_path=calls_path, failing_path=failing_path, refused_path=refused_path, pods_path=pods_path)
+    return dict(
+        calls_path=calls_path,
+        failing_path=failing_path,
+        refused_path=refused_path,
+        pods_path=pods_path,
+        service_accounts_path=service_accounts_path,
+    )
 
 
 def run_cli(*args: str) -> subprocess.CompletedProcess:
@@ -156,6 +167,25 @@ class TestInstall:
         assert result.returncode == 0, result.stdout + result.stderr
         assert "kubectl create namespace rl" not in calls_of(fake_tools)
         assert "kubectl get serviceaccounts -n rl -o name" in calls_of(fake_tools)
+
+    def test_an_empty_listing_inside_a_namespace_does_not_confirm_it_exists(self, fake_tools):
+        """A namespace that does not exist answers a namespaced listing exactly as an existing empty one does."""
+        fake_tools["refused_path"].write_text("Forbidden|kubectl get namespace")
+
+        result = run_cli("install", "-n", "rl", "-r", "wb", "--skip-preflight")
+
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert "nothing here says whether namespace rl exists" in result.stderr
+
+    def test_a_namespace_that_lists_a_service_account_is_taken_to_exist(self, fake_tools):
+        """A non-empty namespaced listing is the one answer that proves the namespace is there."""
+        fake_tools["refused_path"].write_text("Forbidden|kubectl get namespace")
+        fake_tools["service_accounts_path"].write_text("serviceaccount/default\n")
+
+        result = run_cli("install", "-n", "rl", "-r", "wb", "--skip-preflight")
+
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert "nothing here says whether namespace rl exists" not in result.stderr
 
     def test_a_namespace_absent_from_inside_stops_the_install(self, fake_tools):
         """Every later step would fail on the missing namespace, one confusing error at a time."""
