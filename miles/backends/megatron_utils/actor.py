@@ -80,7 +80,7 @@ logging.getLogger("megatron").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-CRITIC_VALUES_VALUE_SPEC: dict[str, ValueSpec] = {"values": ValueSpec(codec="auto")}
+CRITIC_VALUES_VALUE_SPEC: dict[str, ValueSpec] = {"values": ValueSpec(codec="typed_ragged")}
 
 
 def _setup_disk_offload_reclaim(disk_dir: str) -> None:
