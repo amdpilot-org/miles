@@ -34,7 +34,7 @@ from miles.utils.object_store import ObjectStoreBackend
 from miles.utils.object_store_config import MOONCAKE_MASTER_ADDRESS_KEY, compute_mooncake_init_kwargs
 from miles.utils.run_uuid import RUN_UUID_LENGTH, generate_run_uuid, validate_run_uuid
 from miles.utils.tracking_utils.ci_history import RECORD_DIR_ENV
-from miles.utils.workers.argv_utils import with_relax_parser_required_args
+from miles.utils.workers.argv_utils import with_relax_parser_required_args, with_suppressed_parser_help
 from miles.utils.workers.naming import DEPLOY_INSTANCE_ID_MAX_LENGTH
 from miles.utils.workers.types import ClusterBackend, DeployComponent, WorkerCommBackend, resolve_worker_comm_backend
 from miles.utils.workers.worker_provider.static import parse_host_and_port
@@ -2777,7 +2777,7 @@ def get_miles_extra_args_provider(add_custom_arguments=None):
 
         def add_user_provided_function_arguments(parser):
             try:
-                with with_relax_parser_required_args(parser):
+                with with_relax_parser_required_args(parser), with_suppressed_parser_help(parser):
                     args_partial, _ = parser.parse_known_args()
             except SystemExit:
                 return parser

@@ -26,6 +26,7 @@ from miles.utils.workers.argv_utils import (
     parse_declared_args,
     render_cli_argv,
     with_relax_parser_required_args,
+    with_suppressed_parser_help,
 )
 
 
@@ -933,3 +934,87 @@ class TestWithRelaxParserRequiredArgs:
             raise RuntimeError("boom")
 
         assert [action for action in parser._actions if action.required]
+
+
+class TestWithSuppressedParserHelp:
+    @staticmethod
+    def _parser() -> argparse.ArgumentParser:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--needed", required=True)
+        parser.add_argument("--optional", default="d")
+        return parser
+
+    def test_the_probe_parse_neither_prints_help_nor_exits(self):
+        """miles --help printed the probe's relaxed usage, which lists what the run requires as optional."""
+        parser = self._parser()
+        stdout = io.StringIO()
+
+        with (
+            contextlib.redirect_stdout(stdout),
+            with_relax_parser_required_args(parser),
+            with_suppressed_parser_help(parser),
+        ):
+            _namespace, extras = parser.parse_known_args(["--help"])
+
+        assert extras == ["--help"]
+        assert stdout.getvalue() == ""
+
+    def test_the_arguments_the_probe_is_after_are_still_read(self):
+        """The probe exists to find the user-provided functions, which it must still parse out of argv."""
+        parser = self._parser()
+
+        with with_suppressed_parser_help(parser):
+            namespace, extras = parser.parse_known_args(["--needed", "n", "--optional", "v", "--help"])
+
+        assert namespace.optional == "v"
+        assert extras == ["--help"]
+
+    def test_the_real_parse_still_answers_help(self):
+        """Help moves to the parse that knows what the run requires; it is not taken away from the user."""
+        parser = self._parser()
+
+        with with_suppressed_parser_help(parser):
+            parser.parse_known_args(["--needed", "n"])
+
+        with pytest.raises(SystemExit):
+            parser.parse_known_args(["--needed", "n", "--help"])
+
+    def test_both_spellings_of_help_are_gone_only_for_the_duration(self):
+        """argparse registers -h and --help separately, and leaving either behind still runs the help action."""
+        parser = self._parser()
+
+        with with_suppressed_parser_help(parser):
+            suppressed = set(parser._option_string_actions)
+
+        assert {"-h", "--help"}.isdisjoint(suppressed)
+        assert {"-h", "--help"} <= set(parser._option_string_actions)
+
+    def test_help_is_restored_even_when_the_parse_raises(self):
+        """A probe that fails mid-read must not leave the process with a parser that cannot print help."""
+        parser = self._parser()
+
+        with contextlib.suppress(RuntimeError), with_suppressed_parser_help(parser):
+            raise RuntimeError("boom")
+
+        assert {"-h", "--help"} <= set(parser._option_string_actions)
+
+    def test_the_other_options_are_left_registered_while_help_is_suppressed(self):
+        """Only the help action is taken out; removing more would make the probe read a different command line."""
+        parser = self._parser()
+
+        with with_suppressed_parser_help(parser):
+            inside = set(parser._option_string_actions)
+
+        assert {"--needed", "--optional"} <= inside
+
+    def test_a_parser_that_declares_no_help_is_left_alone(self):
+        """Every parser the probe is handed is not required to carry a help action at all."""
+        parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument("--optional", default="d")
+
+        with with_suppressed_parser_help(parser):
+            namespace, extras = parser.parse_known_args(["--optional", "v"])
+
+        assert namespace.optional == "v"
+        assert extras == []
+        assert set(parser._option_string_actions) == {"--optional"}
