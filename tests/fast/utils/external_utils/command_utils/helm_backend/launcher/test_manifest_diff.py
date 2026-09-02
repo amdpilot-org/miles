@@ -90,7 +90,7 @@ class TestManifestScaling:
         )
 
         assert diff.allowed_changed == [
-            "leaderworkerset.x-k8s.io/v1/LeaderWorkerSet/rl/myrun-miles-run-engine: replicas 2 -> 6"
+            "leaderworkerset.x-k8s.io/LeaderWorkerSet/rl/myrun-miles-run-engine: replicas 2 -> 6"
         ]
 
     def test_refuses_a_configmap_whose_data_changed(self):
@@ -100,7 +100,7 @@ class TestManifestScaling:
             after=_manifest_after(lambda objects: objects[1]["data"].update({"values.yaml": "run: {id: x}\n"})),
         )
 
-        assert diff.disallowed_changed == ["v1/ConfigMap/rl/myrun-miles-run-values: data.values.yaml"]
+        assert diff.disallowed_changed == ["ConfigMap/rl/myrun-miles-run-values: data.values.yaml"]
 
     def test_says_so_when_the_rendered_manifests_are_identical(self):
         """Relaunching the same run id is how users check on a run, and it must read as a no-op."""
@@ -119,7 +119,7 @@ class TestManifestRefusals:
 
         assert not diff.is_allowed
         assert diff.disallowed_changed == [
-            "leaderworkerset.x-k8s.io/v1/LeaderWorkerSet/rl/myrun-miles-run-engine: "
+            "leaderworkerset.x-k8s.io/LeaderWorkerSet/rl/myrun-miles-run-engine: "
             "spec.leaderWorkerTemplate.workerTemplate.spec.containers.[0].image"
         ]
 
@@ -134,7 +134,7 @@ class TestManifestRefusals:
 
         assert not diff.is_allowed
         assert diff.disallowed_changed == [
-            "leaderworkerset.x-k8s.io/v1/LeaderWorkerSet/rl/myrun-miles-run-engine: "
+            "leaderworkerset.x-k8s.io/LeaderWorkerSet/rl/myrun-miles-run-engine: "
             "spec.leaderWorkerTemplate.workerTemplate.spec.containers.[0].command.[2]"
         ]
 
@@ -146,9 +146,7 @@ class TestManifestRefusals:
         )
 
         assert not diff.is_allowed
-        assert [str(identity) for identity in diff.additions] == [
-            "leaderworkerset.x-k8s.io/v1/LeaderWorkerSet/rl/second"
-        ]
+        assert [str(identity) for identity in diff.additions] == ["leaderworkerset.x-k8s.io/LeaderWorkerSet/rl/second"]
 
     def test_refuses_an_object_the_upgrade_would_delete(self):
         """Upgrading would remove the orchestrator, and with it the run it is driving."""
@@ -157,7 +155,7 @@ class TestManifestRefusals:
         )
 
         assert not diff.is_allowed
-        assert [str(identity) for identity in diff.removals] == ["apps/v1/StatefulSet/rl/myrun-miles-run-orchestrator"]
+        assert [str(identity) for identity in diff.removals] == ["apps/StatefulSet/rl/myrun-miles-run-orchestrator"]
 
     def test_refuses_replicas_moving_on_a_kind_that_does_not_scale(self):
         """Only a LeaderWorkerSet adds cells without touching the pods it already has."""
@@ -166,7 +164,7 @@ class TestManifestRefusals:
         )
 
         assert not diff.is_allowed
-        assert diff.disallowed_changed == ["apps/v1/StatefulSet/rl/myrun-miles-run-orchestrator: spec.replicas"]
+        assert diff.disallowed_changed == ["apps/StatefulSet/rl/myrun-miles-run-orchestrator: spec.replicas"]
 
     def test_refuses_a_data_block_moving_on_a_kind_that_is_not_a_configmap(self):
         """A Secret's data is mounted into running pods, so rewriting it is not a free change."""
@@ -177,7 +175,7 @@ class TestManifestRefusals:
         diff = manifest_diff.diff_manifests(before=before, after=after)
 
         assert not diff.is_allowed
-        assert diff.disallowed_changed == ["v1/Secret/rl/creds: data.token"]
+        assert diff.disallowed_changed == ["Secret/rl/creds: data.token"]
 
     def test_refuses_a_change_to_an_object_another_namespace_shares_a_name_with(self):
         """A release may hold both, and folding them would let this edit through as no change at all."""
@@ -189,10 +187,10 @@ class TestManifestRefusals:
         diff = manifest_diff.diff_manifests(before=before, after=after)
 
         assert not diff.is_allowed
-        assert diff.disallowed_changed == ["v1/Service/other/engine: spec.clusterIP"]
+        assert diff.disallowed_changed == ["Service/other/engine: spec.clusterIP"]
 
     def test_refuses_a_change_to_an_object_another_api_group_shares_a_name_with(self):
-        """A crd of the same kind and name is a second object, and only apiVersion tells the two apart."""
+        """A crd of the same kind and name is a second object, and only the api group tells the two apart."""
         builtin = {
             "apiVersion": "v1",
             "kind": "Service",
@@ -206,7 +204,7 @@ class TestManifestRefusals:
         diff = manifest_diff.diff_manifests(before=before, after=after)
 
         assert not diff.is_allowed
-        assert diff.disallowed_changed == ["example.com/v1/Service/rl/engine: spec.clusterIP"]
+        assert diff.disallowed_changed == ["example.com/Service/rl/engine: spec.clusterIP"]
 
     def test_names_the_field_it_refused(self):
         """A refusal the user cannot locate just makes them reach for --skip-upgrade-check."""
@@ -228,7 +226,7 @@ class TestManifestRefusals:
 
         assert not diff.is_allowed
         assert diff.allowed_changed == [
-            "leaderworkerset.x-k8s.io/v1/LeaderWorkerSet/rl/myrun-miles-run-engine: replicas 2 -> 6"
+            "leaderworkerset.x-k8s.io/LeaderWorkerSet/rl/myrun-miles-run-engine: replicas 2 -> 6"
         ]
 
 
@@ -291,7 +289,7 @@ class TestTheObjectsAHotRestartRebuilds:
 
         assert diff.is_allowed
         assert diff.allowed_changed == [
-            "apps/v1/StatefulSet/rl/myrun-miles-run-orchestrator: spec.template.spec.containers.[0].image"
+            "apps/StatefulSet/rl/myrun-miles-run-orchestrator: spec.template.spec.containers.[0].image"
         ]
 
     def test_a_rebuilt_object_says_the_whitelist_is_what_allowed_it(self):
@@ -317,7 +315,7 @@ class TestTheObjectsAHotRestartRebuilds:
 
         assert not diff.is_allowed
         assert diff.disallowed_changed == [
-            "leaderworkerset.x-k8s.io/v1/LeaderWorkerSet/rl/myrun-miles-run-engine: "
+            "leaderworkerset.x-k8s.io/LeaderWorkerSet/rl/myrun-miles-run-engine: "
             "spec.leaderWorkerTemplate.workerTemplate.spec.containers.[0].image"
         ]
 
@@ -402,7 +400,7 @@ class TestScalingIsLimitedToTheSupportedApi:
 
         assert not diff.is_allowed
         assert diff.disallowed_changed == [
-            "example.com/v1/LeaderWorkerSet/rl/someone-elses-leaderworkerset: spec.replicas"
+            "example.com/LeaderWorkerSet/rl/someone-elses-leaderworkerset: spec.replicas"
         ]
 
     def test_reports_no_scaling_for_a_leaderworkerset_of_another_api(self):
@@ -423,14 +421,14 @@ class TestScalingIsLimitedToTheSupportedApi:
 
         assert diff.rebuilds(key=_FOREIGN_KEY)
 
-    def test_refuses_a_replica_change_on_an_unsupported_version_of_the_same_api_group(self):
-        """A future or older version of the api can size a set by something other than spec.replicas."""
+    def test_scales_another_served_version_of_the_supported_api_group(self):
+        """A set sized some other way carries no spec.replicas, so the group is precise enough on its own."""
         diff = manifest_diff.diff_manifests(
             before=_manifest([_foreign_leader_worker_set(api_version="leaderworkerset.x-k8s.io/v1alpha1")]),
             after=_manifest([_foreign_leader_worker_set(replicas=6, api_version="leaderworkerset.x-k8s.io/v1alpha1")]),
         )
 
-        assert not diff.is_allowed
+        assert diff.is_allowed
 
     def test_still_scales_the_supported_api(self):
         """The whole point of the exemption is that this run's own engine pool may grow."""
@@ -441,7 +439,7 @@ class TestScalingIsLimitedToTheSupportedApi:
 
         assert diff.is_allowed
         assert diff.allowed_changed == [
-            "leaderworkerset.x-k8s.io/v1/LeaderWorkerSet/rl/someone-elses-leaderworkerset: replicas 2 -> 6"
+            "leaderworkerset.x-k8s.io/LeaderWorkerSet/rl/someone-elses-leaderworkerset: replicas 2 -> 6"
         ]
 
     def test_a_whitelisted_foreign_object_is_still_allowed_to_change(self):

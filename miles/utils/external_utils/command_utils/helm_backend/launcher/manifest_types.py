@@ -15,7 +15,7 @@ RESTART_AT_ANNOTATION = "miles.radixark.io/restart-at"
 PodWorkloadKind = Literal["StatefulSet", "LeaderWorkerSet", "Deployment", "DaemonSet", "ReplicaSet", "Job"]
 STATEFUL_SET_KIND: PodWorkloadKind = "StatefulSet"
 LEADER_WORKER_SET_KIND: PodWorkloadKind = "LeaderWorkerSet"
-_STATEFUL_SET_API_VERSION = "apps/v1"
+_STATEFUL_SET_API_GROUP = "apps"
 
 SpecT = TypeVar("SpecT")
 
@@ -64,14 +64,18 @@ class ObjectMetadata(FrozenOpenBaseModel):
     namespace: str | None = None
 
 
+def compute_api_group(api_version: str) -> str:
+    return api_version.rpartition("/")[0]
+
+
 class ObjectIdentity(NamedTuple):
-    api_version: str
+    api_group: str
     kind: str
     namespace: str
     name: str
 
     def __str__(self) -> str:
-        return "/".join(self)
+        return "/".join(part for part in self if part)
 
     @property
     def key(self) -> ManifestObjectKey:
@@ -86,7 +90,7 @@ class _ManifestObjectBase(FrozenOpenBaseModel, Generic[SpecT]):
 
     def identity(self, *, default_namespace: str) -> ObjectIdentity:
         return ObjectIdentity(
-            api_version=self.api_version,
+            api_group=compute_api_group(self.api_version),
             kind=self.kind,
             namespace=self.metadata.namespace or default_namespace,
             name=self.metadata.name,
@@ -191,7 +195,7 @@ class Manifest(FrozenStrictBaseModel):
 
     def _container(self, *, stateful_set: str, container: str) -> Container | None:
         identity = ObjectIdentity(
-            api_version=_STATEFUL_SET_API_VERSION,
+            api_group=_STATEFUL_SET_API_GROUP,
             kind=STATEFUL_SET_KIND,
             namespace=self.namespace,
             name=stateful_set,
