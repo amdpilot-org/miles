@@ -213,10 +213,23 @@ class TestEnvReporter:
         """The snapshot runs on the caller's own thread, so an audit failure must not end its startup."""
         with patch("miles.utils.env_report.reporter.collect_env_report_snapshot", side_effect=RuntimeError("boom")):
             with caplog.at_level(logging.WARNING, logger="miles.utils.env_report.reporter"):
-                start_env_reporting(make_args())
+                reporter = start_env_reporting(make_args())
+                reporter.stop()
 
-        assert "Failed to start the env reporting" in caplog.text
+        assert "Failed to log the startup env report" in caplog.text
         assert read_events(event_log_dir) == []
+
+    def test_a_failing_startup_report_still_starts_the_periodic_ones(
+        self, mocked_pip_inspect, event_log_dir: Path, caplog
+    ) -> None:
+        """The startup write is one attempt, and losing it must not cost the process every later report."""
+        with patch("miles.utils.env_report.reporter.collect_unprobed_env_report", side_effect=RuntimeError("boom")):
+            with caplog.at_level(logging.WARNING, logger="miles.utils.env_report.reporter"):
+                reporter = start_env_reporting(make_args(env_report_interval_seconds=0.01))
+                _wait_for_events(event_log_dir, count=1)
+                reporter.stop()
+
+        assert "Failed to log the startup env report" in caplog.text
 
 
 def _wait_for_events(log_dir: Path, *, count: int) -> None:
