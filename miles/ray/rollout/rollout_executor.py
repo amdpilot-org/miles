@@ -127,6 +127,9 @@ class RolloutExecutor:
     async def is_initialized(self) -> bool:
         return self._init_once.is_initialized()
 
+    async def get_init_state(self) -> str:
+        return self._init_once.state.value
+
     # -------------------------- lifecycle -----------------------------
 
     async def dispose(self) -> None:

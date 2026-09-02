@@ -5,6 +5,7 @@ import logging
 from argparse import Namespace
 from typing import Any
 
+from miles.utils.init_once import InitState
 from miles.utils.misc import call_agent_abort_hook
 from miles.utils.retry_utils import retry_until_deadline
 from miles.utils.workers.rpc.client.misc import RETRYABLE_ERRORS, ServerRestartedError
@@ -32,8 +33,8 @@ async def wait_until_worker_not_initialized(
 ) -> None:
     async def attempt(remaining: float) -> None:
         await handle.wait_ready(timeout=_WORKER_READY_TIMEOUT_SECONDS, allow_server_uuid_change=True)
-        if await handle.is_initialized():
-            raise _StillInitializedError("the worker still answers that a previous script already initialized it")
+        if (state := await handle.get_init_state()) != InitState.NOT_INITED.value:
+            raise _StillInitializedError(f"the worker answers {state}, so a previous script already got hold of it")
 
     await retry_until_deadline(
         attempt,
