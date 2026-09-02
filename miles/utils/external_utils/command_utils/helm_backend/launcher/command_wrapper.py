@@ -18,6 +18,7 @@ _ModelT = TypeVar("_ModelT", bound=BaseModel)
 CI_LABEL = "miles.radixark.io/ci-run"
 _JOB_NAME_LABEL = "batch.kubernetes.io/job-name"
 _ALREADY_EXISTS = "AlreadyExists"
+_JOB_COMPLETION_JSONPATH = "jsonpath={.status.succeeded},{.status.failed}"
 _GET_REQUEST_TIMEOUT = "30s"
 
 
@@ -150,6 +151,19 @@ class Kubectl:
         if _ALREADY_EXISTS in result.stderr:
             return False
         raise RuntimeError(f"Could not create the objects of {manifest_path}: {result.stderr.strip()}")
+
+    @staticmethod
+    def jobs_finished(manifest_path: str) -> bool:
+        result = Kubectl._run(["get", "-f", manifest_path, "--output", _JOB_COMPLETION_JSONPATH])
+        if result.returncode != 0:
+            raise RuntimeError(f"Could not read the objects of {manifest_path}: {result.stderr.strip()}")
+        return any(count.isdigit() and int(count) > 0 for count in result.stdout.split(","))
+
+    @staticmethod
+    def replace(manifest_path: str) -> None:
+        result = Kubectl._run(["replace", "--force", "-f", manifest_path])
+        if result.returncode != 0:
+            raise RuntimeError(f"Could not replace the objects of {manifest_path}: {result.stderr.strip()}")
 
     @staticmethod
     def delete_job(name: str, *, namespace: str, check: bool = False) -> None:

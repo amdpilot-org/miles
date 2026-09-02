@@ -136,6 +136,9 @@ class _Runner:
     def _create_uninstall_job_once(self, *, attempt: int) -> bool:
         try:
             created = Kubectl.create_if_absent(self.uninstall_manifest)
+            if not created and Kubectl.jobs_finished(self.uninstall_manifest):
+                Kubectl.replace(self.uninstall_manifest)
+                created = True
         except Exception:
             logger.error(
                 f"Attempt {attempt} at creating the uninstall job of {self.uninstall_manifest} failed", exc_info=True
@@ -145,7 +148,7 @@ class _Runner:
         if created:
             logger.info(f"This run's release uninstalls itself through the job created from {self.uninstall_manifest}")
         else:
-            logger.info("This run's uninstall job already exists, so an earlier attempt created it")
+            logger.info("This run's uninstall job is already there and has not run yet, so it still uninstalls it")
         return True
 
     def _publish(self, status: OrchestratorStatus, *, exit_code: int | None) -> None:

@@ -280,17 +280,71 @@ class TestUninstallJob:
         assert code == 1
         assert kubectl_calls == [["create", "-f", MANIFEST]]
 
-    def test_treats_a_job_someone_already_created_as_success(self, tmp_path, monkeypatch):
-        """A second attempt is normal after a restart, and it must not turn a finished run into a failure."""
+    def test_replaces_the_finished_job_a_previous_launch_of_this_release_left(self, tmp_path, monkeypatch):
+        """A completed job holds the name without ever running again, so the release would never be uninstalled."""
         state_file = tmp_path / "orchestrator.state"
-        refusal = _refusal('Error from server (AlreadyExists): jobs "u" already exists')
-        monkeypatch.setattr(Kubectl, "_run", staticmethod(lambda arguments, **kwargs: refusal))
+        answers = [
+            _refusal('Error from server (AlreadyExists): jobs "u" already exists'),
+            subprocess.CompletedProcess(args=[], returncode=0, stdout="1,", stderr=""),
+            subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr=""),
+        ]
+        calls: list[list[str]] = []
+
+        def fake_run(arguments, **kwargs):
+            calls.append(list(arguments))
+            return answers.pop(0)
+
+        monkeypatch.setattr(Kubectl, "_run", staticmethod(fake_run))
 
         code = orchestrator_wrapper.main(
             ["--state-file", str(state_file), "--uninstall-manifest", MANIFEST, "--", sys.executable, "-c", "pass"]
         )
 
-        assert code == 0
+        assert (code, answers) == (0, [])
+        assert calls[-1] == ["replace", "--force", "-f", MANIFEST]
+
+    def test_treats_a_job_someone_already_created_as_success(self, tmp_path, monkeypatch):
+        """A second attempt is normal after a restart, and it must not turn a finished run into a failure."""
+        state_file = tmp_path / "orchestrator.state"
+        answers = [
+            _refusal('Error from server (AlreadyExists): jobs "u" already exists'),
+            subprocess.CompletedProcess(args=[], returncode=0, stdout=",", stderr=""),
+        ]
+        monkeypatch.setattr(Kubectl, "_run", staticmethod(lambda arguments, **kwargs: answers.pop(0)))
+
+        code = orchestrator_wrapper.main(
+            ["--state-file", str(state_file), "--uninstall-manifest", MANIFEST, "--", sys.executable, "-c", "pass"]
+        )
+
+        assert (code, answers) == (0, [])
+
+    def test_retries_when_the_cluster_cannot_say_whether_the_job_it_holds_has_finished(
+        self, tmp_path, monkeypatch, slept
+    ):
+        """Reading that as unfinished would adopt a job that already ran and leave the release installed."""
+        state_file = tmp_path / "orchestrator.state"
+        answers = [
+            _refusal('Error from server (AlreadyExists): jobs "u" already exists'),
+            _refusal("Error from server: etcdserver: request timed out"),
+            _refusal('Error from server (AlreadyExists): jobs "u" already exists'),
+            subprocess.CompletedProcess(args=[], returncode=0, stdout="1,", stderr=""),
+            subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr=""),
+        ]
+        calls: list[list[str]] = []
+
+        def fake_run(arguments, **kwargs):
+            calls.append(list(arguments))
+            return answers.pop(0)
+
+        monkeypatch.setattr(Kubectl, "_run", staticmethod(fake_run))
+
+        code = orchestrator_wrapper.main(
+            ["--state-file", str(state_file), "--uninstall-manifest", MANIFEST, "--", sys.executable, "-c", "pass"]
+        )
+
+        assert (code, answers) == (0, [])
+        assert slept == [orchestrator_wrapper._UNINSTALL_JOB_RETRY_SLEEPS[0]]
+        assert calls[-1] == ["replace", "--force", "-f", MANIFEST]
 
     def test_keeps_the_run_alive_when_every_attempt_is_refused(self, tmp_path, monkeypatch, slept):
         """The run's own outcome is what the launcher waits for; a leaked release is the smaller problem."""
@@ -325,6 +379,7 @@ class TestUninstallJob:
         answers = [
             _refusal("Error from server: try again"),
             _refusal('Error from server (AlreadyExists): jobs "u" already exists'),
+            subprocess.CompletedProcess(args=[], returncode=0, stdout=",", stderr=""),
         ]
         monkeypatch.setattr(Kubectl, "_run", staticmethod(lambda arguments, **kwargs: answers.pop(0)))
 

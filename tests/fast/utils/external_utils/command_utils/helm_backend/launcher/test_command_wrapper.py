@@ -5,7 +5,11 @@ import pytest
 
 from miles.utils.external_utils.command_utils.common import chart_dir
 from miles.utils.external_utils.command_utils.helm_backend.launcher import command_wrapper, entrypoint
-from miles.utils.external_utils.command_utils.helm_backend.launcher.command_wrapper import Helm, Kubectl
+from miles.utils.external_utils.command_utils.helm_backend.launcher.command_wrapper import (
+    _JOB_COMPLETION_JSONPATH,
+    Helm,
+    Kubectl,
+)
 from miles.utils.external_utils.command_utils.helm_backend.naming import RUN_ID_MAX_LENGTH, ReleaseName
 from miles.utils.workers.types import DeployComponent
 from miles.utils.workers.worker_provider.kubernetes.helm import naming
@@ -160,6 +164,45 @@ class TestCreateIfAbsent:
 
         with pytest.raises(RuntimeError, match="Could not create"):
             Kubectl.create_if_absent("/etc/miles/job.yaml")
+
+
+class TestJobsFinished:
+    def test_reports_a_job_that_already_succeeded_or_failed(self, monkeypatch):
+        """A job holding its name after it ran never runs again, so its caller has to recreate it."""
+        commands = _kubectl_answering(monkeypatch, returncode=0, stdout="1,")
+
+        assert Kubectl.jobs_finished("/etc/miles/job.yaml")
+        assert commands == [["get", "-f", "/etc/miles/job.yaml", "--output", _JOB_COMPLETION_JSONPATH]]
+
+    def test_reports_a_job_that_has_not_run_yet_as_unfinished(self, monkeypatch):
+        """An armed job still does its work, and replacing it would throw that work away."""
+        _kubectl_answering(monkeypatch, returncode=0, stdout=",")
+
+        assert not Kubectl.jobs_finished("/etc/miles/job.yaml")
+
+    def test_refuses_to_read_an_unanswered_query_as_unfinished(self, monkeypatch):
+        """Guessing here adopts a job that already ran and leaves the release installed forever."""
+        _kubectl_answering(monkeypatch, returncode=1, stderr="Error from server: etcdserver: request timed out")
+
+        with pytest.raises(RuntimeError, match="Could not read"):
+            Kubectl.jobs_finished("/etc/miles/job.yaml")
+
+
+class TestReplace:
+    def test_forces_the_objects_of_a_rendered_manifest_over_the_ones_holding_their_names(self, monkeypatch):
+        """A job's pod template is immutable, so only a forced replace can put a fresh job under that name."""
+        commands = _kubectl_answering(monkeypatch, returncode=0)
+
+        Kubectl.replace("/etc/miles/job.yaml")
+
+        assert commands == [["replace", "--force", "-f", "/etc/miles/job.yaml"]]
+
+    def test_lets_a_caller_that_cannot_go_on_without_the_replacement_fail(self, monkeypatch):
+        """Reporting a replace that never happened would tell the run that it uninstalls itself when it does not."""
+        _kubectl_answering(monkeypatch, returncode=1, stderr="Error from server (Forbidden): jobs is forbidden")
+
+        with pytest.raises(RuntimeError, match="Could not replace"):
+            Kubectl.replace("/etc/miles/job.yaml")
 
 
 class TestDeleteJob:
