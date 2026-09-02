@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 
 from miles.utils.external_utils.model_args_utils import load_model_args
 from miles.utils.file_arg_utils import PSEUDO_FILE_PREFIX
+from miles.utils.logging_utils import configure_logger_raw
 from miles.utils.object_store_config import MOONCAKE_MASTER_PORT, compute_mooncake_init_kwargs
 from miles.utils.workers.argv_utils import parse_declared_args
 from miles.utils.workers.worker_provider.kubernetes.helm.naming import CHART_NAME
@@ -81,6 +82,7 @@ def _parse_extra_env_vars(text: str):
 
 
 def get_default_wandb_args(test_file: str, run_name_prefix: str | None = None, run_id: str | None = None):
+    configure_logger_raw("launcher")
     if not os.environ.get("WANDB_API_KEY"):
         logger.info("Skip wandb configuration since WANDB_API_KEY is not found")
         return ""
