@@ -120,6 +120,9 @@ def validate_multi_policy_args(args, *, megatron_config: MegatronConfig) -> None
         "multi policy training does not support --async-unused-samples-handler retry: one generate call feeds "
         "every policy, so recycling its prompts for one of them regenerates the data of all the others"
     )
+    assert (
+        args.ckpt_step is None
+    ), "multi policy training does not support --ckpt-step: every policy stands at an iteration of its own"
     _assert_no_debug_rollout_data_flags(args)
     assert args.eval_interval is None or not args.eval_uses_snapshots, (
         "multi policy training evaluates on the shared rollout engines only: a snapshot eval backend "
