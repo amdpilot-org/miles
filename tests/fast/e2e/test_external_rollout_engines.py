@@ -29,7 +29,7 @@ def infra_with(**overrides: Any) -> dict[str, Any]:
 
 
 def manifests_of(infra: dict[str, Any]) -> str:
-    return script._engine_manifests(InfraValues.model_validate(infra))
+    return script._engine_manifests(InfraValues.model_validate(infra), object_name=script.ENGINE_OBJECT_NAME)
 
 
 def stateful_set_of(infra: dict[str, Any]) -> dict[str, Any]:
