@@ -19,7 +19,7 @@ from miles.utils.workers.serving.utils import (
 )
 from miles.utils.workers.serving.worker_identity import read_worker_identity, read_worker_in_pod_index
 from miles.utils.workers.types import ClusterBackend
-from miles.utils.workers.worker_spec import RPC_PORT_NAME, ServeWorkerSpec
+from miles.utils.workers.worker_spec import RPC_PORT_NAME, PortInfo, ServeWorkerSpec
 
 DEFAULT_HOST = "0.0.0.0"
 
@@ -33,7 +33,7 @@ def main() -> None:
     worker = create_worker(spec, specs_fn=args.specs, worker_argv=worker_argv)
     _log(f"pool_id={args.pool_id} worker_class={spec.worker_class}")
 
-    port = _rpc_port_of(spec) + read_worker_in_pod_index(os.environ)
+    port = _rpc_port_of(spec).effective_static_port(worker_in_pod_index=read_worker_in_pod_index(os.environ))
     app = create_rpc_app(worker)
     _log(f"serve host={DEFAULT_HOST} port={port}")
     uvicorn.run(app, host=DEFAULT_HOST, port=port)
@@ -52,8 +52,8 @@ def _backend_capability(specs_fn: str, worker_argv: list[str]) -> BackendCapabil
     return get_backend_capability(specs=load_function(specs_fn)(worker_argv), cluster_backend=cluster_backend)
 
 
-def _rpc_port_of(spec: ServeWorkerSpec) -> int:
-    ports = [port_info.static_port for port_info in spec.port_infos if port_info.name == RPC_PORT_NAME]
+def _rpc_port_of(spec: ServeWorkerSpec) -> PortInfo:
+    ports = [port_info for port_info in spec.port_infos if port_info.name == RPC_PORT_NAME]
     assert len(ports) == 1, f"spec '{spec.name}' declares {len(ports)} rpc ports, so this process cannot pick one"
     return ports[0]
 

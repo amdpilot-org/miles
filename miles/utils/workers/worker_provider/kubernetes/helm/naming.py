@@ -21,9 +21,7 @@ def static_cell_addrs(
 ) -> NamedHostAndPorts:
     host = static_worker_host(release, spec.name, cell_index)
     return {
-        port.name: HostAndPort(
-            host=host, port=port.static_port + (worker_in_pod_index if port.mode == "per_worker" else 0)
-        )
+        port.name: HostAndPort(host=host, port=port.effective_static_port(worker_in_pod_index=worker_in_pod_index))
         for port in spec.port_infos
     }
 
