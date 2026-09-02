@@ -19,8 +19,9 @@ def assert_the_run_was_watched_closely_enough(evidence: HotRestartEvidence) -> N
     if (attempts := evidence.observation_attempts) > 0:
         assert len(complete) >= MINIMUM_OBSERVATION_SUCCESS_RATIO * attempts, (
             f"the whole release was read {len(complete)} time(s) out of {attempts} attempt(s), under "
-            f"{MINIMUM_OBSERVATION_SUCCESS_RATIO:.0%}; a cluster that answers half the time hides the very pod "
-            f"replacement these assertions are here to catch"
+            f"{MINIMUM_OBSERVATION_SUCCESS_RATIO:.0%}; those attempts are the polls taken while the release was "
+            f"up, and a cluster that answers half the time hides the very pod replacement these assertions are "
+            f"here to catch"
         )
 
 

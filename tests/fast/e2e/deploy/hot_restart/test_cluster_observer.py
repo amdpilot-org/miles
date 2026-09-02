@@ -172,9 +172,9 @@ class TestClusterObserver:
         self._install_reader(
             monkeypatch,
             [
+                _settled_snapshot(),
+                _settled_snapshot(),
                 cluster_snapshot(pods=[], workloads=[workload_fact(TRAINER)], reads_missing=(POD_KIND,)),
-                _settled_snapshot(),
-                _settled_snapshot(),
             ],
         )
 
@@ -183,7 +183,27 @@ class TestClusterObserver:
         observer.observe_once()
 
         assert len(observer.snapshots) == 1
-        assert (observer.attempts, observer.failures) == (3, 1)
+        assert (observer.attempts, observer.failures) == (2, 1)
+
+    def test_the_polls_taken_before_the_release_was_installed_are_no_attempt_at_all(self, monkeypatch):
+        """Counting them would divide a whole-release reading by however slowly helm happened to install."""
+        observer = _observer()
+        self._install_reader(
+            monkeypatch,
+            [
+                cluster_snapshot(pods=[], workloads=[]),
+                cluster_snapshot(pods=[pod_fact(f"{TRAINER}-0", uid="uid-t")], workloads=[]),
+                cluster_snapshot(pods=[], workloads=[workload_fact(TRAINER)], reads_missing=(POD_KIND,)),
+                _settled_snapshot(),
+                _settled_snapshot(),
+            ],
+        )
+
+        for _ in range(5):
+            observer.observe_once()
+
+        assert len(observer.snapshots) == 1
+        assert (observer.attempts, observer.failures) == (1, 1)
 
     def test_a_pods_read_that_failed_is_a_failed_read_and_not_a_vanished_release(self, monkeypatch):
         """These used to be the same thing, which left the "reads missing" branch unreachable."""
@@ -209,6 +229,28 @@ class TestClusterObserver:
 
         assert observer.snapshots == []
         assert observer.failures == 1
+
+    def test_a_read_that_raised_while_the_release_was_up_is_an_attempt_all_the_same(self, monkeypatch):
+        """Regression: a cluster that only ever raised scored a perfect ratio, since nothing counted against it."""
+        observer = _observer()
+        self._install_reader(monkeypatch, [_settled_snapshot(), _settled_snapshot()])
+        observer.observe_once_or_warn()
+        observer.observe_once_or_warn()
+        monkeypatch.setattr(cluster_module, "read_cluster_snapshot", _raise_boom)
+
+        observer.observe_once_or_warn()
+
+        assert len(observer.snapshots) == 1
+        assert (observer.attempts, observer.failures) == (2, 1)
+
+    def test_a_read_that_raised_before_the_release_was_up_is_no_attempt_at_all(self, monkeypatch):
+        """The same window the empty polls are outside of: helm had not installed anything to read yet."""
+        observer = _observer()
+        monkeypatch.setattr(cluster_module, "read_cluster_snapshot", _raise_boom)
+
+        observer.observe_once_or_warn()
+
+        assert (observer.attempts, observer.failures) == (0, 1)
 
     def test_a_release_being_uninstalled_is_not_recorded_as_a_run_losing_its_pods(self, monkeypatch):
         """The last observation happens while the run is torn down, and every pod is gone by then."""

@@ -81,6 +81,7 @@ class ClusterObserver:
     snapshots: list[ClusterSnapshot] = field(default_factory=list)
     attempts: int = 0
     failures: int = 0
+    saw_the_release_up: bool = False
     _settled_workloads: frozenset[str] | None = field(default=None, init=False)
     _topology_read_before: tuple[frozenset[str], frozenset[str]] | None = field(default=None, init=False)
 
@@ -88,11 +89,10 @@ class ClusterObserver:
         try:
             self.observe_once()
         except BaseException:
-            self.failures += 1
+            self._record_a_failed_read()
             logger.warning("Failed to observe the cluster of a run being hot restarted", exc_info=True)
 
     def observe_once(self) -> None:
-        self.attempts += 1
         snapshot = read_cluster_snapshot(
             release=self.release,
             namespace=self.namespace,
@@ -101,7 +101,7 @@ class ClusterObserver:
             ),
         )
         if not snapshot.describes_the_whole_release:
-            self.failures += 1
+            self._record_a_failed_read()
             logger.warning(
                 f"Observing {self.release} could not read {list(snapshot.reads_missing)}, so this is a read that "
                 f"failed rather than a run whose pods changed"
@@ -110,11 +110,15 @@ class ClusterObserver:
         if snapshot.describes_a_release_that_is_gone:
             logger.warning(
                 f"Observed {self.release} with {len(snapshot.pods)} pod(s) and {len(snapshot.workloads)} "
-                f"workload(s), which is a release being uninstalled rather than a run whose pods were replaced"
+                f"workload(s), which is a release being installed or uninstalled rather than a run whose pods "
+                f"were replaced"
             )
             return
         if not self._describes_the_release_this_run_settled_into(snapshot):
             return
+
+        self.saw_the_release_up = True
+        self.attempts += 1
         self.snapshots.append(snapshot)
 
     def _describes_the_release_this_run_settled_into(self, snapshot: ClusterSnapshot) -> bool:
@@ -139,6 +143,11 @@ class ClusterObserver:
             )
             return False
         return True
+
+    def _record_a_failed_read(self) -> None:
+        self.failures += 1
+        if self.saw_the_release_up:
+            self.attempts += 1
 
 
 @contextmanager
