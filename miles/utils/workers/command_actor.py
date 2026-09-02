@@ -10,6 +10,14 @@ from miles.utils.workers import process_utils
 logger = logging.getLogger(__name__)
 
 
+def assert_command_actor_fault_mode(mode: str) -> None:
+    assert (
+        failure_mode := fault_injector.FailureMode(mode)
+    ) is fault_injector.FailureMode.SIGKILL, (
+        f"only sigkill can be injected into a subprocess from the outside, not {failure_mode.value}"
+    )
+
+
 class CommandActor(NodeProbeMixin):
     def __init__(self) -> None:
         self._process: subprocess.Popen | None = None
@@ -36,10 +44,7 @@ class CommandActor(NodeProbeMixin):
 
     def inject_fault(self, mode: str) -> None:
         assert self._process is not None, "CommandActor has no subprocess to inject a fault into"
-        assert (failure_mode := fault_injector.FailureMode(mode)) is fault_injector.FailureMode.SIGKILL, (
-            f"{failure_mode.value} is a fault a process inflicts on itself from the inside, and no signal reproduces "
-            f"it from the outside, so only sigkill can be injected into a subprocess"
-        )
+        assert_command_actor_fault_mode(mode)
 
         logger.warning(f"CommandActor kills its subprocess group pid={self._process.pid}")
         process_utils.kill_process_tree(self._process)
