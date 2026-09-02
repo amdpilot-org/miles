@@ -159,6 +159,24 @@ class TestWithLogFollowing:
         assert not any("--previous" in command for command in fake.commands)
 
 
+class TestParseRfc3339:
+    def test_reads_the_nine_digit_fraction_kubectl_stamps_a_line_with(self):
+        """A stamp this parser rejects stays in the line and never advances the point a reconnect resumes from."""
+        assert log_follower._parse_rfc3339("2026-08-12T09:00:00.123456789Z") is not None
+
+    def test_pads_a_fraction_shorter_than_it_supports(self):
+        """kubectl trims trailing zeros, so the same stream carries stamps of several fractional widths."""
+        assert log_follower._parse_rfc3339("2026-08-12T09:00:00.12Z") is not None
+
+    def test_reads_a_stamp_that_carries_no_fraction(self):
+        """A line stamped on a whole second is an ordinary line, not one to be left with its stamp."""
+        assert log_follower._parse_rfc3339("2026-08-12T09:00:00Z") is not None
+
+    def test_answers_nothing_for_a_line_that_starts_with_a_word(self):
+        """The first token of an untimestamped line is log text, and taking it as a stamp would eat it."""
+        assert log_follower._parse_rfc3339("INFO") is None
+
+
 class TestLogsCommand:
     def test_asks_for_the_timestamps_a_reconnect_needs(self):
         """--since-time is the only way back to where a dropped stream stopped, and it reads these stamps."""

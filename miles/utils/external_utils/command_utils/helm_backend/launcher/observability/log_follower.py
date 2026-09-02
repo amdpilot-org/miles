@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import subprocess
 import tempfile
 import threading
@@ -23,6 +24,8 @@ logger = logging.getLogger(__name__)
 
 _STOP_GRACE_SECONDS = 5.0
 _ERROR_TAIL_CHARACTERS = 500
+_FRACTIONAL_SECONDS = re.compile(r"(?<=:\d\d)\.(\d+)")
+_SUPPORTED_FRACTION_DIGITS = 6
 
 
 @contextmanager
@@ -144,15 +147,20 @@ class _LogStream:
 
     def _emit(self, line: str) -> None:
         timestamp, _, rest = line.partition(" ")
-        if _is_timestamp(timestamp):
+        if _parse_rfc3339(timestamp) is not None:
             self._last_timestamp = timestamp
             line = rest
         logger.info(f"{self._prefix} {line}")
 
 
-def _is_timestamp(token: str) -> bool:
+def _parse_rfc3339(text: str) -> datetime | None:
+    normalized = _FRACTIONAL_SECONDS.sub(_normalized_fraction, text).replace("Z", "+00:00").replace("z", "+00:00")
     try:
-        datetime.fromisoformat(token.replace("Z", "+00:00"))
+        return datetime.fromisoformat(normalized)
     except ValueError:
-        return False
-    return True
+        return None
+
+
+def _normalized_fraction(match: re.Match[str]) -> str:
+    digits = match.group(1)[:_SUPPORTED_FRACTION_DIGITS]
+    return f".{digits.ljust(_SUPPORTED_FRACTION_DIGITS, '0')}"
