@@ -23,6 +23,9 @@ python examples/infra_features/hot_restart/run_qwen3_0_6b_hot_restart.py \
     --hot-restart orchestration,rollout_executor
 ```
 
+Both invocations name the same W&B run, so the relaunched orchestration script resumes reporting
+into the run the original launch opened.
+
 ## TODO
 
 * Show a hot restart that changes the rollout executor's args and resumes under them; today the
