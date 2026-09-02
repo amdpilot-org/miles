@@ -78,6 +78,27 @@ infra.yaml
 /etc/miles
 {{- end }}
 
+{{- define "miles-workbench.infraValuesVolumeName" -}}
+infra-values
+{{- end }}
+
+{{- define "miles-workbench.assertInfraValuesMountIsReserved" -}}
+{{- $root := . -}}
+{{- $reservedName := include "miles-workbench.infraValuesVolumeName" . -}}
+{{- $reservedDir := include "miles-workbench.infraValuesDir" . -}}
+{{- range $volume := (.Values.infra.volumes | default list) }}
+{{- if eq $volume.name $reservedName }}
+{{- fail (printf "infra.volumes[%s] takes the volume name the chart itself uses for the %s mount, and kubernetes rejects a pod that declares one name twice: rename this volume" $reservedName $reservedDir) }}
+{{- end }}
+{{- range $index, $mount := ($volume.mounts | default list) }}
+{{- $mountPath := include "miles-common.mountPath" (dict "root" $root "volume" $volume "index" $index "mount" $mount) }}
+{{- if eq $mountPath $reservedDir }}
+{{- fail (printf "infra.volumes[%s].mounts[%d].mountPath is %s, which the chart mounts the installed infra values on, and kubernetes rejects a pod that mounts one path twice: mount this volume elsewhere" $volume.name $index $reservedDir) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
 {{- define "miles-workbench.env" -}}
 {{- $launch := dict
       "MILES_SCRIPT_CLUSTER_BACKEND" "kubernetes"

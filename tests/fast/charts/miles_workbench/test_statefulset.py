@@ -135,6 +135,14 @@ class TestWorkbenchStatefulSet:
         assert _volume(objects, "infra-values")["configMap"]["name"].endswith("-infra")
         assert dict(name="MILES_SCRIPT_HELM_VALUES", value="/etc/miles/infra.yaml") in container(objects)["env"]
 
+    def test_a_user_volume_may_not_take_the_reserved_name_or_path(self):
+        """Both belong to the chart's own infra values mount, and a duplicate of either is rejected by kubernetes."""
+        name_clash = render_error(*volumes_args(host_path_volume(name="infra-values")))
+        path_clash = render_error(*volumes_args(host_path_volume(mounts=[{"mountPath": "/etc/miles"}])))
+
+        assert "infra-values" in name_clash
+        assert "/etc/miles" in path_clash
+
     def test_scheduling_and_environment_values_reach_the_pod(self, tmp_path):
         """Cluster-specific scheduling and environment values are passed through untouched."""
         values_file = tmp_path / "cluster.yaml"

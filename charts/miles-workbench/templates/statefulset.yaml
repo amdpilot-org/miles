@@ -38,13 +38,13 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- $mounts := include "miles-common.volumeMounts" . | trim }}
           volumeMounts:
-            - name: infra-values
+            - name: {{ include "miles-workbench.infraValuesVolumeName" . | quote }}
               mountPath: {{ include "miles-workbench.infraValuesDir" . | quote }}
             {{- with $mounts }}
             {{- . | nindent 12 }}
             {{- end }}
       volumes:
-        - name: infra-values
+        - name: {{ include "miles-workbench.infraValuesVolumeName" . | quote }}
           configMap:
             name: {{ include "miles-workbench.infraConfigMapName" . | quote }}
         {{- with include "miles-common.volumes" . }}
