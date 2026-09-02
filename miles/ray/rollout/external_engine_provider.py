@@ -275,3 +275,11 @@ def _assert_engines_match_args(args: Any, *, engines: list[_ExternalEngineInfo])
         f"({args.rollout_external_router_pd}), but the engines reporting prefill/decode are "
         f"{pd_engine_urls or 'none'}"
     )
+
+    assert not args.rollout_external_router_pd or {engine.worker_type for engine in engines} == {
+        "prefill",
+        "decode",
+    }, (
+        f"--rollout-external-router-pd needs prefill and decode engines, got "
+        f"{[(engine.url, engine.worker_type) for engine in engines]}"
+    )
