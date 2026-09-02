@@ -1,5 +1,4 @@
 import os
-import tempfile
 
 from tests.ci.ci_register import register_cuda_ci, register_rocm_ci
 
@@ -39,10 +38,7 @@ def prepare():
 
 def execute():
     U = command_utils.default_config().create_backend()
-    config_file = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", prefix="sglang_config_", delete=False)
-    config_file.write(SGLANG_CONFIG_YAML)
-    config_file.flush()
-    config_path = config_file.name
+    config_arg = command_utils.encode_pseudo_file(SGLANG_CONFIG_YAML)
 
     ckpt_args = f"--hf-checkpoint /root/models/{MODEL_NAME}/ " f"--ref-load /root/models/{MODEL_NAME}/ "
 
@@ -106,7 +102,7 @@ def execute():
         f"--sglang-mem-fraction-static 0.6 "
         "--sglang-enable-metrics "
         "--sglang-cuda-graph-max-bs 32 "
-        f"--sglang-config {config_path} "
+        f"--sglang-config {config_arg} "
     )
 
     ci_args = "--ci-test "
