@@ -53,12 +53,18 @@ def _chained_optimizer(*members) -> object:
 
 
 def _reset(
-    monkeypatch, *members, using_pytorch_optimizer: bool = True, stream_optimizer_state_to_disk: bool = False
+    monkeypatch,
+    *members,
+    using_pytorch_optimizer: bool = True,
+    stream_optimizer_state_to_disk: bool = False,
+    chunked_optimizer_state_offload: bool = False,
 ) -> None:
     optimizer_utils = pytest.importorskip("miles.backends.megatron_utils.optimizer_utils")
     monkeypatch.setattr(optimizer_utils, "USING_PYTORCH_OPTIMIZER", using_pytorch_optimizer)
     optimizer_utils.reset_optimizer_state(
-        _chained_optimizer(*members), stream_optimizer_state_to_disk=stream_optimizer_state_to_disk
+        _chained_optimizer(*members),
+        stream_optimizer_state_to_disk=stream_optimizer_state_to_disk,
+        chunked_optimizer_state_offload=chunked_optimizer_state_offload,
     )
 
 
@@ -241,7 +247,14 @@ class TestWhatAResetRefusesToWalk:
         optimizer.config = SimpleNamespace(offload_optimizer_states=False, fp16=True)
 
         with pytest.raises(AssertionError, match="loss scaler"):
-            optimizer_utils.reset_optimizer_state(optimizer, stream_optimizer_state_to_disk=False)
+            optimizer_utils.reset_optimizer_state(
+                optimizer, stream_optimizer_state_to_disk=False, chunked_optimizer_state_offload=False
+            )
+
+    def test_a_chunked_offload_is_refused(self, monkeypatch):
+        """The offloader's cpu store keeps canonical moments this reset never reaches."""
+        with pytest.raises(AssertionError, match="chunked-optimizer-state-offload"):
+            _reset(monkeypatch, _FakeChainedMember(), chunked_optimizer_state_offload=True)
 
     def test_an_optimizer_offloading_its_states_is_refused(self, monkeypatch):
         """The offloader would copy the old moments back over the reset from the buffer it keeps."""
@@ -250,4 +263,6 @@ class TestWhatAResetRefusesToWalk:
         optimizer.config = SimpleNamespace(offload_optimizer_states=True, fp16=False)
 
         with pytest.raises(AssertionError):
-            optimizer_utils.reset_optimizer_state(optimizer, stream_optimizer_state_to_disk=False)
+            optimizer_utils.reset_optimizer_state(
+                optimizer, stream_optimizer_state_to_disk=False, chunked_optimizer_state_offload=False
+            )
