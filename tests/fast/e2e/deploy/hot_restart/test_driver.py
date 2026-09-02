@@ -188,6 +188,40 @@ class TestHotRestartDriverProgressGuard:
             RunProgress(last_saved_iteration=1, last_finished_rollout_id=1)
         )
 
+    def test_a_replacement_that_loses_work_after_it_caught_up_still_fails(self, tmp_path):
+        """Regression: the exemption covered the whole take-over, so a later rollback stayed silent."""
+        driver = _driver(tmp_path)
+        driver._assert_the_run_never_lost_a_step_outside_a_take_over(
+            RunProgress(last_saved_iteration=1, last_finished_rollout_id=2)
+        )
+        driver.records.append(HotRestartRecord(index=0, saved_iteration_at_trigger=1, frozen_rollout_id=2))
+        for finished in (1, 2):
+            driver._assert_the_run_never_lost_a_step_outside_a_take_over(
+                RunProgress(last_saved_iteration=1, last_finished_rollout_id=finished)
+            )
+
+        with pytest.raises(AssertionError, match="lost work"):
+            driver._assert_the_run_never_lost_a_step_outside_a_take_over(
+                RunProgress(last_saved_iteration=1, last_finished_rollout_id=1)
+            )
+
+    def test_a_replacement_that_jumped_straight_past_the_mark_is_no_longer_exempt(self, tmp_path):
+        """Regression: reporting above the frozen step left the latch shut, so a later rollback stayed silent."""
+        driver = _driver(tmp_path)
+        driver._assert_the_run_never_lost_a_step_outside_a_take_over(
+            RunProgress(last_saved_iteration=1, last_finished_rollout_id=2)
+        )
+        driver.records.append(HotRestartRecord(index=0, saved_iteration_at_trigger=1, frozen_rollout_id=2))
+        for finished in (1, 3):
+            driver._assert_the_run_never_lost_a_step_outside_a_take_over(
+                RunProgress(last_saved_iteration=1, last_finished_rollout_id=finished)
+            )
+
+        with pytest.raises(AssertionError, match="lost work"):
+            driver._assert_the_run_never_lost_a_step_outside_a_take_over(
+                RunProgress(last_saved_iteration=1, last_finished_rollout_id=1)
+            )
+
 
 class TestTheFreezeATakeOverWaitsFor:
     def test_a_run_that_has_finished_nothing_is_not_frozen_yet(self, tmp_path, monkeypatch):

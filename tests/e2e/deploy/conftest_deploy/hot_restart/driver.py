@@ -132,6 +132,7 @@ class HotRestartDriver:
         self._schedule_finished = threading.Event()
         self._worker = PollingWorker(name="hot-restart-driver", run=self._drive)
         self._max_finished_rollout_id: int | None = None
+        self._num_take_overs_caught_up: int = 0
         self._observer = ClusterObserver(release=self.release, namespace=self.namespace, trainer_id=self.trainer_id)
 
     @property
@@ -308,7 +309,7 @@ class HotRestartDriver:
         finished = progress.last_finished_rollout_id
         if finished is None:
             return
-        if self.records and finished <= self.records[-1].frozen_rollout_id:
+        if self._is_still_catching_up_after_a_take_over(finished):
             return
 
         assert self._max_finished_rollout_id is None or finished >= self._max_finished_rollout_id, (
@@ -316,6 +317,14 @@ class HotRestartDriver:
             f"take-over's rollback an event log only grows, so this run lost work nobody asked it to"
         )
         self._max_finished_rollout_id = finished
+
+    def _is_still_catching_up_after_a_take_over(self, finished: int) -> bool:
+        if not self.records or self._num_take_overs_caught_up >= len(self.records):
+            return False
+        if self._max_finished_rollout_id is not None and finished >= self._max_finished_rollout_id:
+            self._num_take_overs_caught_up = len(self.records)
+            return False
+        return finished <= self.records[-1].frozen_rollout_id
 
     def _relaunch_on_a_thread(self, index: int) -> None:
         thread = threading.Thread(
