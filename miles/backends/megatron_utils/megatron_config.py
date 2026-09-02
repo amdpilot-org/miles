@@ -217,11 +217,23 @@ def _assert_no_declared_critic(raw: "_RawMegatronConfig") -> None:
 # ---------------------------- per policy args -----------------------------
 
 
+_ROLLOUT_SHARED_ARGS: frozenset[str] = frozenset(
+    {"advantage_estimator", "max_tokens_per_gpu", "micro_batch_size", "use_dynamic_batch_size"}
+)
+
+
 def compute_trainer_args(args: Namespace, trainer: MegatronTrainerConfig) -> Namespace:
     # TODO: support policies with different global batch sizes.
     assert "global_batch_size" not in trainer.overrides, (
         f"--megatron-config trainer {trainer.trainer_id!r} overrides global_batch_size; every policy has to "
         f"share the run's"
+    )
+
+    # TODO: let policies differ in these once the rollout side reads per-trainer arguments.
+    forbidden = _ROLLOUT_SHARED_ARGS & set(trainer.overrides)
+    assert not forbidden, (
+        f"--megatron-config trainer {trainer.trainer_id!r} overrides {sorted(forbidden)}; every policy has to "
+        f"share the run's rollout arguments"
     )
 
     ans = copy.deepcopy(args)

@@ -436,14 +436,14 @@ class TestComputeTrainerArgs:
         with pytest.raises(AssertionError, match="does not know"):
             _model_args(_make_args(path), model_id="a")
 
-    def test_an_overlaid_advantage_estimator_does_not_fabricate_a_critic(self, tmp_path):
-        """use_critic is settled from the command line before the overlay, so an override must not flip it."""
+    def test_a_policy_that_overrides_a_shared_rollout_argument_is_refused(self, tmp_path):
+        """The rollout side converts, trims and splits every policy's data under the run's own arguments."""
         path = _write_yaml(
             {"trainers": [{"model_id": "a", "overrides": {"advantage_estimator": "ppo"}}, {"model_id": "b"}]}, tmp_path
         )
-        args = _make_args(path, advantage_estimator="grpo")
 
-        assert _model_args(args, model_id="a").use_critic is False
+        with pytest.raises(AssertionError, match="rollout arguments"):
+            _model_args(_make_args(path), model_id="a")
 
     def test_a_policy_that_overrides_the_global_batch_size_is_refused(self, tmp_path):
         """Every policy trains at the run's global batch size, so an override cannot be honored."""
