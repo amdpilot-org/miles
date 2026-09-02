@@ -206,7 +206,7 @@ class TestUninstallJob:
             ["--state-file", str(state_file), "--uninstall-manifest", MANIFEST, "--", sys.executable, "-c", "pass"]
         )
 
-        assert kubectl_calls == [["create", "-f", MANIFEST]]
+        assert kubectl_calls == [["create", "-f", MANIFEST, "--request-timeout", "60s"]]
 
     def test_creates_the_job_for_a_failed_run_too(self, tmp_path, kubectl_calls):
         """A failed run holds just as many gpus as a successful one, and its logs stay in the run directory."""
@@ -225,7 +225,7 @@ class TestUninstallJob:
             ]
         )
 
-        assert kubectl_calls == [["create", "-f", MANIFEST]]
+        assert kubectl_calls == [["create", "-f", MANIFEST, "--request-timeout", "60s"]]
 
     def test_creates_the_job_when_the_script_could_not_be_launched(self, tmp_path, kubectl_calls):
         """That verdict ends the run as surely as a failing script, and the release must go the same way."""
@@ -242,7 +242,7 @@ class TestUninstallJob:
             ]
         )
 
-        assert kubectl_calls == [["create", "-f", MANIFEST]]
+        assert kubectl_calls == [["create", "-f", MANIFEST, "--request-timeout", "60s"]]
 
     def test_never_creates_the_job_when_the_pod_is_asked_to_stop(self, tmp_path, kubectl_calls):
         """A relaunch SIGTERMs the orchestrator it replaces, and uninstalling then would tear down the new run."""
@@ -266,7 +266,7 @@ class TestUninstallJob:
         )
 
         assert code == 4
-        assert kubectl_calls == [["create", "-f", MANIFEST]]
+        assert kubectl_calls == [["create", "-f", MANIFEST, "--request-timeout", "60s"]]
 
     def test_creates_the_job_for_a_run_a_restart_cut_short(self, tmp_path, kubectl_calls):
         """A pod that restarted mid-training reports a failure, and that failure ends the release too."""
@@ -278,7 +278,7 @@ class TestUninstallJob:
         )
 
         assert code == 1
-        assert kubectl_calls == [["create", "-f", MANIFEST]]
+        assert kubectl_calls == [["create", "-f", MANIFEST, "--request-timeout", "60s"]]
 
     def test_replaces_the_finished_job_a_previous_launch_of_this_release_left(self, tmp_path, monkeypatch):
         """A completed job holds the name without ever running again, so the release would never be uninstalled."""

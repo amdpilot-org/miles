@@ -20,6 +20,7 @@ _JOB_NAME_LABEL = "batch.kubernetes.io/job-name"
 _ALREADY_EXISTS = "AlreadyExists"
 _JOB_COMPLETION_JSONPATH = "jsonpath={.status.succeeded},{.status.failed}"
 _GET_REQUEST_TIMEOUT = "30s"
+_CREATE_REQUEST_TIMEOUT = "60s"
 
 
 class Helm:
@@ -145,7 +146,7 @@ class Kubectl:
 
     @staticmethod
     def create_if_absent(manifest_path: str) -> bool:
-        result = Kubectl._run(["create", "-f", manifest_path])
+        result = Kubectl._run(["create", "-f", manifest_path, "--request-timeout", _CREATE_REQUEST_TIMEOUT])
         if result.returncode == 0:
             return True
         if _ALREADY_EXISTS in result.stderr:

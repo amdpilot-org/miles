@@ -148,7 +148,7 @@ class TestCreateIfAbsent:
         commands = _kubectl_answering(monkeypatch, returncode=0, stderr="")
 
         assert Kubectl.create_if_absent("/etc/miles/job.yaml")
-        assert commands == [["create", "-f", "/etc/miles/job.yaml"]]
+        assert commands == [["create", "-f", "/etc/miles/job.yaml", "--request-timeout", "60s"]]
 
     def test_reports_an_object_that_was_already_there_without_failing(self, monkeypatch):
         """Its callers retry after a restart, and the whole point is that the second attempt is harmless."""
