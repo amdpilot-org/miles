@@ -12,7 +12,7 @@ from miles.utils.external_utils.command_utils.helm_backend.launcher.manifest_typ
 )
 from miles.utils.pydantic_utils import FrozenStrictBaseModel
 
-_SCALABLE_KINDS = frozenset({LEADER_WORKER_SET_KIND})
+_SCALABLE_API_KINDS = frozenset({("leaderworkerset.x-k8s.io/v1", LEADER_WORKER_SET_KIND)})
 _REPLICAS_PATH = ("spec", "replicas")
 
 
@@ -109,15 +109,15 @@ def _compute_allowed_by(
     path: tuple[str, ...],
     allow_diff_object_keys: frozenset[ManifestObjectKey],
 ) -> Literal["scaling", "whitelist"] | None:
-    if _is_scaling(old, new, path=path):
+    if _is_scaling(old, new, identity=identity, path=path):
         return "scaling"
     if identity.key in allow_diff_object_keys:
         return "whitelist"
     return None
 
 
-def _is_scaling(old: ManifestObject, new: ManifestObject, *, path: tuple[str, ...]) -> bool:
-    if old.kind not in _SCALABLE_KINDS or path != _REPLICAS_PATH:
+def _is_scaling(old: ManifestObject, new: ManifestObject, *, identity: ObjectIdentity, path: tuple[str, ...]) -> bool:
+    if (identity.api_version, identity.kind) not in _SCALABLE_API_KINDS or path != _REPLICAS_PATH:
         return False
     return _replicas(old) is not None and _replicas(new) is not None
 
