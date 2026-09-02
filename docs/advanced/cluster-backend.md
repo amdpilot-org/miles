@@ -36,6 +36,11 @@ python -m miles.utils.external_utils.miles_workbench exec -n "$MILES_NS" -- \
   bash -lc "cd /root/miles && python scripts/run_qwen3_4b.py train"
 ```
 
+The recipe defaults to `/root/models`, `/root/datasets` and `/root/shared_data`; the example
+[`infra.yaml`](#for-cluster-administrator) mounts all three from the shared volume. Fill them once
+with `python scripts/run_qwen3_4b.py prepare`, or pass `--model-dir`, `--data-dir` and
+`--output-dir` to point the recipe elsewhere.
+
 ## Observability
 
 **Built in**
@@ -101,6 +106,9 @@ infra:
       mounts:
         - {mountPath: /cluster-storage}
         - {mountPath: /root/miles, subPath: alice/miles}
+        - {mountPath: /root/models, subPath: models}
+        - {mountPath: /root/datasets, subPath: datasets}
+        - {mountPath: /root/shared_data, subPath: alice/shared_data}
   paths:
     runsRoot: /cluster-storage/miles_data
 ```
