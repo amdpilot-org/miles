@@ -218,7 +218,7 @@ def _assert_no_declared_critic(raw: "_RawMegatronConfig") -> None:
 
 def compute_trainer_args(args: Namespace, trainer: MegatronTrainerConfig) -> Namespace:
     ans = copy.deepcopy(args)
-    ans.trainer_model_id = trainer.model_id
+    ans.trainer_model_id = trainer.model_id if resolve_megatron_config(args).is_multi_policy else None
 
     for key, value in trainer.overrides.items():
         assert hasattr(ans, key), (
