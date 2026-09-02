@@ -276,5 +276,5 @@ class TestMooncakeServiceNameCoupling:
         assert len(services) == 1
         assert MooncakeInfo.master_object_name(RUN_RELEASE_NAME) == services[0]["metadata"]["name"]
         assert MooncakeInfo.master_service_host(RUN_RELEASE_NAME, NAMESPACE) == (
-            f"{services[0]['metadata']['name']}.{NAMESPACE}.svc.cluster.local"
+            f"{services[0]['metadata']['name']}.{NAMESPACE}.svc"
         )

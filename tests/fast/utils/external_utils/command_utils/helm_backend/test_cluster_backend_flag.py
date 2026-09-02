@@ -317,7 +317,7 @@ class TestApiServerHost:
         config = _config()
         host = KubernetesCommandBackend(config).api_server_host(config)
 
-        assert host == f"{_release()}-orchestrator.{NAMESPACE}.svc.cluster.local"
+        assert host == f"{_release()}-orchestrator.{NAMESPACE}.svc"
 
     @pytest.mark.parametrize("component", [DeployComponent.PRIMARY, DeployComponent.TRAINER])
     def test_no_deployment_of_a_split_run_has_an_api_server_to_name(self, component):

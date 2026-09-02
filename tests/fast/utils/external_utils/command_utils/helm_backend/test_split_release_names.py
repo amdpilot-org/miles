@@ -77,7 +77,7 @@ class TestTwoReleasesOfOneRun:
 
         master = MooncakeInfo.master_service_host(primary, NAMESPACE)
 
-        assert master == f"{component_name(primary, 'mooncake-master')}.{NAMESPACE}.svc.cluster.local"
+        assert master == f"{component_name(primary, 'mooncake-master')}.{NAMESPACE}.svc"
         assert master != MooncakeInfo.master_service_host(_release(DeployComponent.TRAINER), NAMESPACE)
 
 

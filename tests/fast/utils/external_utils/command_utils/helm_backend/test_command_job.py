@@ -149,7 +149,7 @@ class TestNaming:
 
     def test_addresses_rank_zero_through_the_headless_service(self):
         """A multi-node step needs one address every pod agrees on before any of them is scheduled."""
-        assert _job().master_address == ("miles-run-command-convert-0.miles-run-command-convert.rl.svc.cluster.local")
+        assert _job().master_address == ("miles-run-command-convert-0.miles-run-command-convert.rl.svc")
 
     def test_installs_command_jobs_under_their_own_release(self):
         """A step sharing a training run's release would be torn down with it, or collide with its objects."""

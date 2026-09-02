@@ -92,7 +92,7 @@ def _deploy_instance_id_budget(*, run_id: str) -> int:
 class RunNames:
     @staticmethod
     def service_fqdn(*, name: str, namespace: str) -> str:
-        return f"{name}.{namespace}.svc.cluster.local"
+        return f"{name}.{namespace}.svc"
 
     @staticmethod
     def orchestrator_object(*, release: str) -> str:
