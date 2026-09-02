@@ -89,8 +89,30 @@ class TrainRayActor(NodeProbeMixin):
         os.environ["MASTER_PORT"] = str(master_port)
 
     # TODO mv the args into ctor
-    @abc.abstractmethod
+    @init_once
     def init(
+        self,
+        args: Pickled,
+        role: str,
+        *,
+        with_ref: bool = False,
+        with_opd_teacher: bool = False,
+        recv_ckpt_src_rank: int | None = None,
+        indep_dp_info: IndepDPInfo,
+        indep_dp_store_addr: str | None,
+    ) -> int | None:
+        return self._init(
+            args,
+            role,
+            with_ref=with_ref,
+            with_opd_teacher=with_opd_teacher,
+            recv_ckpt_src_rank=recv_ckpt_src_rank,
+            indep_dp_info=indep_dp_info,
+            indep_dp_store_addr=indep_dp_store_addr,
+        )
+
+    @abc.abstractmethod
+    def _init(
         self,
         args: Pickled,
         role: str,
@@ -103,7 +125,6 @@ class TrainRayActor(NodeProbeMixin):
     ) -> int | None:
         raise NotImplementedError
 
-    @init_once
     def _init_common(self, args: Namespace, role: str, with_ref: bool = False, with_opd_teacher: bool = False) -> None:
         self.args = args
         self.role = role

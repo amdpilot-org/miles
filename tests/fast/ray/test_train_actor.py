@@ -91,7 +91,7 @@ class TestInitRunsExactlyOnce:
         actor = _actor_with(_inited_guard())
 
         with pytest.raises(AssertionError, match="stale worker"):
-            actor._init_common(None, "actor")
+            actor.init(None, "actor", indep_dp_info=None, indep_dp_store_addr=None)
 
     def test_a_worker_that_never_ran_init_reports_itself_uninitialized(self):
         """A restarted script asks a worker it found running whether to initialize it or to resume it."""
