@@ -376,3 +376,50 @@ class TestDroppingAReporterThatStoppedReporting:
         await _apply(provider, _snapshot([_cell(0)]))
 
         assert sorted(provider._cell_of_id) == [_cell_id(0)]
+
+
+def _announcing(cell: RegisteredCellInfo, worker_names: list[str]) -> RegisteredCellInfo:
+    return cell.model_copy(update={"info": cell.info.model_copy(update={"worker_names": worker_names})})
+
+
+class TestACellAnnouncingTheWorkersItCarries:
+    async def test_a_cell_that_announces_no_worker_at_all_is_refused(self):
+        """The rollout reconciliation indexes worker_names[0], and an empty list is what it fails on."""
+        provider, _watcher = await _watched()
+
+        with pytest.raises(AssertionError, match="announces the workers"):
+            await provider.ingest(_snapshot([_announcing(_cell(0), [])]))
+
+    async def test_a_cell_that_announces_a_worker_it_does_not_carry_is_refused(self):
+        """Addresses are looked up by the announced names, and a name nothing answers to is a dead lookup."""
+        provider, _watcher = await _watched()
+
+        with pytest.raises(AssertionError, match="announces the workers"):
+            await provider.ingest(_snapshot([_announcing(_cell(0), ["some-other-worker-0"])]))
+
+    async def test_a_cell_that_carries_one_worker_twice_is_refused(self):
+        """Two entries of one name make the run's view of the fleet count an engine that is not there."""
+        provider, _watcher = await _watched()
+        cell = _cell(0)
+        twice = cell.model_copy(update={"workers": [*cell.workers, *cell.workers]})
+
+        with pytest.raises(AssertionError, match="one of them twice"):
+            await provider.ingest(_snapshot([twice]))
+
+    async def test_a_cell_that_announces_exactly_what_it_carries_is_taken_in(self):
+        """Every healthy engine reports this shape, and the check may not stand in its way."""
+        provider, _watcher = await _watched()
+
+        await _apply(provider, _snapshot([_cell(0)]))
+
+        assert sorted(provider._cell_of_id) == [_cell_id(0)]
+
+    async def test_a_refused_snapshot_leaves_the_membership_it_found(self):
+        """The hub had already taken such a snapshot in, and the run then failed on what it held."""
+        provider, _watcher = await _watched()
+        await _apply(provider, _snapshot([_cell(0)]))
+
+        with pytest.raises(AssertionError):
+            await provider.ingest(_snapshot([_announcing(_cell(1), [])], sequence_number=2))
+
+        assert sorted(provider._cell_of_id) == [_cell_id(0)]
