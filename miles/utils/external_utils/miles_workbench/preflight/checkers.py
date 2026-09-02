@@ -26,6 +26,7 @@ ROLES_RESOURCE = "roles.rbac.authorization.k8s.io"
 
 _MAX_CONCURRENT_QUERIES = 32
 _FORBIDDEN_MARKER = "(Forbidden)"
+_ANONYMOUS_IDENTITIES = ("system:anonymous", "system:unauthenticated")
 
 
 # ============================== vocabulary ==============================
@@ -91,9 +92,17 @@ class BinaryPresenceChecker(BaseChecker):
 class ClusterReachableChecker(BaseChecker):
     def check(self) -> CheckResult:
         message = "cluster is reachable and your credentials are accepted"
-        answer = _query("get", "--raw", "/version")
+        answer = _query("auth", "whoami")
         if not answer.ok:
-            return CheckResult(status=Status.FAIL, message=f"{message} ({answer.output})")
+            markers = (_FORBIDDEN_MARKER, *UNSERVED_RESOURCE_MARKERS)
+            return _failed_query_result(
+                message, answer, unverifiable=any(marker in answer.output for marker in markers)
+            )
+        if any(identity in answer.output for identity in _ANONYMOUS_IDENTITIES):
+            return CheckResult(
+                status=Status.FAIL,
+                message=f"{message}: the cluster served this context without credentials ({answer.output})",
+            )
         return CheckResult(status=Status.PASS, message=message)
 
 

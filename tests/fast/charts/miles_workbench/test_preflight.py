@@ -65,6 +65,8 @@ class TestPreflightChecks:
         served_apis_path.write_text(f"{LWS_RESOURCE}\n")
         controller_path = tmp_path / "controller"
         controller_path.write_text("True")
+        identity_path = tmp_path / "identity"
+        identity_path.write_text("ATTRIBUTE   VALUE\nUsername    alice\nGroups      [system:authenticated]\n")
 
         (bin_dir / "kubectl").write_text(
             "#!/usr/bin/env bash\n"
@@ -96,11 +98,12 @@ class TestPreflightChecks:
             f"  cat {served_apis_path}\n"
             "  exit 0\n"
             "fi\n"
-            'if [ "$1" = "get" ] && [ "$2" = "--raw" ]; then\n'
+            'if [ "$1 $2" = "auth whoami" ]; then\n'
             f"  if [ -s {unreachable_path} ]; then\n"
             f"    cat {unreachable_path} >&2\n"
             "    exit 1\n"
             "  fi\n"
+            f"  cat {identity_path}\n"
             "  exit 0\n"
             "fi\n"
             'if [ "$1" = "get" ] && [ "$2" = "all" ]; then\n'
@@ -195,6 +198,7 @@ class TestPreflightChecks:
             family_path=family_path,
             served_apis_path=served_apis_path,
             controller_path=controller_path,
+            identity_path=identity_path,
         )
 
     def run_preflight(self, *args: str) -> subprocess.CompletedProcess:
@@ -203,7 +207,7 @@ class TestPreflightChecks:
 
     def permission_queries(self, fake_cluster: dict) -> str:
         calls = fake_cluster["calls_path"].read_text().splitlines()
-        return "\n".join(line for line in calls if line.startswith("auth"))
+        return "\n".join(line for line in calls if line.startswith("auth can-i"))
 
     def test_it_asks_for_exactly_the_rights_the_install_and_the_workflow_need(self, fake_cluster):
         """Pinned in full: a missing check is a false pass, and a spurious one turns away a legitimate installer."""
@@ -221,7 +225,7 @@ class TestPreflightChecks:
         result = self.run_preflight("-n", "rl")
         calls = fake_cluster["calls_path"].read_text().splitlines()
         queries = {
-            line.removeprefix("auth can-i ").removesuffix(" -n rl") for line in calls if line.startswith("auth")
+            line.removeprefix("auth can-i ").removesuffix(" -n rl") for line in calls if line.startswith("auth can-i")
         }
 
         assert result.returncode == 0, result.stdout + result.stderr
@@ -546,7 +550,7 @@ class TestPreflightChecks:
         ],
     )
     def test_any_failure_to_reach_the_server_stops_the_run(self, fake_cluster, error):
-        """/version is served to every authenticated caller, so a failure here is never a permission problem."""
+        """The identity review answers every authenticated caller, so a failure here is never a permission problem."""
         (fake_cluster["unreachable_path"]).write_text(error)
 
         result = self.run_preflight("-n", "rl")
@@ -554,6 +558,16 @@ class TestPreflightChecks:
         assert result.returncode == 1
         assert "cluster is reachable" in result.stderr
         assert "kubeconfig" in result.stderr
+        assert "auth can-i" not in fake_cluster["calls_path"].read_text()
+
+    def test_a_context_the_cluster_serves_anonymously_stops_the_run(self, fake_cluster):
+        """An unauthenticated context would otherwise report every later denial as missing RBAC."""
+        (fake_cluster["identity_path"]).write_text("Username    system:anonymous\n")
+
+        result = self.run_preflight("-n", "rl")
+
+        assert result.returncode == 1
+        assert "without credentials" in result.stderr
         assert "auth can-i" not in fake_cluster["calls_path"].read_text()
 
     def test_a_wholly_denied_run_points_at_the_namespace_and_context(self, fake_cluster):
