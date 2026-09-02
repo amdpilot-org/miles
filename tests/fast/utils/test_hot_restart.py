@@ -25,6 +25,7 @@ from miles.utils.hot_restart import (
     wait_trainers_idle,
     wait_until_worker_not_initialized,
 )
+from miles.utils.init_once import InitState
 from miles.utils.workers.rpc.client import handle as rpc_handle_module
 from miles.utils.workers.rpc.client.handle import RpcWorkerHandle
 from miles.utils.workers.rpc.client.misc import ServerRestartedError
@@ -133,7 +134,9 @@ class _FakeInferenceController:
 
 
 class _FakeWorker:
-    def __init__(self, answers: list[bool | Exception], *, ready_errors: list[Exception] | None = None) -> None:
+    def __init__(
+        self, answers: list[bool | InitState | Exception], *, ready_errors: list[Exception] | None = None
+    ) -> None:
         self._answers = list(answers)
         self._ready_errors = list(ready_errors or [])
         self.ready_timeouts: list[float] = []
@@ -145,11 +148,13 @@ class _FakeWorker:
         if self._ready_errors:
             raise self._ready_errors.pop(0)
 
-    async def is_initialized(self) -> bool:
+    async def get_init_state(self) -> str:
         answer = self._answers.pop(0)
         if isinstance(answer, Exception):
             raise answer
-        return answer
+        if isinstance(answer, InitState):
+            return answer.value
+        return (InitState.INITED if answer else InitState.NOT_INITED).value
 
 
 class _StuckThenNotInitializedWorker:
@@ -159,11 +164,11 @@ class _StuckThenNotInitializedWorker:
     async def wait_ready(self, *, timeout: float, allow_server_uuid_change: bool = False) -> None:
         return None
 
-    async def is_initialized(self) -> bool:
+    async def get_init_state(self) -> str:
         self.rounds += 1
         if self.rounds == 1:
             await asyncio.sleep(30.0)
-        return False
+        return InitState.NOT_INITED.value
 
 
 @pytest.fixture
@@ -215,6 +220,12 @@ class TestWaitUntilWorkerNotInitialized:
     async def test_a_worker_replaced_mid_wait_is_waited_out(self, fast_polling: None):
         """The replacement answers a call the old process accepted, which is the restart this wait exists for."""
         worker = _FakeWorker([True, ServerRestartedError("replaced"), False])
+
+        await wait_until_worker_not_initialized(worker, timeout=5.0)
+
+    async def test_a_worker_still_initializing_is_waited_out(self, fast_polling: None):
+        """A process midway through init is not NOT_INITED, and initializing it again would be refused."""
+        worker = _FakeWorker([InitState.INITIALIZING, InitState.INIT_FAILED, False])
 
         await wait_until_worker_not_initialized(worker, timeout=5.0)
 
@@ -658,7 +669,7 @@ class TestTheTakeOverSurfaceCrossesTheWire:
         "worker_cls, methods",
         [
             (TrainerController, {"is_initialized", "load_state"}),
-            (RolloutExecutor, {"is_initialized"}),
+            (RolloutExecutor, {"get_init_state"}),
             (InferenceController, {"is_initialized", "abort_all", "wait_expected_num_cells"}),
         ],
     )
