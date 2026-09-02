@@ -131,6 +131,7 @@ def run_ci(
             config=config,
             train_script=get_train_script(fully_async=fully_async),
         )
+        injector.observe_a_fault_free_tail()
     finally:
         injector.stop_and_join()
 

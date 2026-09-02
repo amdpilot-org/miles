@@ -33,6 +33,9 @@ class _StubInjector:
     def __init__(self) -> None:
         self.event_log = state.EventLog()
 
+    def observe_a_fault_free_tail(self) -> None:
+        pass
+
     def stop_and_join(self) -> None:
         pass
 

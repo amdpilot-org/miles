@@ -40,7 +40,7 @@ def _run_injection_loop(
             event_log=event_log or state.EventLog(),
             cell_fault_forms=cell_fault_forms or api_server_fault_forms(),
             get_virtual_cells=get_virtual_cells,
-            injection_enabled=injection_enabled,
+            injection_admission=core.InjectionAdmission(is_open=injection_enabled),
             poll_interval_seconds=1e-6,
             quiescent_polls_required=quiescent_polls_required,
         )

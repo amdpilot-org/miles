@@ -4,7 +4,8 @@ import logging
 import random
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 import requests
 
 from tests.e2e.ft.conftest_ft.fault_injection.fault_forms import ROLLOUT_CELL_TYPE, BaseFaultForm, CellFaultForms
@@ -24,6 +25,23 @@ POLL_INTERVAL_SECONDS: float = 2.0
 QUIESCENT_POLLS_REQUIRED: int = 60
 
 
+class InjectionAdmission:
+    def __init__(self, *, is_open: Callable[[], bool] | None = None) -> None:
+        self._is_open = is_open
+        self._closed = threading.Event()
+        self._lock = threading.Lock()
+
+    @contextmanager
+    def admitting_one_fault(self) -> Iterator[bool]:
+        with self._lock:
+            yield not self._closed.is_set() and (self._is_open is None or self._is_open())
+
+    def close_after_any_fault_in_flight(self) -> None:
+        self._closed.set()
+        with self._lock:
+            pass
+
+
 def _compute_next_injection_time(rng: random.Random, mean_interval_seconds: float) -> float:
     return time.monotonic() + rng.expovariate(1.0 / mean_interval_seconds)
 
@@ -37,10 +55,11 @@ def run_fault_injection_loop(
     event_log: EventLog,
     cell_fault_forms: CellFaultForms,
     get_virtual_cells: Callable[[], list[dict]] | None = None,
-    injection_enabled: Callable[[], bool] | None = None,
+    injection_admission: InjectionAdmission | None = None,
     poll_interval_seconds: float = POLL_INTERVAL_SECONDS,
     quiescent_polls_required: int = QUIESCENT_POLLS_REQUIRED,
 ) -> None:
+    admission = injection_admission if injection_admission is not None else InjectionAdmission()
     rng = random.Random(seed)
     next_injection_time_of_cell_type: dict[str, float] = {
         cell_type: _compute_next_injection_time(rng, mean_interval_seconds)
@@ -102,26 +121,27 @@ def run_fault_injection_loop(
         target = rng.choice(cells_of_type[cell_type])
         cell_name = target["metadata"]["name"]
         form = _draw_form(cell_fault_forms[cell_type], events=event_log.events, cell_type=cell_type, rng=rng)
-        if injection_enabled is not None and not injection_enabled():
-            continue
-        try:
-            form.inject(target, rng)
-        except Exception:
+        with admission.admitting_one_fault() as admitted:
+            if not admitted:
+                continue
+            try:
+                form.inject(target, rng)
+            except Exception:
+                event_log.note_injection_attempt(
+                    cell_name=cell_name, form_name=form.name, succeeded=False, harmed=form.harms_the_cell
+                )
+                quiescent_polls_of_cell_type[cell_type] = 0
+                logger.info("Failed to inject fault %s into %s", form.name, cell_name, exc_info=True)
+                continue
+
             event_log.note_injection_attempt(
-                cell_name=cell_name, form_name=form.name, succeeded=False, harmed=form.harms_the_cell
+                cell_name=cell_name, form_name=form.name, succeeded=True, harmed=form.harms_the_cell
             )
             quiescent_polls_of_cell_type[cell_type] = 0
-            logger.info("Failed to inject fault %s into %s", form.name, cell_name, exc_info=True)
-            continue
-
-        event_log.note_injection_attempt(
-            cell_name=cell_name, form_name=form.name, succeeded=True, harmed=form.harms_the_cell
-        )
-        quiescent_polls_of_cell_type[cell_type] = 0
-        next_injection_time_of_cell_type[cell_type] = _compute_next_injection_time(
-            rng, mean_interval_seconds_of_cell_type[cell_type]
-        )
-        logger.info("Injected fault %s into %s", form.name, cell_name)
+            next_injection_time_of_cell_type[cell_type] = _compute_next_injection_time(
+                rng, mean_interval_seconds_of_cell_type[cell_type]
+            )
+            logger.info("Injected fault %s into %s", form.name, cell_name)
 
 
 def _kind_is_quiescent(kind_cells: list[dict], *, expected_num_cells: int) -> bool:

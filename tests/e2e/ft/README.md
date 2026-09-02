@@ -381,7 +381,9 @@ Architecture (external fault injection, not inside the training loop):
      or the test layer deletes the pod on kubernetes
   4. The health checker notices by heartbeat timeout
   5. The mini FT controller recovers it (suspend -> resume)
-  6. Verify: training completes, no hangs, prod assertions pass
+  6. When training returns, close admission and keep polling until the last accepted
+     injection is >= 120s old, so the recovery witness has a reading it can accept
+  7. Verify: training completes, no hangs, prod assertions pass
 
 Per-kind schedules: exponential, mean that kind's --*-crash-interval-seconds
 
@@ -410,6 +412,7 @@ membership is asserted.
 - **Why the per-cell pairing**: a floor of ">= 2 healings" passes whenever the last crash never recovered. The default intervals are short enough that a soak reliably clears the floors.
 - **Why the step budget is 60**: a rollout injection costs a 60-poll (~120s) quiescent streak plus an exponential wait of mean 240s, and a weight update forfeits the streak, so a mixed or colocated soak needs well over ten minutes of run to reach the second accepted rollout injection the witness demands. The budget buys that time without lowering the quiescence gate, which exists to stop the injector killing a kind's last live replica.
 - **Why the rollout witness is one-sided**: the trainer witness reads the run's own CellReconfigureEvents, which miss nothing; the rollout witness reads sampled polls, which miss windows by construction. It therefore never demands seeing the down half of a recovery - it demands a Serving reading fresh enough (>= 120s after the cell's last injection, past the ~95s staleness) to prove the survivor really serves. Undercounting an intermediate recovery cannot fail the run; claiming one that never happened cannot pass it.
+- **Why the run ends with a fault-free tail**: the last accepted fault can land seconds before training returns, and the witness demands a Serving reading taken >= 120s after it. Stopping the injector right there would fail a run whose replacement was already back. Admission therefore closes first and the loop keeps observing until that tail exists; a failing run skips the tail and tears down at once. Admission, the injection and its bookkeeping are one critical section, so closing admission cannot return while a fault it already let through is still being injected and would otherwise land after the tail was measured.
 - **Stopping the injector**: `stop_and_join` asserts the thread actually stopped, since a thread still mid-injection could crash a cell nothing will heal, and would race the witness being read.
 
 ### `scenario_realistic_gsm8k`

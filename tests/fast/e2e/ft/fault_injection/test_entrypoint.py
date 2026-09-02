@@ -62,6 +62,47 @@ def test_handle_forwards_the_quiescent_poll_override() -> None:
     assert captured["poll_interval_seconds"] == 0.25
 
 
+def test_closing_admission_waits_for_a_fault_it_already_let_through() -> None:
+    """Regression: a fault admitted but not yet recorded let the tail be measured from an older one."""
+    released, entered = threading.Event(), threading.Event()
+
+    def slow_inject(cell: dict, rng: random.Random) -> None:
+        entered.set()
+        released.wait(timeout=30)
+
+    handle = entrypoint.FaultInjectorHandle(
+        base_url="http://control",
+        seed=0,
+        mean_interval_seconds_of_cell_type=intervals(("actor",), 1e-12),
+        cell_fault_forms=fixed_fault_forms([StubFaultForm("slow", slow_inject)]),
+        poll_interval_seconds=0,
+        quiescent_polls_required=1,
+    )
+
+    with (
+        patch.object(core, "requests") as mock_requests,
+        patch.object(entrypoint, "STALE_STATUS_GRACE_SECONDS", 0.0),
+    ):
+        mock_requests.get.side_effect = lambda url, timeout: mock_response(
+            {"items": [typed_cell(f"actor-{i}", "actor") for i in range(3)]}
+        )
+        handle.start()
+        try:
+            assert entered.wait(timeout=30)
+            closing = threading.Thread(name="closing-admission", target=handle.observe_a_fault_free_tail)
+            closing.start()
+            closing.join(timeout=2)
+            assert closing.is_alive()
+
+            released.set()
+            closing.join(timeout=30)
+            assert not closing.is_alive()
+            assert views.compute_injection_times(handle.event_log.events)
+        finally:
+            released.set()
+            handle.stop_and_join()
+
+
 def test_an_injector_that_outlives_the_join_fails_instead_of_racing_the_log() -> None:
     """Reading the log beside a still-running injector would assert on a half-written history."""
     released = threading.Event()

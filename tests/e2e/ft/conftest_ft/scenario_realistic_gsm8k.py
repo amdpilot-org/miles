@@ -174,6 +174,7 @@ def run_realistic_gsm8k(
 
     try:
         run.launch(config)
+        injector.observe_a_fault_free_tail()
     finally:
         injector.stop_and_join()
 
