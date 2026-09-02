@@ -251,6 +251,14 @@ class TestWhatAResetRefusesToWalk:
                 optimizer, stream_optimizer_state_to_disk=False, chunked_optimizer_state_offload=False
             )
 
+    def test_a_non_adam_optimizer_is_refused_before_anything_is_reset(self, monkeypatch):
+        """The self-check only knows adam's moments, so refusing late would leave a half-reset trainer."""
+        optimizer_utils = pytest.importorskip("miles.backends.megatron_utils.optimizer_utils")
+        monkeypatch.setattr(optimizer_utils, "USING_PYTORCH_OPTIMIZER", False)
+
+        with pytest.raises(AssertionError, match="dist_muon"):
+            optimizer_utils.assert_optimizer_state_reset_supported(optimizer_name="dist_muon")
+
     def test_a_chunked_offload_is_refused(self, monkeypatch):
         """The offloader's cpu store keeps canonical moments this reset never reaches."""
         with pytest.raises(AssertionError, match="chunked-optimizer-state-offload"):

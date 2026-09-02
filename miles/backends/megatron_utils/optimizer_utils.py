@@ -3,6 +3,12 @@ from megatron.core.optimizer import USING_PYTORCH_OPTIMIZER
 from megatron.core.optimizer.optimizer import ChainedOptimizer, MegatronOptimizer
 
 
+def assert_optimizer_state_reset_supported(*, optimizer_name: str) -> None:
+    assert (
+        USING_PYTORCH_OPTIMIZER or optimizer_name.lower().removeprefix("dist_") == "adam"
+    ), f"a state reset checks the moments adam keeps, but --optimizer is {optimizer_name!r}"
+
+
 def reset_optimizer_state(
     optimizer: MegatronOptimizer, *, stream_optimizer_state_to_disk: bool, chunked_optimizer_state_offload: bool
 ) -> None:

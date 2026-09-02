@@ -68,7 +68,7 @@ from .model import (
     save,
     train,
 )
-from .optimizer_utils import reset_optimizer_state
+from .optimizer_utils import assert_optimizer_state_reset_supported, reset_optimizer_state
 from .parallel import verify_megatron_parallel_state
 from .replay_utils import register_replay_list_moe
 from .update_weight.common import named_params_and_buffers
@@ -319,6 +319,7 @@ class MegatronTrainRayActor(TrainRayActor):
             assert not self.args.use_precision_aware_optimizer
             assert not self.args.optimizer_cpu_offload
             assert not self.args.offload_optimizer_states
+            assert_optimizer_state_reset_supported(optimizer_name=self.args.optimizer)
             if self.args.megatron_to_hf_mode != "bridge":
                 assert self.args.finetune
                 assert self.args.no_load_optim
