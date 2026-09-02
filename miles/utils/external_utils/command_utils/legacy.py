@@ -5,6 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from miles.utils.external_utils.command_utils.base_backend import ExecuteTrainConfig as _CurrentExecuteTrainConfig
+from miles.utils.external_utils.command_utils.base_backend import resolve_hardware
 from miles.utils.external_utils.command_utils.common import (
     GENERATION_HARDWARE,
     MOONCAKE_MASTER_LOG_PATH,
@@ -48,6 +49,7 @@ __all__ = [
     "get_mooncake_object_store_args",
     "hf_download_dataset",
     "repo_base_dir",
+    "resolve_hardware",
     "rsync_simple",
     "ssh_start_ray_workers",
     "start_mooncake_master",
