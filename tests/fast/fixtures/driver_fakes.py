@@ -25,7 +25,6 @@ class FakeRolloutExecutor:
         self.get = FakeRemoteMethod(self._get)
         self.eval = FakeRemoteMethod(self._eval)
         self.save = FakeRemoteMethod(self._save)
-        self.dispose = FakeRemoteMethod(self._dispose)
         self.report_eval_skip = FakeRemoteMethod(self._report_eval_skip)
 
     async def _get(self, rollout_id: int) -> RolloutDataPack:
@@ -47,7 +46,7 @@ class FakeRolloutExecutor:
     async def _save(self, rollout_id: int) -> None:
         self.events.append(f"executor_save:{rollout_id}")
 
-    async def _dispose(self) -> None:
+    async def dispose(self) -> None:
         self.events.append("executor_dispose")
 
     async def _report_eval_skip(self, rollout_id: int, reason: str) -> None:

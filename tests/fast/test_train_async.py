@@ -7,6 +7,7 @@ import train_async as train_async_driver
 from tests.fast.fixtures.driver_fakes import FakeInferenceController, FakeRolloutExecutor, FakeTrainingModel
 
 from miles.ray import placement_group as placement_group_mod
+from miles.utils.async_utils import with_disposer
 
 
 def _make_args(**overrides: Any) -> SimpleNamespace:
@@ -68,7 +69,7 @@ def _install_driver_fakes(
     ) -> None:
         events.append(f"update_weights:{rollout_id}")
 
-    monkeypatch.setattr(train_async_driver, "init_orchestration_script", lambda _args: None)
+    monkeypatch.setattr(train_async_driver, "init_orchestration_script", lambda _args, *, disposer: None)
     monkeypatch.setattr(train_async_driver, "create_rollout_components", create_rollout_components)
     monkeypatch.setattr(train_async_driver, "create_training_models", create_training_models)
     monkeypatch.setattr(train_async_driver, "maybe_start_mini_ft_controller", lambda _args: None)
@@ -93,7 +94,7 @@ class TestApiServer:
         args = _make_args(api_server_port=8123, ft_components=["rollout"])
         components = _install_driver_fakes(monkeypatch, args, events)
 
-        await train_async_driver.train(args)
+        await with_disposer(train_async_driver.train, args)
 
         (call,) = components.api_server_calls
         assert list(call["trainer_models"]) == ["actor"]
@@ -108,7 +109,7 @@ class TestApiServer:
         args = _make_args(api_server_port=None)
         components = _install_driver_fakes(monkeypatch, args, events)
 
-        await train_async_driver.train(args)
+        await with_disposer(train_async_driver.train, args)
 
         assert components.api_server_calls == []
 
@@ -125,7 +126,7 @@ class TestWeightEqualityCheck:
         )
         components = _install_driver_fakes(monkeypatch, args, events)
 
-        await train_async_driver.train(args)
+        await with_disposer(train_async_driver.train, args)
 
         assert components.inference_controller.check_weights_calls == [
             dict(
@@ -146,7 +147,7 @@ class TestPipelinedGeneration:
         held_generation = asyncio.Event()
         components.rollout_executor.generation_gates[1] = held_generation
 
-        driver = asyncio.create_task(train_async_driver.train(args))
+        driver = asyncio.create_task(with_disposer(train_async_driver.train, args))
         await asyncio.wait_for(components.actor_model.train_started[0].wait(), timeout=10)
 
         assert "generate_start:1" in events
@@ -170,7 +171,7 @@ class TestTerminalLifecycle:
         args = _make_args(use_critic=True, keep_old_actor=True, eval_interval=1, hf_checkpoint="/ckpt/hf")
         _install_driver_fakes(monkeypatch, args, events)
 
-        await train_async_driver.train(args)
+        await with_disposer(train_async_driver.train, args)
 
         assert "eval:0" in events
         assert sorted(event for event in events if event.endswith("_dispose")) == [

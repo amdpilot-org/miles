@@ -6,6 +6,8 @@ import pytest
 import train as train_driver
 from tests.fast.fixtures.driver_fakes import FakeInferenceController, FakeRolloutExecutor, FakeTrainingModel
 
+from miles.utils.async_utils import with_disposer
+
 
 def _make_args(**overrides: Any) -> SimpleNamespace:
     args = SimpleNamespace(
@@ -56,7 +58,7 @@ def _install_driver_fakes(
     ) -> None:
         events.append(f"update_weights:{rollout_id}")
 
-    monkeypatch.setattr(train_driver, "init_orchestration_script", lambda _args: None)
+    monkeypatch.setattr(train_driver, "init_orchestration_script", lambda _args, *, disposer: None)
     monkeypatch.setattr(train_driver, "create_rollout_components", create_rollout_components)
     monkeypatch.setattr(train_driver, "create_training_models", create_training_models)
     monkeypatch.setattr(train_driver, "maybe_start_mini_ft_controller", lambda _args: None)
@@ -72,7 +74,7 @@ class TestEvalOnlyRun:
         args = _make_args(num_rollout=0, eval_interval=2)
         components = _install_driver_fakes(monkeypatch, args, events)
 
-        await train_driver.train(args)
+        await with_disposer(train_driver.train, args)
 
         assert events.count("prepare_eval") == 1
         assert events.count("eval:0") == 1
@@ -93,7 +95,7 @@ class TestWeightEqualityCheck:
         )
         components = _install_driver_fakes(monkeypatch, args, events)
 
-        await train_driver.train(args)
+        await with_disposer(train_driver.train, args)
 
         assert components.inference_controller.check_weights_calls == [
             dict(
@@ -110,7 +112,7 @@ class TestWeightEqualityCheck:
         args = _make_args(check_weight_update_equal=False)
         components = _install_driver_fakes(monkeypatch, args, events)
 
-        await train_driver.train(args)
+        await with_disposer(train_driver.train, args)
 
         assert components.inference_controller.check_weights_calls == []
 
@@ -122,7 +124,7 @@ class TestTerminalLifecycle:
         args = _make_args(use_critic=True)
         _install_driver_fakes(monkeypatch, args, events)
 
-        await train_driver.train(args)
+        await with_disposer(train_driver.train, args)
 
         assert sorted(event for event in events if event.endswith("_dispose")) == [
             "actor_dispose",
