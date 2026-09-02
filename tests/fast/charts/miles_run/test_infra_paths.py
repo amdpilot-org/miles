@@ -192,6 +192,62 @@ class TestRunsRootContainmentIgnoresHowAPathIsSpelled:
 
 
 @requires_helm
+class TestTheMountThatProvidesTheRunsRootDecides:
+    def test_a_read_only_mount_nested_under_a_writable_one_is_refused(self):
+        """Kubernetes hands the path to the innermost mount, so the writable one above it never sees a write."""
+        error = render_run_error(
+            *volumes_args(
+                host_path_volume(
+                    name="data",
+                    path="/data",
+                    mounts=[{"mountPath": "/data"}, {"mountPath": "/data/runs", "readOnly": True}],
+                )
+            ),
+            "--set",
+            "infra.paths.runsRoot=/data/runs",
+        )
+
+        assert "read-only" in error
+
+    def test_a_writable_mount_nested_under_a_read_only_one_is_accepted(self):
+        """The same rule the other way round: the run writes into the inner mount, and that one is writable."""
+        container = orchestrator_container(
+            *volumes_args(
+                host_path_volume(
+                    name="data",
+                    path="/data",
+                    mounts=[{"mountPath": "/data", "readOnly": True}, {"mountPath": "/data/runs"}],
+                )
+            ),
+            "--set",
+            "infra.paths.runsRoot=/data/runs",
+        )
+
+        assert container["image"]
+
+    def test_a_runs_root_provided_by_one_writable_mount_is_accepted(self):
+        """The ordinary cluster, where a single shared volume holds every run's directory."""
+        container = orchestrator_container(
+            *volumes_args(host_path_volume()), "--set", "infra.paths.runsRoot=/cluster-storage/miles_data"
+        )
+
+        assert container["image"]
+
+    def test_an_empty_dir_nested_under_a_shared_mount_is_refused(self):
+        """The shared volume above it is never written: each pod gets the emptyDir's own copy of the directory."""
+        error = render_run_error(
+            *volumes_args(
+                host_path_volume(name="data", path="/data", mounts=[{"mountPath": "/data"}]),
+                {"name": "scratch", "emptyDir": {}, "mounts": [{"mountPath": "/data/runs"}]},
+            ),
+            "--set",
+            "infra.paths.runsRoot=/data/runs",
+        )
+
+        assert "emptyDir" in error
+
+
+@requires_helm
 class TestRunDirectory:
     def test_the_orchestrator_watches_the_state_file_the_launcher_named(self):
         """The launcher polls the path it injected, so a chart that derives its own is a run that can only hang."""
