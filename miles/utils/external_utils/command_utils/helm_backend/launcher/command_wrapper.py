@@ -174,6 +174,10 @@ class Kubectl:
         )
 
     @staticmethod
+    def delete_service(name: str, *, namespace: str) -> None:
+        Kubectl._run(["delete", "service", name, "--namespace", namespace, "--ignore-not-found"])
+
+    @staticmethod
     def get_json(
         kind: str,
         *,
