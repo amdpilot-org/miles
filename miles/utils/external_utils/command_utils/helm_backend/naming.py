@@ -28,6 +28,7 @@ _VALUES_DIR_NAME = "values"
 _RECORDS_DIR_NAME = "launches"
 _RECORD_FILE_GLOB = "launch-*.json"
 _RECORDED_STATE_FILE_KEY = "state_file"
+_SUPERSEDED_MARKER_SUFFIX = ".superseded"
 
 
 def platform_account_name(*, release: str, access: PlatformAccess) -> str:
@@ -127,6 +128,10 @@ class RunFiles:
     @staticmethod
     def new_record_file(*, run_directory: str | Path) -> Path:
         return Path(run_directory) / _RECORDS_DIR_NAME / f"launch-{_new_launch_token()}.json"
+
+    @staticmethod
+    def superseded_marker(*, state_file: str | Path) -> Path:
+        return Path(f"{state_file}{_SUPERSEDED_MARKER_SUFFIX}")
 
     @staticmethod
     def latest_state_file(*, run_directory: str | Path) -> Path | None:
