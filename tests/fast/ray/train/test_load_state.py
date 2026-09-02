@@ -90,17 +90,20 @@ class TestTrainerCellLoadState:
             assert [method for method, _args, _kwargs in ray.get(handle.get_calls.remote())] == ["load_state"]
 
 
-class TestAFailedReloadLeavesTheCellStanding:
-    async def test_a_worker_that_refuses_the_reload_does_not_kill_the_cell(self):
-        """A take-over that cannot reload has to report that, not turn a live trainer into one to heal."""
+class TestAFailedReloadRecyclesTheCell:
+    async def test_a_rank_that_refuses_the_reload_errors_the_cell_and_kills_every_rank(self):
+        """A surviving rank would still be in the checkpoint collective while the take-over reports the failure."""
         cell = make_alive_cell(0, alive_cell_indices=[0])
-        for handle in get_raw_actor_handles(cell):
-            ray.get(handle.set_fail_methods.remote(["load_state"]))
+        handles = get_raw_actor_handles(cell)
+        ray.get(handles[0].set_fail_methods.remote(["load_state"]))
 
         with pytest.raises(RuntimeError, match="Injected failure"):
             await cell.load_state()
 
-        assert cell.is_alive
+        assert cell.is_errored
+        for handle in handles:
+            with pytest.raises(ray.exceptions.RayActorError):
+                ray.get(handle.get_calls.remote())
 
 
 class TestAReloadWaitsForTheWholeFleet:

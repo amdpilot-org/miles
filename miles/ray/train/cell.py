@@ -87,7 +87,7 @@ class TrainerCell:
         return results
 
     async def load_state(self) -> list:
-        return await self.execute("load_state", kill_on_failure=False)
+        return await self.execute("load_state")
 
     async def train(
         self,
