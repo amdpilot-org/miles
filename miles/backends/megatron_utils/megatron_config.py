@@ -217,6 +217,12 @@ def _assert_no_declared_critic(raw: "_RawMegatronConfig") -> None:
 
 
 def compute_trainer_args(args: Namespace, trainer: MegatronTrainerConfig) -> Namespace:
+    # TODO: support policies with different global batch sizes.
+    assert "global_batch_size" not in trainer.overrides, (
+        f"--megatron-config trainer {trainer.trainer_id!r} overrides global_batch_size; every policy has to "
+        f"share the run's"
+    )
+
     ans = copy.deepcopy(args)
     ans.trainer_model_id = trainer.model_id
 
