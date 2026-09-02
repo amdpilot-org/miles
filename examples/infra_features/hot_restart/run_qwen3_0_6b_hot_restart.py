@@ -108,6 +108,7 @@ def build_train_args(args: ScriptArgs) -> str:
         f"{optimizer_args} "
         f"{misc_args} "
         f"{command_utils.get_default_wandb_args(__file__, run_id=args.run_id)} "
+        f"--wandb-run-id {args.run_id} "
         f"{args.extra_args} "
     )
 
