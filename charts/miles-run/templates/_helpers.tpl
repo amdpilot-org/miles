@@ -35,7 +35,11 @@ tolerations:
   {{- toYaml . | nindent 2 }}
 {{- end }}
 {{- if not .gated }}
-{{- with $scheduling.affinity }}
+{{- $affinity := $scheduling.affinity | default dict }}
+{{- if .withoutPodAntiAffinity }}
+{{- $affinity = omit $affinity "podAntiAffinity" }}
+{{- end }}
+{{- with $affinity }}
 affinity:
   {{- toYaml . | nindent 2 }}
 {{- end }}

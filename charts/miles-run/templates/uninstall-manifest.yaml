@@ -24,7 +24,7 @@ data:
           labels:
             miles.radixark.io/uninstall-of: {{ .Release.Name | quote }}
         spec:
-          {{- include "miles-run.podDefaults" . | nindent 10 }}
+          {{- include "miles-run.podDefaultsFor" (dict "context" . "gated" false "withoutPodAntiAffinity" true) | nindent 10 }}
           serviceAccountName: {{ include "miles-common.uninstallerServiceAccountName" . | quote }}
           restartPolicy: Never
           containers:

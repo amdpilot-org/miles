@@ -62,6 +62,19 @@ class TestUninstallManifest:
 
         assert "--ignore-not-found" in command
 
+    def test_does_not_inherit_the_anti_affinity_that_spread_the_run(self):
+        """Required anti-affinity can hold down every eligible node, leaving this pod nowhere to be scheduled
+        and the release and its gpus in place, while node placement still has to be obeyed."""
+        affinity = (
+            "--set-json",
+            'infra.scheduling.affinity={"podAntiAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":'
+            '[{"topologyKey":"kubernetes.io/hostname"}]},"nodeAffinity":{"k":"v"}}',
+        )
+
+        spec = _rendered_job(*affinity)["spec"]["template"]["spec"]
+
+        assert spec["affinity"] == {"nodeAffinity": {"k": "v"}}
+
     def test_runs_as_the_account_that_outlives_the_release(self):
         """helm deletes the release's own rolebinding halfway through, which would 403 the rest of the deletions."""
         assert _rendered_job()["spec"]["template"]["spec"]["serviceAccountName"] == UNINSTALLER_SERVICE_ACCOUNT
