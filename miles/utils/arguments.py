@@ -3118,9 +3118,10 @@ def _validate_static_addrs_name_another_launch(args: argparse.Namespace, *, comp
 
 def _validate_registration(args: argparse.Namespace, *, component: DeployComponent) -> None:
     if (init_expected := args.init_expected_num_cells) is not None:
-        assert (
-            not component.deploys_own_inference_engines()
-        ), f"--deploy-component {component.value} deploys its own engines, so drop --init-expected-num-cells"
+        assert component is DeployComponent.PRIMARY, (
+            f"--init-expected-num-cells needs --deploy-component {DeployComponent.PRIMARY.value}, not "
+            f"{component.value}"
+        )
         assert (
             init_expected >= 1
         ), f"--init-expected-num-cells {init_expected} lets the run start before a single engine registered into it"
