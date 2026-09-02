@@ -117,7 +117,7 @@ All three run on every PR. `pytest tests/e2e/k8s_apiserver tests/e2e/k8s_kind` s
 | --- | --- | --- | --- |
 | Fakes + fake clock | `tests/fast/utils/workers/reconcile/` | Control flow, timing, shutdown | Nothing |
 | Real apiserver, no kubelet | `tests/e2e/k8s_apiserver/` | API semantics: cursors, watch timeouts, real 410, relist | etcd and the apiserver as containers, plus a second apiserver with `--watch-cache=false` — with the cache on, a compacted `resourceVersion` is still served, so nothing can invalidate a live cursor |
-| kind cluster | `tests/e2e/k8s_kind/` | What only a kubelet produces: Running, restarts, graceful deletion, bookmarks | A pinned kind binary, downloaded on demand and checked against its pinned SHA-256 |
+| kind cluster | `tests/e2e/k8s_kind/` | What only a kubelet produces: Running, restarts, graceful deletion, bookmarks | A pinned kind binary: a `kind` on `PATH` is used only when its version matches the pin, otherwise the pinned build is downloaded on demand and checked against its pinned SHA-256 |
 
 | Env var | Effect |
 | --- | --- |
