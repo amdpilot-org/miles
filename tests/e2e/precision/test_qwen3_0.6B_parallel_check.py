@@ -1,6 +1,8 @@
+import itertools
 import os
 
 from tests.ci.ci_register import register_cuda_ci
+from tests.e2e.script_config import config_for_launch
 
 from miles.utils.external_utils import command_utils
 
@@ -31,7 +33,9 @@ def prepare():
 
 
 def execute():
-    U = command_utils.default_config().create_backend()
+    config = command_utils.default_config()
+    U = config.create_backend()
+    launch_indices = itertools.count()
     ckpt_args = f"--hf-checkpoint /root/models/{MODEL_NAME}/ " f"--ref-load /root/models/{MODEL_NAME}_torch_dist "
 
     rollout_args = (
@@ -105,6 +109,7 @@ def execute():
             ),
             num_gpus_per_node=NUM_GPUS,
             megatron_model_type=MODEL_TYPE,
+            config=config_for_launch(config, launch_index=next(launch_indices)),
         )
         # 8 GPU CPU 1
         for num_gpus in [8, 4, 2]:
@@ -134,6 +139,7 @@ def execute():
                             train_args=args,
                             num_gpus_per_node=num_gpus,
                             megatron_model_type=MODEL_TYPE,
+                            config=config_for_launch(config, launch_index=next(launch_indices)),
                         )
         train_args += "--calculate-per-token-loss "
 

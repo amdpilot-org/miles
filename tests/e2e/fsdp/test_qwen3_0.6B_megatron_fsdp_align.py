@@ -1,6 +1,7 @@
 import os
 
 from tests.ci.ci_register import register_cuda_ci, register_rocm_ci
+from tests.e2e.script_config import config_for_launch
 
 from miles.utils.external_utils import command_utils
 
@@ -39,7 +40,8 @@ def prepare():
 
 
 def execute():
-    U = command_utils.default_config().create_backend()
+    config = command_utils.default_config()
+    U = config.create_backend()
     ckpt_args = f"--hf-checkpoint /root/models/{MODEL_NAME}/"
 
     rollout_args = (
@@ -113,6 +115,7 @@ def execute():
             train_args=train_args + (f"{fsdp_args}" f"--save-debug-rollout-data {debug_data_path} "),
             num_gpus_per_node=NUM_GPUS,
             megatron_model_type=None,
+            config=config_for_launch(config, launch_index=0),
         )
 
         U.execute_train(
@@ -125,6 +128,7 @@ def execute():
             ),
             num_gpus_per_node=NUM_GPUS,
             megatron_model_type=None,
+            config=config_for_launch(config, launch_index=1),
         )
 
         U.execute_train(
@@ -152,6 +156,7 @@ def execute():
             ),
             num_gpus_per_node=NUM_GPUS,
             megatron_model_type=MODEL_TYPE,
+            config=config_for_launch(config, launch_index=2),
         )
 
     finally:
