@@ -423,3 +423,66 @@ class TestACellAnnouncingTheWorkersItCarries:
             await provider.ingest(_snapshot([_announcing(_cell(1), [])], sequence_number=2))
 
         assert sorted(provider._cell_of_id) == [_cell_id(0)]
+
+
+async def _hub_with_two_reporters(clock: _FakeClock) -> RegistrationHub:
+    provider, _watcher = await _watched(clock=clock)
+    await _apply(provider, _snapshot([_cell(0)]))
+    await _apply(provider, _snapshot([_other_cell(0)], reporter_id=_OTHER_REPORTER))
+    return provider
+
+
+class TestRenewingAReporterOnTheSnapshotsTakenIn:
+    async def test_a_snapshot_claiming_another_reporters_cells_does_not_renew_its_sender(self):
+        """A reporter that keeps sending such snapshots was never dropped, so its stale cells stayed."""
+        clock = _FakeClock()
+        provider = await _hub_with_two_reporters(clock)
+
+        clock.now += REPORTER_TTL_SECONDS - 1.0
+        with pytest.raises(AssertionError, match="is reported by both"):
+            await provider.ingest(
+                _snapshot([_cell(0, reporter_id=_OTHER_REPORTER)], reporter_id=_OTHER_REPORTER, sequence_number=2)
+            )
+        clock.now += 2.0
+        provider._remove_stale_reporters()
+
+        assert _OTHER_REPORTER not in provider._state_of_reporter_id
+
+    async def test_the_cells_such_a_reporter_registered_before_are_dropped_with_it(self):
+        """Those engines may long be gone, and the run keeps routing requests to them until they are."""
+        clock = _FakeClock()
+        provider = await _hub_with_two_reporters(clock)
+
+        clock.now += REPORTER_TTL_SECONDS - 1.0
+        with pytest.raises(AssertionError, match="is reported by both"):
+            await provider.ingest(
+                _snapshot([_cell(0, reporter_id=_OTHER_REPORTER)], reporter_id=_OTHER_REPORTER, sequence_number=2)
+            )
+        clock.now += 2.0
+        provider._remove_stale_reporters()
+
+        assert _cell_id(0, pool_id=_OTHER_POOL_ID) not in provider._cell_of_id
+
+    async def test_a_snapshot_that_was_taken_in_renews_its_sender(self):
+        """A healthy reporter is kept alive by exactly this stamp, and dropping it would flap the fleet."""
+        clock = _FakeClock()
+        provider = await _hub_with_two_reporters(clock)
+
+        clock.now += REPORTER_TTL_SECONDS - 1.0
+        await _apply(provider, _snapshot([_other_cell(0)], reporter_id=_OTHER_REPORTER, sequence_number=2))
+        clock.now += 2.0
+        provider._remove_stale_reporters()
+
+        assert _OTHER_REPORTER in provider._state_of_reporter_id
+
+    async def test_a_snapshot_refused_as_late_still_leaves_the_reporter_to_its_deadline(self):
+        """Only the deadline ends the stalemate with a reporter that restarted and resends from sequence 1."""
+        clock = _FakeClock()
+        provider = await _hub_with_two_reporters(clock)
+
+        clock.now += REPORTER_TTL_SECONDS - 1.0
+        await provider.ingest(_snapshot([_other_cell(0)], reporter_id=_OTHER_REPORTER, sequence_number=1))
+        clock.now += 2.0
+        provider._remove_stale_reporters()
+
+        assert _OTHER_REPORTER not in provider._state_of_reporter_id
