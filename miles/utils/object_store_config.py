@@ -21,6 +21,15 @@ def compute_mooncake_init_kwargs(*, host: str = "127.0.0.1", master_port: int = 
     }
 
 
+def compute_mooncake_init_kwargs_from_env() -> dict:
+    defaulted_init_kwargs = compute_mooncake_init_kwargs()
+    return {
+        field.init_kwarg: value
+        for field in _MOONCAKE_STORE_FIELDS
+        if field.init_kwarg in defaulted_init_kwargs and (value := os.environ.get(field.env_var)) is not None
+    }
+
+
 def compute_mooncake_store_config(init_kwargs: dict[str, Any], *, contribute_segment: bool) -> dict[str, Any]:
     config: dict[str, Any] = {}
     for field in _MOONCAKE_STORE_FIELDS:
