@@ -85,6 +85,84 @@ class TestMooncakeStoreConfig:
         assert config["master_server_addr"] == ""
 
 
+class TestMooncakeInitKwargs:
+    def test_defaults_name_the_launched_master(self, monkeypatch: pytest.MonkeyPatch):
+        """The launcher's defaults point at the master it starts and never read the environment."""
+        monkeypatch.setenv("MOONCAKE_MASTER", "10.9.9.9:50051")
+        init_kwargs = object_store_config.compute_mooncake_init_kwargs_vanilla(host="10.0.0.2", master_port=1234)
+        assert init_kwargs["master_server_address"] == "10.0.0.2:1234"
+        assert init_kwargs["protocol"] == "tcp"
+
+    def test_env_answers_only_defaulted_fields(self, monkeypatch: pytest.MonkeyPatch):
+        """The environment layer covers every defaulted field and nothing the launcher does not default."""
+        _clear_mooncake_env(monkeypatch)
+        monkeypatch.setenv("MOONCAKE_MASTER", "10.1.1.2:50051")
+        monkeypatch.setenv("MOONCAKE_PROTOCOL", "rdma")
+        monkeypatch.setenv("MOONCAKE_LOCAL_HOSTNAME", "10.1.1.1")
+        from_env = object_store_config.compute_mooncake_init_kwargs_from_env()
+        assert from_env == {"master_server_address": "10.1.1.2:50051", "protocol": "rdma"}
+
+    def test_env_overrides_reach_the_store_config(self, monkeypatch: pytest.MonkeyPatch):
+        """A defaulted field the environment names wins over the built-in default at store setup."""
+        _clear_mooncake_env(monkeypatch)
+        monkeypatch.setenv("MOONCAKE_MASTER", "10.1.1.2:50051")
+        monkeypatch.setenv("MOONCAKE_PROTOCOL", "rdma")
+        init_kwargs = (
+            object_store_config.compute_mooncake_init_kwargs_vanilla()
+            | object_store_config.compute_mooncake_init_kwargs_from_env()
+        )
+        config = object_store_config.compute_mooncake_store_config(init_kwargs, contribute_segment=True)
+        assert config["master_server_addr"] == "10.1.1.2:50051"
+        assert config["protocol"] == "rdma"
+
+
+class TestTheEnvironmentAnswersEveryDefaultedField:
+    def test_the_capacities_the_platform_names_reach_the_init_kwargs(self, monkeypatch: pytest.MonkeyPatch):
+        """A pod sized by its platform would otherwise be given the launcher's 2 GiB of each capacity."""
+        _clear_mooncake_env(monkeypatch)
+        monkeypatch.setenv("MOONCAKE_GLOBAL_SEGMENT_SIZE", "64mb")
+        monkeypatch.setenv("MOONCAKE_LOCAL_BUFFER_SIZE", "16mb")
+
+        from_env = object_store_config.compute_mooncake_init_kwargs_from_env()
+
+        assert from_env == {"global_segment_size": "64mb", "local_buffer_size": "16mb"}
+
+    def test_the_capacities_the_platform_names_survive_into_the_store_config(self, monkeypatch: pytest.MonkeyPatch):
+        """The kwargs are only worth answering because this is what the store is finally set up with."""
+        _clear_mooncake_env(monkeypatch)
+        monkeypatch.setenv("MOONCAKE_GLOBAL_SEGMENT_SIZE", "64mb")
+
+        init_kwargs = (
+            object_store_config.compute_mooncake_init_kwargs_vanilla()
+            | object_store_config.compute_mooncake_init_kwargs_from_env()
+        )
+        config = object_store_config.compute_mooncake_store_config(init_kwargs, contribute_segment=True)
+
+        assert config["global_segment_size"] == 64 * 1024**2
+        assert config["local_buffer_size"] == 2 * 1024**3
+
+    def test_a_defaulted_field_the_environment_leaves_alone_keeps_the_launcher_default(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        """The launcher still starts the master it configures, and a run naming nothing must still find it."""
+        _clear_mooncake_env(monkeypatch)
+        monkeypatch.setenv("MOONCAKE_PROTOCOL", "rdma")
+
+        init_kwargs = (
+            object_store_config.compute_mooncake_init_kwargs_vanilla(host="10.0.0.2")
+            | object_store_config.compute_mooncake_init_kwargs_from_env()
+        )
+
+        assert init_kwargs["master_server_address"] == "10.0.0.2:50051"
+        assert init_kwargs["protocol"] == "rdma"
+
+    def test_an_environment_that_names_nothing_changes_nothing(self, monkeypatch: pytest.MonkeyPatch):
+        """Every kubernetes run that names no store took this path before the environment was read at all."""
+        _clear_mooncake_env(monkeypatch)
+
+        assert object_store_config.compute_mooncake_init_kwargs_from_env() == {}
+
+
 def _clear_mooncake_env(monkeypatch: pytest.MonkeyPatch) -> None:
     for name in (
         "MOONCAKE_LOCAL_HOSTNAME",

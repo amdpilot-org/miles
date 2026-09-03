@@ -12,12 +12,21 @@ _GLOBAL_SEGMENT_SIZE_KEY = "global_segment_size"
 _MISSING = object()
 
 
-def compute_mooncake_init_kwargs(*, host: str = "127.0.0.1", master_port: int = MOONCAKE_MASTER_PORT) -> dict:
+def compute_mooncake_init_kwargs_vanilla(*, host: str = "127.0.0.1", master_port: int = MOONCAKE_MASTER_PORT) -> dict:
     return {
         "protocol": "tcp",
         MOONCAKE_MASTER_ADDRESS_KEY: f"{host}:{master_port}",
         "global_segment_size": "2gb",
         "local_buffer_size": "2gb",
+    }
+
+
+def compute_mooncake_init_kwargs_from_env() -> dict:
+    defaulted_init_kwargs = compute_mooncake_init_kwargs_vanilla()
+    return {
+        field.init_kwarg: value
+        for field in _MOONCAKE_STORE_FIELDS
+        if field.init_kwarg in defaulted_init_kwargs and (value := os.environ.get(field.env_var)) is not None
     }
 
 

@@ -19,7 +19,7 @@ from miles.utils.logging_utils import configure_logger_raw
 from miles.utils.object_store_config import (
     MOONCAKE_MASTER_ADDRESS_KEY,
     MOONCAKE_MASTER_PORT,
-    compute_mooncake_init_kwargs,
+    compute_mooncake_init_kwargs_vanilla,
 )
 from miles.utils.workers.argv_utils import parse_declared_args
 from miles.utils.workers.worker_provider.kubernetes.helm.naming import CHART_NAME
@@ -207,7 +207,7 @@ def get_owned_mooncake_master_port(train_argv: list[str]) -> int | None:
 
 
 def get_mooncake_object_store_args(master_port: int = MOONCAKE_MASTER_PORT, master_host: str = "127.0.0.1") -> str:
-    init_kwargs = compute_mooncake_init_kwargs(host=master_host, master_port=master_port)
+    init_kwargs = compute_mooncake_init_kwargs_vanilla(host=master_host, master_port=master_port)
     return (
         f"{OBJECT_STORE_BACKEND_FLAG} {MOONCAKE_BACKEND_NAME} "
         f"{MOONCAKE_INIT_KWARGS_FLAG} {shlex.quote(json.dumps(init_kwargs))} "
