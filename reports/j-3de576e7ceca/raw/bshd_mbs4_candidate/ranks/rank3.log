@@ -1,0 +1,107 @@
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:38.375 actor_cell0_rank0] train_actor.py:125 - Detected ROCm/HIP environment, skipping NUMA affinity setup
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:38.376 actor_cell0_rank0] parallel.py:59 - [Rank 0] FSDP mesh shape=(4,), dp_replicate_size=1, dp_shard_size=4, dp_rank=0
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:49:38.375 actor_cell0_rank1] train_actor.py:125 - Detected ROCm/HIP environment, skipping NUMA affinity setup
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:49:38.376 actor_cell0_rank1] parallel.py:59 - [Rank 1] FSDP mesh shape=(4,), dp_replicate_size=1, dp_shard_size=4, dp_rank=1
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:49:38.375 actor_cell0_rank2] train_actor.py:125 - Detected ROCm/HIP environment, skipping NUMA affinity setup
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:49:38.376 actor_cell0_rank2] parallel.py:59 - [Rank 2] FSDP mesh shape=(4,), dp_replicate_size=1, dp_shard_size=4, dp_rank=2
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:49:38.375 actor_cell0_rank3] train_actor.py:125 - Detected ROCm/HIP environment, skipping NUMA affinity setup
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:49:38.376 actor_cell0_rank3] parallel.py:59 - [Rank 3] FSDP mesh shape=(4,), dp_replicate_size=1, dp_shard_size=4, dp_rank=3
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:40.606 actor_cell0_rank0] actor.py:294 - [Rank 0] tie_word_embeddings=True, loading full model to CPU on all ranks
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:49:40.606 actor_cell0_rank1] actor.py:294 - [Rank 1] tie_word_embeddings=True, loading full model to CPU on all ranks
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:49:40.606 actor_cell0_rank2] actor.py:294 - [Rank 2] tie_word_embeddings=True, loading full model to CPU on all ranks
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:49:40.606 actor_cell0_rank3] actor.py:294 - [Rank 3] tie_word_embeddings=True, loading full model to CPU on all ranks
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:43.375 actor_cell0_rank0] actor.py:879 - FSDP MixedPrecision Policy: param_dtype=torch.bfloat16, reduce_dtype=torch.float32
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:49:43.372 actor_cell0_rank2] actor.py:879 - FSDP MixedPrecision Policy: param_dtype=torch.bfloat16, reduce_dtype=torch.float32
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:49:43.409 actor_cell0_rank1] actor.py:879 - FSDP MixedPrecision Policy: param_dtype=torch.bfloat16, reduce_dtype=torch.float32
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:49:43.426 actor_cell0_rank3] actor.py:879 - FSDP MixedPrecision Policy: param_dtype=torch.bfloat16, reduce_dtype=torch.float32
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:49:50.525 actor_cell0_rank2] lr_scheduler.py:80 - > learning rate decay style: constant
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:49:50.612 actor_cell0_rank3] lr_scheduler.py:80 - > learning rate decay style: constant
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:49:50.634 actor_cell0_rank1] lr_scheduler.py:80 - > learning rate decay style: constant
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:51.760 actor_cell0_rank0] lr_scheduler.py:80 - > learning rate decay style: constant
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:51.761 actor_cell0_rank0] timer.py:31 - Timer sleep start
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:51.762 actor_cell0_rank0] memory_utils.py:41 - [Rank 0] Memory-Usage before offload model: {'gpu': '0', 'total_GB': 287.98, 'free_GB': 279.37, 'used_GB': 8.62, 'allocated_GB': 4.17, 'reserved_GB': 6.08}
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:49:51.762 actor_cell0_rank1] memory_utils.py:41 - [Rank 1] Memory-Usage before offload model: {'gpu': '1', 'total_GB': 287.98, 'free_GB': 277.94, 'used_GB': 10.04, 'allocated_GB': 4.17, 'reserved_GB': 7.53}
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:49:51.762 actor_cell0_rank2] memory_utils.py:41 - [Rank 2] Memory-Usage before offload model: {'gpu': '2', 'total_GB': 287.98, 'free_GB': 277.94, 'used_GB': 10.04, 'allocated_GB': 4.17, 'reserved_GB': 7.53}
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:49:51.762 actor_cell0_rank3] memory_utils.py:41 - [Rank 3] Memory-Usage before offload model: {'gpu': '3', 'total_GB': 287.98, 'free_GB': 278.03, 'used_GB': 9.95, 'allocated_GB': 4.17, 'reserved_GB': 7.53}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:53.814 actor_cell0_rank0] memory_utils.py:41 - [Rank 0] Memory-Usage after offload model: {'gpu': '0', 'total_GB': 287.98, 'free_GB': 285.45, 'used_GB': 2.54, 'allocated_GB': 0.0, 'reserved_GB': 0.0}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:53.814 actor_cell0_rank0] timer.py:42 - Timer sleep end (elapsed: 2.1s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:53.814 actor_cell0_rank0] timer.py:31 - Timer train_wait start
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:49:53.814 actor_cell0_rank1] memory_utils.py:41 - [Rank 1] Memory-Usage after offload model: {'gpu': '1', 'total_GB': 287.98, 'free_GB': 285.47, 'used_GB': 2.51, 'allocated_GB': 0.0, 'reserved_GB': 0.0}
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:49:53.814 actor_cell0_rank2] memory_utils.py:41 - [Rank 2] Memory-Usage after offload model: {'gpu': '2', 'total_GB': 287.98, 'free_GB': 285.47, 'used_GB': 2.51, 'allocated_GB': 0.0, 'reserved_GB': 0.0}
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:49:53.814 actor_cell0_rank3] memory_utils.py:41 - [Rank 3] Memory-Usage after offload model: {'gpu': '3', 'total_GB': 287.98, 'free_GB': 285.56, 'used_GB': 2.42, 'allocated_GB': 0.0, 'reserved_GB': 0.0}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:54.204 actor_cell0_rank0] timer.py:31 - Timer update_weights start
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:54.204 actor_cell0_rank0] timer.py:42 - Timer update_weights end (elapsed: 0.0s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:54.412 actor_cell0_rank0] timer.py:31 - Timer wake_up start
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:55.305 actor_cell0_rank0] memory_utils.py:41 - [Rank 0] Memory-Usage after wake_up model: {'gpu': '0', 'total_GB': 287.98, 'free_GB': 281.26, 'used_GB': 6.73, 'allocated_GB': 4.16, 'reserved_GB': 4.19}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:55.305 actor_cell0_rank0] timer.py:42 - Timer wake_up end (elapsed: 0.9s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:55.305 actor_cell0_rank0] timer.py:42 - Timer train_wait end (elapsed: 1.5s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:55.305 actor_cell0_rank0] timer.py:31 - Timer train start
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:49:55.309 actor_cell0_rank0] timer.py:31 - Timer log_probs start
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:49:55.305 actor_cell0_rank1] memory_utils.py:41 - [Rank 1] Memory-Usage after wake_up model: {'gpu': '1', 'total_GB': 287.98, 'free_GB': 281.28, 'used_GB': 6.71, 'allocated_GB': 4.16, 'reserved_GB': 4.19}
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:49:55.305 actor_cell0_rank2] memory_utils.py:41 - [Rank 2] Memory-Usage after wake_up model: {'gpu': '2', 'total_GB': 287.98, 'free_GB': 281.28, 'used_GB': 6.71, 'allocated_GB': 4.16, 'reserved_GB': 4.19}
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:49:55.305 actor_cell0_rank3] memory_utils.py:41 - [Rank 3] Memory-Usage after wake_up model: {'gpu': '3', 'total_GB': 287.98, 'free_GB': 281.37, 'used_GB': 6.61, 'allocated_GB': 4.16, 'reserved_GB': 4.19}
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:50:01.520 actor_cell0_rank2] log_utils.py:100 - ft op=cross_cell phase=start kind=log_gather rank=2
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:50:01.479 actor_cell0_rank3] log_utils.py:100 - ft op=cross_cell phase=start kind=log_gather rank=3
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:01.526 actor_cell0_rank0] timer.py:42 - Timer log_probs end (elapsed: 6.2s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:01.527 actor_cell0_rank0] log_utils.py:100 - ft op=cross_cell phase=start kind=log_gather rank=0
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:01.540 actor_cell0_rank0] log_utils.py:106 - ft op=cross_cell phase=end kind=log_gather rank=0 success=true
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:01.540 actor_cell0_rank0] log_utils.py:126 - rollout 0: {'rollout/response_lengths': 8.0, 'rollout/rewards': 0.0, 'rollout/truncated': 0.0, 'rollout/raw_reward': 0.0, 'rollout/total_lengths': 64.75, 'rollout/log_probs': -7.969667077064514, 'rollout/entropy': 0.5319404155015945, 'rollout/advantages': 0.0, 'rollout/returns': 0.0}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:01.540 actor_cell0_rank0] timer.py:31 - Timer actor_train start
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:50:01.538 actor_cell0_rank1] log_utils.py:100 - ft op=cross_cell phase=start kind=log_gather rank=1
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:50:01.540 actor_cell0_rank1] log_utils.py:106 - ft op=cross_cell phase=end kind=log_gather rank=1 success=true
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:50:01.540 actor_cell0_rank2] log_utils.py:106 - ft op=cross_cell phase=end kind=log_gather rank=2 success=true
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:50:01.540 actor_cell0_rank3] log_utils.py:106 - ft op=cross_cell phase=end kind=log_gather rank=3 success=true
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:07.212 actor_cell0_rank0] log_utils.py:547 - step 0: {'train/loss': 7.969666957855225, 'train/grad_norm': 7664.60986328125, 'train/lr-pg_0': 1e-06, 'train/step': 0}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:07.212 actor_cell0_rank0] timer.py:42 - Timer actor_train end (elapsed: 5.7s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:07.212 actor_cell0_rank0] timer.py:42 - Timer train end (elapsed: 11.9s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:07.212 actor_cell0_rank0] timer.py:31 - Timer train_wait start
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:07.212 actor_cell0_rank0] train_metric_utils.py:56 - perf 0: {'perf/sleep_time': 2.0530550479888916, 'perf/update_weights_time': 0.00017333030700683594, 'perf/wake_up_time': 0.8934657573699951, 'perf/train_wait_time': 1.4909005165100098, 'perf/log_probs_time': 6.217490196228027, 'perf/actor_train_time': 5.672208786010742, 'perf/train_time': 11.906840085983276, 'perf/log_probs_tflops': 0.32432072547461815, 'perf/actor_train_tflops': 1.0664950853246928, 'perf/actor_train_tok_per_s': 182.6448988540525, 'perf/step_time': 13.397740602493286, 'perf/wait_time_ratio': 0.11127999569065823}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:07.214 actor_cell0_rank0] timer.py:31 - Timer sleep start
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:07.215 actor_cell0_rank0] memory_utils.py:41 - [Rank 0] Memory-Usage before offload model: {'gpu': '0', 'total_GB': 287.98, 'free_GB': 261.1, 'used_GB': 26.89, 'allocated_GB': 16.74, 'reserved_GB': 21.07}
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:50:07.215 actor_cell0_rank1] memory_utils.py:41 - [Rank 1] Memory-Usage before offload model: {'gpu': '1', 'total_GB': 287.98, 'free_GB': 261.12, 'used_GB': 26.87, 'allocated_GB': 16.74, 'reserved_GB': 21.08}
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:50:07.215 actor_cell0_rank2] memory_utils.py:41 - [Rank 2] Memory-Usage before offload model: {'gpu': '2', 'total_GB': 287.98, 'free_GB': 261.12, 'used_GB': 26.87, 'allocated_GB': 16.74, 'reserved_GB': 21.08}
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:50:07.215 actor_cell0_rank3] memory_utils.py:41 - [Rank 3] Memory-Usage before offload model: {'gpu': '3', 'total_GB': 287.98, 'free_GB': 261.22, 'used_GB': 26.77, 'allocated_GB': 16.74, 'reserved_GB': 21.07}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:12.787 actor_cell0_rank0] memory_utils.py:41 - [Rank 0] Memory-Usage after offload model: {'gpu': '0', 'total_GB': 287.98, 'free_GB': 281.95, 'used_GB': 6.04, 'allocated_GB': 0.15, 'reserved_GB': 0.22}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:12.788 actor_cell0_rank0] timer.py:42 - Timer sleep end (elapsed: 5.6s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:12.790 actor_cell0_rank0] timer.py:31 - Timer update_weights start
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:12.790 actor_cell0_rank0] timer.py:42 - Timer update_weights end (elapsed: 0.0s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:12.835 actor_cell0_rank0] timer.py:31 - Timer wake_up start
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:50:12.787 actor_cell0_rank1] memory_utils.py:41 - [Rank 1] Memory-Usage after offload model: {'gpu': '1', 'total_GB': 287.98, 'free_GB': 281.98, 'used_GB': 6.01, 'allocated_GB': 0.15, 'reserved_GB': 0.22}
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:50:12.788 actor_cell0_rank2] memory_utils.py:41 - [Rank 2] Memory-Usage after offload model: {'gpu': '2', 'total_GB': 287.98, 'free_GB': 281.98, 'used_GB': 6.01, 'allocated_GB': 0.15, 'reserved_GB': 0.22}
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:50:12.788 actor_cell0_rank3] memory_utils.py:41 - [Rank 3] Memory-Usage after offload model: {'gpu': '3', 'total_GB': 287.98, 'free_GB': 282.07, 'used_GB': 5.91, 'allocated_GB': 0.15, 'reserved_GB': 0.22}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:14.696 actor_cell0_rank0] memory_utils.py:41 - [Rank 0] Memory-Usage after wake_up model: {'gpu': '0', 'total_GB': 287.98, 'free_GB': 265.29, 'used_GB': 22.69, 'allocated_GB': 16.81, 'reserved_GB': 16.88}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:14.697 actor_cell0_rank0] timer.py:42 - Timer wake_up end (elapsed: 1.9s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:14.697 actor_cell0_rank0] timer.py:42 - Timer train_wait end (elapsed: 7.5s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:14.697 actor_cell0_rank0] timer.py:31 - Timer train start
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:14.699 actor_cell0_rank0] timer.py:31 - Timer log_probs start
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:50:14.696 actor_cell0_rank1] memory_utils.py:41 - [Rank 1] Memory-Usage after wake_up model: {'gpu': '1', 'total_GB': 287.98, 'free_GB': 265.31, 'used_GB': 22.67, 'allocated_GB': 16.81, 'reserved_GB': 16.88}
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:50:14.696 actor_cell0_rank2] memory_utils.py:41 - [Rank 2] Memory-Usage after wake_up model: {'gpu': '2', 'total_GB': 287.98, 'free_GB': 265.32, 'used_GB': 22.67, 'allocated_GB': 16.81, 'reserved_GB': 16.88}
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:50:14.696 actor_cell0_rank3] memory_utils.py:41 - [Rank 3] Memory-Usage after wake_up model: {'gpu': '3', 'total_GB': 287.98, 'free_GB': 265.42, 'used_GB': 22.57, 'allocated_GB': 16.81, 'reserved_GB': 16.88}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:14.841 actor_cell0_rank0] timer.py:42 - Timer log_probs end (elapsed: 0.1s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:14.849 actor_cell0_rank0] log_utils.py:100 - ft op=cross_cell phase=start kind=log_gather rank=0
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:14.854 actor_cell0_rank0] log_utils.py:106 - ft op=cross_cell phase=end kind=log_gather rank=0 success=true
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:14.854 actor_cell0_rank0] log_utils.py:126 - rollout 1: {'rollout/response_lengths': 8.0, 'rollout/rewards': 0.0, 'rollout/truncated': 0.0, 'rollout/raw_reward': 0.0, 'rollout/total_lengths': 64.75, 'rollout/log_probs': -7.831359028816223, 'rollout/entropy': 0.5347914397716522, 'rollout/advantages': 0.0, 'rollout/returns': 0.0}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:14.855 actor_cell0_rank0] timer.py:31 - Timer actor_train start
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:50:14.849 actor_cell0_rank1] log_utils.py:100 - ft op=cross_cell phase=start kind=log_gather rank=1
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:50:14.854 actor_cell0_rank1] log_utils.py:106 - ft op=cross_cell phase=end kind=log_gather rank=1 success=true
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:50:14.853 actor_cell0_rank2] log_utils.py:100 - ft op=cross_cell phase=start kind=log_gather rank=2
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:50:14.854 actor_cell0_rank2] log_utils.py:106 - ft op=cross_cell phase=end kind=log_gather rank=2 success=true
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:50:14.849 actor_cell0_rank3] log_utils.py:100 - ft op=cross_cell phase=start kind=log_gather rank=3
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:50:14.854 actor_cell0_rank3] log_utils.py:106 - ft op=cross_cell phase=end kind=log_gather rank=3 success=true
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:15.419 actor_cell0_rank0] log_utils.py:547 - step 1: {'train/loss': 7.831358909606934, 'train/grad_norm': 7897.009765625, 'train/lr-pg_0': 1e-06, 'train/step': 1}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:15.419 actor_cell0_rank0] timer.py:42 - Timer actor_train end (elapsed: 0.6s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:15.419 actor_cell0_rank0] timer.py:42 - Timer train end (elapsed: 0.7s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:15.419 actor_cell0_rank0] timer.py:31 - Timer train_wait start
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:15.420 actor_cell0_rank0] train_metric_utils.py:56 - perf 1: {'perf/sleep_time': 5.57327127456665, 'perf/update_weights_time': 5.7697296142578125e-05, 'perf/wake_up_time': 1.8612825870513916, 'perf/train_wait_time': 7.484457492828369, 'perf/log_probs_time': 0.14179253578186035, 'perf/actor_train_time': 0.5648565292358398, 'perf/train_time': 0.7227821350097656, 'perf/log_probs_tflops': 14.221206496893524, 'perf/actor_train_tflops': 10.709591692955806, 'perf/actor_train_tok_per_s': 1834.09405110629, 'perf/step_time': 8.207239627838135, 'perf/wait_time_ratio': 0.9119335893936664}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:15.422 actor_cell0_rank0] timer.py:31 - Timer sleep start
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:15.422 actor_cell0_rank0] memory_utils.py:41 - [Rank 0] Memory-Usage before offload model: {'gpu': '0', 'total_GB': 287.98, 'free_GB': 254.11, 'used_GB': 33.88, 'allocated_GB': 16.78, 'reserved_GB': 28.05}
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:50:15.422 actor_cell0_rank1] memory_utils.py:41 - [Rank 1] Memory-Usage before offload model: {'gpu': '1', 'total_GB': 287.98, 'free_GB': 254.12, 'used_GB': 33.86, 'allocated_GB': 16.77, 'reserved_GB': 28.07}
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:50:15.422 actor_cell0_rank2] memory_utils.py:41 - [Rank 2] Memory-Usage before offload model: {'gpu': '2', 'total_GB': 287.98, 'free_GB': 254.12, 'used_GB': 33.86, 'allocated_GB': 16.77, 'reserved_GB': 28.07}
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:50:15.422 actor_cell0_rank3] memory_utils.py:41 - [Rank 3] Memory-Usage before offload model: {'gpu': '3', 'total_GB': 287.98, 'free_GB': 254.21, 'used_GB': 33.77, 'allocated_GB': 16.77, 'reserved_GB': 28.07}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:19.183 actor_cell0_rank0] memory_utils.py:41 - [Rank 0] Memory-Usage after offload model: {'gpu': '0', 'total_GB': 287.98, 'free_GB': 281.94, 'used_GB': 6.04, 'allocated_GB': 0.15, 'reserved_GB': 0.22}
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:19.184 actor_cell0_rank0] timer.py:42 - Timer sleep end (elapsed: 3.8s)
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:19.186 actor_cell0_rank0] timer.py:31 - Timer update_weights start
+(FSDPTrainRayActor pid=60692) [2026-09-09 15:50:19.186 actor_cell0_rank0] timer.py:42 - Timer update_weights end (elapsed: 0.0s)
+(FSDPTrainRayActor pid=60693) [2026-09-09 15:50:19.183 actor_cell0_rank1] memory_utils.py:41 - [Rank 1] Memory-Usage after offload model: {'gpu': '1', 'total_GB': 287.98, 'free_GB': 281.97, 'used_GB': 6.01, 'allocated_GB': 0.15, 'reserved_GB': 0.22}
+(FSDPTrainRayActor pid=60694) [2026-09-09 15:50:19.184 actor_cell0_rank2] memory_utils.py:41 - [Rank 2] Memory-Usage after offload model: {'gpu': '2', 'total_GB': 287.98, 'free_GB': 281.97, 'used_GB': 6.01, 'allocated_GB': 0.15, 'reserved_GB': 0.22}
+(FSDPTrainRayActor pid=60695) [2026-09-09 15:50:19.184 actor_cell0_rank3] memory_utils.py:41 - [Rank 3] Memory-Usage after offload model: {'gpu': '3', 'total_GB': 287.98, 'free_GB': 282.06, 'used_GB': 5.92, 'allocated_GB': 0.15, 'reserved_GB': 0.22}

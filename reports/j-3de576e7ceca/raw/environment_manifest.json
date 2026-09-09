@@ -1,0 +1,56 @@
+{
+  "checkpoint": {
+    "content_sha256": "ff00ef4f85f8b7c0200270a8a8003db7aba2c901fdd73806c78dfd12605a0620",
+    "path": "/job/cache/huggingface/Qwen3-VL-4B-Instruct",
+    "repository": "Qwen/Qwen3-VL-4B-Instruct",
+    "revision": "ebb281ec70b05090aa6165b016eac8ec08e71b17"
+  },
+  "delivery_main": {
+    "branch": "main",
+    "dirty": false,
+    "head": "8d9826eacc8b5c279546f96711bb401b7f62c54c",
+    "path": "/job/miles-delivery",
+    "status": ""
+  },
+  "gcc": "gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+  "gpu_architecture": [
+    9,
+    5
+  ],
+  "gpu_architecture_name": "gfx950",
+  "gpu_count": 4,
+  "gpu_names": [
+    "AMD Instinct MI355X",
+    "AMD Instinct MI355X",
+    "AMD Instinct MI355X",
+    "AMD Instinct MI355X"
+  ],
+  "hipcc": "HIP version: 7.2.26015-fc0010cf6a",
+  "job_id": "j-3de576e7ceca",
+  "original_pr": "https://github.com/amdpilot-org/miles/pull/52",
+  "python": "3.10.12",
+  "related_issue": "https://github.com/radixark/miles/issues/2406",
+  "rocm": "7.2.0",
+  "torch": "2.9.1+rocm7.2.0.git7e1940d4",
+  "torch_cuda": null,
+  "torch_hip": "7.2.26015-fc0010cf6a",
+  "validation_candidate": {
+    "branch": "HEAD",
+    "dirty": true,
+    "head": "03a7d4096ffa4fe93ed4c5e2555c46ce9771bb78",
+    "path": "/job/miles-validation-candidate",
+    "status": "M miles/backends/training_utils/data.py\n M miles/utils/arguments.py"
+  },
+  "validation_control": {
+    "branch": "HEAD",
+    "dirty": false,
+    "head": "03a7d4096ffa4fe93ed4c5e2555c46ce9771bb78",
+    "path": "/job/miles-validation",
+    "status": ""
+  },
+  "visible_gpu_env": {
+    "CUDA_VISIBLE_DEVICES": null,
+    "HIP_VISIBLE_DEVICES": null,
+    "ROCR_VISIBLE_DEVICES": null
+  }
+}
