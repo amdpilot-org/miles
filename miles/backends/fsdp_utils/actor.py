@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import torch
 import torch.distributed as dist
+from PIL import Image
 from tqdm import tqdm
 
 from miles.backends.fsdp_utils.adaptations import routing_replay
@@ -49,6 +50,10 @@ if TYPE_CHECKING:
     from miles.utils.audit_utils.witness.allocator import WitnessInfo
 
 logger = logging.getLogger(__name__)
+
+
+def _current_cuda_device() -> torch.device:
+    return torch.device("cuda", torch.cuda.current_device())
 
 
 class FSDPTrainRayActor(TrainRayActor):
@@ -115,6 +120,9 @@ class FSDPTrainRayActor(TrainRayActor):
                 if hasattr(self.hf_config, "vision_config"):
                     self.processor = load_processor(self.args.hf_checkpoint, trust_remote_code=True)
             dist.barrier(group=get_gloo_group())
+
+        self._dummy_vision_inputs = None
+        self._dummy_vision_token_ids = None
 
         self.precision_policy = resolve_precision_policy(self.hf_config, self.args)
         try:
@@ -400,6 +408,7 @@ class FSDPTrainRayActor(TrainRayActor):
                             get_position_ids=True,
                         )
 
+                        self._synchronize_vision_collectives(batch)
                         model_args = self._get_model_inputs_args(batch)
                         # keep logits in native bf16 (chunks upcast to fp32 downstream); avoids a full-vocab fp32 tensor (~5GB)
                         with precision_forward_context(self.precision_policy):
@@ -588,6 +597,7 @@ class FSDPTrainRayActor(TrainRayActor):
             self.ref_model.cpu()
 
     def _train_step(self, batch, step_id, num_microbatches):
+        self._synchronize_vision_collectives(batch)
         model_args = self._get_model_inputs_args(batch)
         # bf16 logits (see log_probs phase); per-response chunks are upcast to fp32 in the loss path.
         with routing_replay.stage(routing_replay.REPLAY_FORWARD), precision_forward_context(self.precision_policy):
@@ -695,6 +705,131 @@ class FSDPTrainRayActor(TrainRayActor):
             model_args.update(batch["multimodal_train_inputs"])
 
         return model_args
+
+    def _synchronize_vision_collectives(self, batch: dict) -> None:
+        if not hasattr(self.hf_config, "vision_config"):
+            return
+
+        local_has_inputs = bool(batch.get("multimodal_train_inputs"))
+        fsdp_group = get_parallel_state().get_mesh("fsdp").get_group()
+        if dist.get_world_size(fsdp_group) == 1:
+            return
+
+        device = _current_cuda_device()
+        any_peer_has_inputs = torch.tensor([int(local_has_inputs)], dtype=torch.int8, device=device)
+        dist.all_reduce(any_peer_has_inputs, op=dist.ReduceOp.MAX, group=fsdp_group)
+
+        if local_has_inputs or not any_peer_has_inputs.item():
+            return
+
+        self._add_dummy_vision_inputs(batch)
+
+    def _add_dummy_vision_inputs(self, batch: dict) -> None:
+        token_ids = self._get_dummy_vision_token_ids()
+        sample_count = len(batch["unconcat_tokens"])
+        dummy_token_ids = torch.tensor(token_ids, device=batch["tokens"].device, dtype=batch["tokens"].dtype)
+
+        if "cu_seqlens" in batch:
+            dummy_tokens = dummy_token_ids.repeat(sample_count).unsqueeze(0)
+        else:
+            dummy_tokens = dummy_token_ids.unsqueeze(0).expand(sample_count, -1)
+
+        dummy_loss_mask = torch.zeros(
+            dummy_tokens.shape, device=batch["full_loss_masks"].device, dtype=batch["full_loss_masks"].dtype
+        )
+        batch["tokens"] = torch.cat([batch["tokens"], dummy_tokens], dim=-1)
+        batch["full_loss_masks"] = torch.cat([batch["full_loss_masks"], dummy_loss_mask], dim=-1)
+
+        for index, tokens in enumerate(batch["unconcat_tokens"]):
+            batch["unconcat_tokens"][index] = torch.cat([tokens, dummy_token_ids], dim=0)
+            batch["total_lengths"][index] += dummy_token_ids.size(0)
+
+        if batch.get("max_seq_lens") is not None:
+            for index, max_seq_len in enumerate(batch["max_seq_lens"]):
+                if max_seq_len is not None:
+                    batch["max_seq_lens"][index] += dummy_token_ids.size(0)
+
+        if "cu_seqlens" in batch:
+            sample_indices = torch.arange(
+                1,
+                sample_count + 1,
+                dtype=batch["cu_seqlens"].dtype,
+                device=batch["cu_seqlens"].device,
+            )
+            batch["cu_seqlens"][1 : sample_count + 1] += sample_indices * dummy_token_ids.size(0)
+            if batch["cu_seqlens"].numel() > sample_count + 1:
+                batch["cu_seqlens"][sample_count + 1 :] += sample_count * dummy_token_ids.size(0)
+            batch["max_seqlen"] += dummy_token_ids.size(0)
+
+        batch["position_ids"] = None
+        dummy_inputs = self._get_dummy_vision_inputs()
+        pixel_values = dummy_inputs["pixel_values"]
+        image_grid_thw = dummy_inputs["image_grid_thw"]
+        if sample_count > 1:
+            pixel_values = pixel_values.repeat(sample_count, *([1] * (pixel_values.dim() - 1)))
+            image_grid_thw = image_grid_thw.repeat(sample_count, *([1] * (image_grid_thw.dim() - 1)))
+
+        batch["multimodal_train_inputs"] = {
+            "pixel_values": pixel_values,
+            "image_grid_thw": image_grid_thw,
+            "mm_token_type_ids": self._dummy_token_type_ids(batch),
+        }
+
+    def _get_dummy_vision_token_ids(self) -> tuple[int, int, int]:
+        if self._dummy_vision_token_ids is None:
+            try:
+                self._dummy_vision_token_ids = (
+                    self.hf_config.vision_start_token_id,
+                    self.hf_config.image_token_id,
+                    self.hf_config.vision_end_token_id,
+                )
+            except AttributeError as error:
+                raise RuntimeError(
+                    "A mixed image/text FSDP microbatch requires vision_start_token_id, image_token_id, "
+                    "and vision_end_token_id for a zero-loss dummy image."
+                ) from error
+        return self._dummy_vision_token_ids
+
+    def _get_dummy_vision_inputs(self) -> dict[str, torch.Tensor]:
+        if self._dummy_vision_inputs is None:
+            if self.processor is None:
+                raise RuntimeError(
+                    "A mixed image/text FSDP microbatch requires a processor to build a dummy image."
+                )
+
+            processor_output = self.processor(
+                images=[Image.new("RGB", (64, 64))],
+                return_tensors="pt",
+            )
+            image_processor = getattr(self.processor, "image_processor", None)
+            merge_size = getattr(image_processor, "merge_size", None)
+            if merge_size is None or "pixel_values" not in processor_output or "image_grid_thw" not in processor_output:
+                raise RuntimeError(
+                    "A mixed image/text FSDP microbatch requires a Qwen-style image processor "
+                    "with pixel_values, image_grid_thw, and merge_size."
+                )
+
+            patch_count = merge_size * merge_size
+            if processor_output["pixel_values"].size(0) < patch_count:
+                raise RuntimeError("The image processor produced too few patches for a minimal dummy image.")
+
+            device = _current_cuda_device()
+            self._dummy_vision_inputs = {
+                "pixel_values": processor_output["pixel_values"][:patch_count].to(device),
+                "image_grid_thw": torch.tensor([[1, merge_size, merge_size]], device=device),
+            }
+
+        return self._dummy_vision_inputs
+
+    def _dummy_token_type_ids(self, batch: dict) -> torch.Tensor:
+        token_type_ids = torch.zeros_like(batch["tokens"])
+        if "cu_seqlens" in batch:
+            sample_count = len(batch["unconcat_tokens"])
+            for sample_index in range(sample_count):
+                token_type_ids[..., batch["cu_seqlens"][sample_index + 1] - 2] = 1
+        else:
+            token_type_ids[..., -2] = 1
+        return token_type_ids
 
 
 @torch.no_grad()
