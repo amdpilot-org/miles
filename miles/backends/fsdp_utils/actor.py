@@ -724,23 +724,57 @@ class FSDPTrainRayActor(TrainRayActor):
 
     def _add_dummy_vision_inputs(self, batch: dict) -> None:
         token_ids = self._get_dummy_vision_token_ids()
-        dummy_tokens = torch.tensor([token_ids], device=batch["tokens"].device, dtype=batch["tokens"].dtype)
+        sample_count = len(batch["unconcat_tokens"])
+        dummy_token_ids = torch.tensor(token_ids, device=batch["tokens"].device, dtype=batch["tokens"].dtype)
+
+        if "cu_seqlens" in batch:
+            dummy_tokens = dummy_token_ids.repeat(sample_count).unsqueeze(0)
+        else:
+            dummy_tokens = dummy_token_ids.unsqueeze(0).expand(sample_count, -1)
+
         dummy_loss_mask = torch.zeros(
-            (1, dummy_tokens.size(1)), device=batch["full_loss_masks"].device, dtype=batch["full_loss_masks"].dtype
+            dummy_tokens.shape, device=batch["full_loss_masks"].device, dtype=batch["full_loss_masks"].dtype
         )
         batch["tokens"] = torch.cat([batch["tokens"], dummy_tokens], dim=-1)
         batch["full_loss_masks"] = torch.cat([batch["full_loss_masks"], dummy_loss_mask], dim=-1)
-        batch["unconcat_tokens"][0] = torch.cat([batch["unconcat_tokens"][0], dummy_tokens[0]], dim=-1)
-        batch["total_lengths"][0] += dummy_tokens.size(1)
-        if batch.get("max_seq_lens") is not None and batch["max_seq_lens"][0] is not None:
-            batch["max_seq_lens"][0] += dummy_tokens.size(1)
+
+        for index, tokens in enumerate(batch["unconcat_tokens"]):
+            batch["unconcat_tokens"][index] = torch.cat([tokens, dummy_token_ids], dim=0)
+            batch["total_lengths"][index] += dummy_token_ids.size(0)
+
+        if batch.get("max_seq_lens") is not None:
+            for index, max_seq_len in enumerate(batch["max_seq_lens"]):
+                if max_seq_len is not None:
+                    batch["max_seq_lens"][index] += dummy_token_ids.size(0)
+
         if "cu_seqlens" in batch:
-            batch["cu_seqlens"][-1] += dummy_tokens.size(1)
-            batch["max_seqlen"] += dummy_tokens.size(1)
+            sample_indices = torch.arange(
+                1,
+                sample_count + 1,
+                dtype=batch["cu_seqlens"].dtype,
+                device=batch["cu_seqlens"].device,
+            )
+            batch["cu_seqlens"][1 : sample_count + 1] += sample_indices * dummy_token_ids.size(0)
+            if batch["cu_seqlens"].numel() > sample_count + 1:
+                batch["cu_seqlens"][sample_count + 1 :] += sample_count * dummy_token_ids.size(0)
+            batch["max_seqlen"] += dummy_token_ids.size(0)
+
         batch["position_ids"] = None
+        dummy_inputs = self._get_dummy_vision_inputs()
+        pixel_values = dummy_inputs["pixel_values"]
+        image_grid_thw = dummy_inputs["image_grid_thw"]
+        if sample_count > 1:
+            pixel_values = pixel_values.repeat(sample_count, *([1] * (pixel_values.dim() - 1)))
+            image_grid_thw = image_grid_thw.repeat(sample_count, *([1] * (image_grid_thw.dim() - 1)))
+
         batch["multimodal_train_inputs"] = {
-            **self._get_dummy_vision_inputs(),
-            "mm_token_type_ids": self._dummy_token_type_ids(batch["tokens"]),
+            "pixel_values": pixel_values,
+            "image_grid_thw": image_grid_thw,
+            "mm_token_type_ids": self._dummy_token_type_ids(batch),
+        }
+        batch["multimodal_num_items"] = {
+            "pixel_values": [pixel_values.size(0) // sample_count] * sample_count,
+            "image_grid_thw": [1] * sample_count,
         }
 
     def _get_dummy_vision_token_ids(self) -> tuple[int, int, int]:
@@ -789,10 +823,14 @@ class FSDPTrainRayActor(TrainRayActor):
 
         return self._dummy_vision_inputs
 
-    @staticmethod
-    def _dummy_token_type_ids(tokens: torch.Tensor) -> torch.Tensor:
-        token_type_ids = torch.zeros_like(tokens)
-        token_type_ids[..., -2] = 1
+    def _dummy_token_type_ids(self, batch: dict) -> torch.Tensor:
+        token_type_ids = torch.zeros_like(batch["tokens"])
+        if "cu_seqlens" in batch:
+            sample_count = len(batch["unconcat_tokens"])
+            for sample_index in range(sample_count):
+                token_type_ids[..., batch["cu_seqlens"][sample_index + 1] - 2] = 1
+        else:
+            token_type_ids[..., -2] = 1
         return token_type_ids
 
 
