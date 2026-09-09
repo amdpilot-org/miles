@@ -713,11 +713,10 @@ class FSDPTrainRayActor(TrainRayActor):
         local_has_inputs = bool(batch.get("multimodal_train_inputs"))
         fsdp_group = get_parallel_state().get_mesh("fsdp").get_group()
         device = _current_cuda_device()
-        local_flag = torch.tensor([local_has_inputs], device=device)
-        peer_flags = [torch.empty_like(local_flag) for _ in range(dist.get_world_size(fsdp_group))]
-        dist.all_gather(peer_flags, local_flag, group=fsdp_group)
+        any_peer_has_inputs = torch.tensor([int(local_has_inputs)], dtype=torch.int8, device=device)
+        dist.all_reduce(any_peer_has_inputs, op=dist.ReduceOp.MAX, group=fsdp_group)
 
-        if local_has_inputs or not torch.stack(peer_flags).any().item():
+        if local_has_inputs or not any_peer_has_inputs.item():
             return
 
         self._add_dummy_vision_inputs(batch)

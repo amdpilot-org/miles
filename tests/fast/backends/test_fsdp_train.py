@@ -44,15 +44,14 @@ def test_vision_collectives_run_dummy_forward_only_for_image_free_rank(monkeypat
         "get_parallel_state",
         lambda: SimpleNamespace(get_mesh=lambda name: SimpleNamespace(get_group=lambda: group)),
     )
-    monkeypatch.setattr(actor_module.dist, "get_world_size", lambda _group: 2)
     monkeypatch.setattr(actor_module, "_current_cuda_device", lambda: torch.device("cpu"))
 
-    def all_gather(outputs, _input, group=None):
+    def all_reduce(flag, op=None, group=None):
+        assert op == actor_module.dist.ReduceOp.MAX
         assert group is group
-        outputs[0].fill_(0)
-        outputs[1].fill_(1)
+        flag.fill_(1)
 
-    monkeypatch.setattr(actor_module.dist, "all_gather", all_gather)
+    monkeypatch.setattr(actor_module.dist, "all_reduce", all_reduce)
 
     batch = {"multimodal_train_inputs": {}}
     actor._synchronize_vision_collectives(batch)
