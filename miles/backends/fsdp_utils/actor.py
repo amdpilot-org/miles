@@ -712,6 +712,9 @@ class FSDPTrainRayActor(TrainRayActor):
 
         local_has_inputs = bool(batch.get("multimodal_train_inputs"))
         fsdp_group = get_parallel_state().get_mesh("fsdp").get_group()
+        if dist.get_world_size(fsdp_group) == 1:
+            return
+
         device = _current_cuda_device()
         any_peer_has_inputs = torch.tensor([int(local_has_inputs)], dtype=torch.int8, device=device)
         dist.all_reduce(any_peer_has_inputs, op=dist.ReduceOp.MAX, group=fsdp_group)

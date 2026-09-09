@@ -44,6 +44,7 @@ def test_vision_collectives_run_dummy_forward_only_for_image_free_rank(monkeypat
         "get_parallel_state",
         lambda: SimpleNamespace(get_mesh=lambda name: SimpleNamespace(get_group=lambda: group)),
     )
+    monkeypatch.setattr(actor_module.dist, "get_world_size", lambda _group: 2)
     monkeypatch.setattr(actor_module, "_current_cuda_device", lambda: torch.device("cpu"))
 
     def all_reduce(flag, op=None, group=None):
@@ -69,6 +70,7 @@ def test_vision_collectives_skip_dummy_when_all_ranks_are_image_free(monkeypatch
         "get_parallel_state",
         lambda: SimpleNamespace(get_mesh=lambda name: SimpleNamespace(get_group=lambda: group)),
     )
+    monkeypatch.setattr(actor_module.dist, "get_world_size", lambda _group: 2)
     monkeypatch.setattr(actor_module, "_current_cuda_device", lambda: torch.device("cpu"))
 
     def all_reduce(flag, op=None, group=None):
@@ -95,6 +97,7 @@ def test_vision_collectives_keep_image_present_rank_unchanged(monkeypatch):
         "get_parallel_state",
         lambda: SimpleNamespace(get_mesh=lambda name: SimpleNamespace(get_group=lambda: group)),
     )
+    monkeypatch.setattr(actor_module.dist, "get_world_size", lambda _group: 2)
     monkeypatch.setattr(actor_module, "_current_cuda_device", lambda: torch.device("cpu"))
 
     def all_reduce(flag, op=None, group=None):
@@ -109,6 +112,30 @@ def test_vision_collectives_keep_image_present_rank_unchanged(monkeypatch):
 
     actor._add_dummy_vision_inputs.assert_not_called()
     assert batch == {"multimodal_train_inputs": {"pixel_values": torch.ones(1)}}
+
+
+def test_vision_collectives_skip_sync_for_single_rank_fsdp_group(monkeypatch):
+    actor = object.__new__(actor_module.FSDPTrainRayActor)
+    actor.hf_config = SimpleNamespace(vision_config={})
+    actor._add_dummy_vision_inputs = Mock()
+    group = object()
+    monkeypatch.setattr(
+        actor_module,
+        "get_parallel_state",
+        lambda: SimpleNamespace(get_mesh=lambda name: SimpleNamespace(get_group=lambda: group)),
+    )
+    monkeypatch.setattr(actor_module.dist, "get_world_size", lambda _group: 1)
+
+    def all_reduce(_flag, op=None, group=None):
+        raise AssertionError("Single-rank FSDP groups should not synchronize image presence")
+
+    monkeypatch.setattr(actor_module.dist, "all_reduce", all_reduce)
+
+    batch = {"multimodal_train_inputs": {}}
+    actor._synchronize_vision_collectives(batch)
+
+    actor._add_dummy_vision_inputs.assert_not_called()
+    assert batch == {"multimodal_train_inputs": {}}
 
 
 def test_dummy_vision_inputs_append_zero_loss_tokens(monkeypatch):
