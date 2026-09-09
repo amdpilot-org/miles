@@ -108,6 +108,28 @@ def test_dummy_vision_inputs_append_zero_loss_tokens(monkeypatch):
     assert batch["multimodal_train_inputs"]["mm_token_type_ids"].tolist() == [[0, 0, 0, 0, 0, 1, 0]]
 
 
+def test_dummy_vision_inputs_allow_missing_thd_max_seq_lens(monkeypatch):
+    actor = object.__new__(actor_module.FSDPTrainRayActor)
+    actor._get_dummy_vision_token_ids = lambda: (10, 11, 12)
+    actor._get_dummy_vision_inputs = lambda: {
+        "pixel_values": torch.ones(4, 4),
+        "image_grid_thw": torch.ones(1, 3, dtype=torch.int64),
+    }
+    batch = {
+        "tokens": torch.tensor([[1, 2, 3, 4]]),
+        "full_loss_masks": torch.ones(1, 4, dtype=torch.int64),
+        "unconcat_tokens": [torch.tensor([1, 2, 3, 4])],
+        "total_lengths": [8],
+        "response_lengths": [4],
+        "max_seq_lens": [None],
+    }
+
+    actor._add_dummy_vision_inputs(batch)
+
+    assert batch["max_seq_lens"] == [None]
+    assert batch["tokens"].shape == (1, 7)
+
+
 def test_unsupported_mixed_vlm_fails_before_model_forward():
     actor = object.__new__(actor_module.FSDPTrainRayActor)
     actor.processor = None

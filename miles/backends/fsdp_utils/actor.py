@@ -732,7 +732,7 @@ class FSDPTrainRayActor(TrainRayActor):
         batch["full_loss_masks"] = torch.cat([batch["full_loss_masks"], dummy_loss_mask], dim=-1)
         batch["unconcat_tokens"][0] = torch.cat([batch["unconcat_tokens"][0], dummy_tokens[0]], dim=-1)
         batch["total_lengths"][0] += dummy_tokens.size(1)
-        if "max_seq_lens" in batch:
+        if batch.get("max_seq_lens") is not None and batch["max_seq_lens"][0] is not None:
             batch["max_seq_lens"][0] += dummy_tokens.size(1)
         if "cu_seqlens" in batch:
             batch["cu_seqlens"][-1] += dummy_tokens.size(1)
