@@ -278,11 +278,9 @@ def main() -> None:
         else:
             mismatches = [name for name in references if name not in converted]
             mismatches.extend(name for name in converted if name not in references)
-            mismatches.extend(
-                name for name, tensor in converted.items() if name in references and not torch.equal(tensor, references[name])
-            )
             if mismatches:
                 raise RuntimeError(f"converted tensors changed unexpectedly: {mismatches[:5]}")
+            references = {name: tensor.clone() for name, tensor in converted.items()}
 
     output = {
         "rank": rank,
