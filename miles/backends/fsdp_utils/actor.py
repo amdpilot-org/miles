@@ -717,7 +717,7 @@ class FSDPTrainRayActor(TrainRayActor):
         peer_flags = [torch.empty_like(local_flag) for _ in range(dist.get_world_size(fsdp_group))]
         dist.all_gather(peer_flags, local_flag, group=fsdp_group)
 
-        if local_has_inputs or not any(flag.item() for flag in peer_flags):
+        if local_has_inputs or not torch.stack(peer_flags).any().item():
             return
 
         self._add_dummy_vision_inputs(batch)
