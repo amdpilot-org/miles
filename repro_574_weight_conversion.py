@@ -183,6 +183,7 @@ def main() -> None:
     bridge, model_list = build_model(args.hf_checkpoint, args.ep_size, args.architecture)
     model = model_list[0]
     fill_parameters(model, rank, -1)
+    initial_local_parameters = local_parameter_digests(model)
     hf_model = bridge.hf_pretrained
     _ = hf_model.model
     hf_model._state_dict_accessor = None
@@ -293,6 +294,7 @@ def main() -> None:
         "device_capability": torch.cuda.get_device_capability(local_rank),
         "visible_device_count": torch.cuda.device_count(),
         "expert_ownership": expert_ownership(round_results[-1]["collectives"]),
+        "initial_local_parameters": initial_local_parameters,
         "rounds_result": round_results,
     }
     args.output_dir.mkdir(parents=True, exist_ok=True)
