@@ -138,6 +138,23 @@ def test_vision_collectives_skip_sync_for_single_rank_fsdp_group(monkeypatch):
     assert batch == {"multimodal_train_inputs": {}}
 
 
+def test_vision_collectives_skip_sync_for_non_vlm_models(monkeypatch):
+    actor = object.__new__(actor_module.FSDPTrainRayActor)
+    actor.hf_config = SimpleNamespace()
+    actor._add_dummy_vision_inputs = Mock()
+
+    def get_parallel_state():
+        raise AssertionError("Non-VLM models should not query FSDP parallel state")
+
+    monkeypatch.setattr(actor_module, "get_parallel_state", get_parallel_state)
+
+    batch = {"multimodal_train_inputs": {}}
+    actor._synchronize_vision_collectives(batch)
+
+    actor._add_dummy_vision_inputs.assert_not_called()
+    assert batch == {"multimodal_train_inputs": {}}
+
+
 def test_dummy_vision_inputs_append_zero_loss_tokens(monkeypatch):
     class Processor:
         image_processor = SimpleNamespace(merge_size=2)
