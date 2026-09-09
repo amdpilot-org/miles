@@ -772,10 +772,6 @@ class FSDPTrainRayActor(TrainRayActor):
             "image_grid_thw": image_grid_thw,
             "mm_token_type_ids": self._dummy_token_type_ids(batch),
         }
-        batch["multimodal_num_items"] = {
-            "pixel_values": [pixel_values.size(0) // sample_count] * sample_count,
-            "image_grid_thw": [1] * sample_count,
-        }
 
     def _get_dummy_vision_token_ids(self) -> tuple[int, int, int]:
         if self._dummy_vision_token_ids is None:

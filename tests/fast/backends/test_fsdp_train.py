@@ -159,7 +159,6 @@ def test_dummy_vision_inputs_support_bshd_microbatch_size_two(monkeypatch):
     assert batch["multimodal_train_inputs"]["pixel_values"].shape == (8, 4)
     assert batch["multimodal_train_inputs"]["image_grid_thw"].shape == (2, 3)
     assert batch["multimodal_train_inputs"]["mm_token_type_ids"].tolist() == [[0, 0, 0, 0, 0, 1, 0]] * 2
-    assert batch["multimodal_num_items"] == {"pixel_values": [4, 4], "image_grid_thw": [1, 1]}
 
 
 def test_dummy_vision_inputs_support_thd_microbatch_size_two(monkeypatch):
@@ -197,7 +196,6 @@ def test_dummy_vision_inputs_support_thd_microbatch_size_two(monkeypatch):
     assert batch["multimodal_train_inputs"]["mm_token_type_ids"].tolist() == [
         [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0]
     ]
-    assert batch["multimodal_num_items"] == {"pixel_values": [4, 4], "image_grid_thw": [1, 1]}
 
 
 def test_dummy_vision_inputs_support_thd_padding_boundary(monkeypatch):
