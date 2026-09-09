@@ -200,6 +200,41 @@ def test_dummy_vision_inputs_support_thd_microbatch_size_two(monkeypatch):
     assert batch["multimodal_num_items"] == {"pixel_values": [4, 4], "image_grid_thw": [1, 1]}
 
 
+def test_dummy_vision_inputs_support_thd_padding_boundary(monkeypatch):
+    actor = object.__new__(actor_module.FSDPTrainRayActor)
+    actor._get_dummy_vision_token_ids = lambda: (10, 11, 12)
+    actor._get_dummy_vision_inputs = lambda: {
+        "pixel_values": torch.ones(4, 4),
+        "image_grid_thw": torch.ones(1, 3, dtype=torch.int64),
+    }
+    batch = {
+        "tokens": torch.tensor([[1, 2, 3, 4, 5, 6, 7, 0, 0]]),
+        "full_loss_masks": torch.ones(1, 9, dtype=torch.int64),
+        "unconcat_tokens": [torch.tensor([1, 2, 3, 4]), torch.tensor([5, 6, 7])],
+        "total_lengths": [8, 7],
+        "response_lengths": [4, 3],
+        "max_seq_lens": [8, 7],
+        "cu_seqlens": torch.tensor([0, 4, 7, 9]),
+        "max_seqlen": 4,
+    }
+
+    actor._add_dummy_vision_inputs(batch)
+
+    assert batch["tokens"].shape == (1, 15)
+    assert batch["full_loss_masks"].tolist() == [[1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]]
+    assert [tokens.tolist() for tokens in batch["unconcat_tokens"]] == [
+        [1, 2, 3, 4, 10, 11, 12],
+        [5, 6, 7, 10, 11, 12],
+    ]
+    assert batch["total_lengths"] == [11, 10]
+    assert batch["max_seq_lens"] == [11, 10]
+    assert batch["cu_seqlens"].tolist() == [0, 7, 13, 15]
+    assert batch["max_seqlen"] == 7
+    assert batch["multimodal_train_inputs"]["mm_token_type_ids"].tolist() == [
+        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+    ]
+
+
 def test_unsupported_mixed_vlm_fails_before_model_forward():
     actor = object.__new__(actor_module.FSDPTrainRayActor)
     actor.processor = None
