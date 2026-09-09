@@ -59,6 +59,32 @@ def test_vision_collectives_run_dummy_forward_only_for_image_free_rank(monkeypat
     actor._add_dummy_vision_inputs.assert_called_once_with(batch)
 
 
+def test_vision_collectives_skip_dummy_when_all_ranks_are_image_free(monkeypatch):
+    actor = object.__new__(actor_module.FSDPTrainRayActor)
+    actor.hf_config = SimpleNamespace(vision_config={})
+    actor._add_dummy_vision_inputs = Mock()
+    group = object()
+    monkeypatch.setattr(
+        actor_module,
+        "get_parallel_state",
+        lambda: SimpleNamespace(get_mesh=lambda name: SimpleNamespace(get_group=lambda: group)),
+    )
+    monkeypatch.setattr(actor_module, "_current_cuda_device", lambda: torch.device("cpu"))
+
+    def all_reduce(flag, op=None, group=None):
+        assert op == actor_module.dist.ReduceOp.MAX
+        assert group is group
+        flag.fill_(0)
+
+    monkeypatch.setattr(actor_module.dist, "all_reduce", all_reduce)
+
+    batch = {"multimodal_train_inputs": {}}
+    actor._synchronize_vision_collectives(batch)
+
+    actor._add_dummy_vision_inputs.assert_not_called()
+    assert batch == {"multimodal_train_inputs": {}}
+
+
 def test_dummy_vision_inputs_append_zero_loss_tokens(monkeypatch):
     class Processor:
         image_processor = SimpleNamespace(merge_size=2)
