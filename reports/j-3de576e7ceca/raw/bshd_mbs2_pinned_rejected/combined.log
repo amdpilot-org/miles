@@ -1,0 +1,17 @@
+WARNING:root:deep_ep is not installed, some functionalities may be limited.
+[aiter] import [module_aiter_core] under /sgl-workspace/aiter/aiter/jit/module_aiter_core.so
+/opt/venv/lib/python3.10/site-packages/apex/transformer/functional/fused_rope.py:49: UserWarning: Aiter backend is selected for fused RoPE. This has lower precision. To disable aiter, export USE_ROCM_AITER_ROPE_BACKEND=0
+  warnings.warn("Aiter backend is selected for fused RoPE. This has lower precision. To disable aiter, export USE_ROCM_AITER_ROPE_BACKEND=0", UserWarning)
+WARNING:fla.utils:Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+[ERROR] `cache_position` is part of Qwen3ASRThinkerTextModel.forward's signature, but not documented. Make sure to add it to the docstring of the function in /opt/venv/lib/python3.10/site-packages/megatron/bridge/models/qwen3_asr/hf_qwen3_asr/modeling_qwen3_asr.py.
+[ERROR] `cache_position` is part of Qwen3ASRThinkerForConditionalGeneration.forward's signature, but not documented. Make sure to add it to the docstring of the function in /opt/venv/lib/python3.10/site-packages/megatron/bridge/models/qwen3_asr/hf_qwen3_asr/modeling_qwen3_asr.py.
+Traceback (most recent call last):
+  File "/job/miles-validation/train.py", line 180, in <module>
+    args = parse_args()
+  File "/job/miles-validation/miles/utils/arguments.py", line 2769, in parse_args
+    miles_validate_args(args)
+  File "/job/miles-validation/miles/utils/arguments.py", line 3614, in miles_validate_args
+    assert args.train_backend == "megatron", "bshd format is only supported for megatron backend."
+AssertionError: bshd format is only supported for megatron backend.
+
+EXIT_STATUS=1

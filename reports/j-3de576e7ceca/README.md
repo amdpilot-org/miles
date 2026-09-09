@@ -1,6 +1,8 @@
 # Four-rank follow-up verification for PR52
 
-Status: **DRAFT — final report update pending**
+Status: **Final**
+
+Mirror PR: [amdpilot-org/miles#54](https://github.com/amdpilot-org/miles/pull/54)
 
 This report continues the unresolved GPU verification for [amdpilot-org/miles PR52](https://github.com/amdpilot-org/miles/pull/52), related to [radixark/miles issue 2406](https://github.com/radixark/miles/issues/2406). It does not duplicate or merge PR52's runtime change.
 
