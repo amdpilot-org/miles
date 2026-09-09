@@ -354,8 +354,9 @@ def create_lora_instance(args: Namespace):
     Returns:
         A LoRA/CanonicalLoRA dataclass instance ready to be applied to a model.
     """
-    from megatron.bridge.peft.canonical_lora import CanonicalLoRA
     from megatron.bridge.peft.lora import LoRA
+
+    from .canonical_lora import CanonicalLoRA
 
     lora_type_name = getattr(args, "lora_type", "lora").lower()
 
