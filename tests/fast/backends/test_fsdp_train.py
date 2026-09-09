@@ -1,7 +1,10 @@
 from argparse import Namespace
 from collections.abc import Iterator
 from contextlib import contextmanager, nullcontext
+from types import SimpleNamespace
 from unittest.mock import Mock
+
+import torch
 
 from miles.backends.fsdp_utils import actor as actor_module
 from miles.backends.megatron_utils.ft.types import TrainStepOutcome, TrainStepOutput
@@ -29,3 +32,96 @@ def test_fsdp_train_debug_rollout_only_returns_a_normal_output(monkeypatch):
 
     assert result == TrainStepOutput(outcome=TrainStepOutcome.NORMAL)
     actor._train_core.assert_not_called()
+
+
+def test_vision_collectives_run_dummy_forward_only_for_image_free_rank(monkeypatch):
+    actor = object.__new__(actor_module.FSDPTrainRayActor)
+    actor.hf_config = SimpleNamespace(vision_config={})
+    actor._add_dummy_vision_inputs = Mock()
+    group = object()
+    monkeypatch.setattr(
+        actor_module,
+        "get_parallel_state",
+        lambda: SimpleNamespace(get_mesh=lambda name: SimpleNamespace(get_group=lambda: group)),
+    )
+    monkeypatch.setattr(actor_module.dist, "get_world_size", lambda _group: 2)
+    monkeypatch.setattr(actor_module, "_current_cuda_device", lambda: torch.device("cpu"))
+
+    def all_gather(outputs, _input, group=None):
+        assert group is group
+        outputs[0].fill_(0)
+        outputs[1].fill_(1)
+
+    monkeypatch.setattr(actor_module.dist, "all_gather", all_gather)
+
+    batch = {"multimodal_train_inputs": {}}
+    actor._synchronize_vision_collectives(batch)
+
+    actor._add_dummy_vision_inputs.assert_called_once_with(batch)
+
+
+def test_dummy_vision_inputs_append_zero_loss_tokens(monkeypatch):
+    class Processor:
+        image_processor = SimpleNamespace(merge_size=2)
+
+        def __call__(self, images, return_tensors):
+            assert return_tensors == "pt"
+            return {
+                "pixel_values": torch.ones(6, 4),
+                "image_grid_thw": torch.ones(1, 3, dtype=torch.int64),
+            }
+
+    monkeypatch.setattr(actor_module, "_current_cuda_device", lambda: torch.device("cpu"))
+
+    actor = object.__new__(actor_module.FSDPTrainRayActor)
+    actor.hf_config = SimpleNamespace(
+        vision_start_token_id=10,
+        image_token_id=11,
+        vision_end_token_id=12,
+    )
+    actor.processor = Processor()
+    actor._dummy_vision_inputs = None
+    actor._dummy_vision_token_ids = None
+    batch = {
+        "tokens": torch.tensor([[1, 2, 3, 4]]),
+        "full_loss_masks": torch.ones(1, 4, dtype=torch.int64),
+        "position_ids": torch.ones(1, 4, dtype=torch.int64),
+        "unconcat_tokens": [torch.tensor([1, 2, 3, 4])],
+        "total_lengths": [8],
+        "response_lengths": [4],
+        "max_seq_lens": [8],
+        "cu_seqlens": torch.tensor([0, 4, 8]),
+        "max_seqlen": 8,
+    }
+
+    actor._add_dummy_vision_inputs(batch)
+
+    assert batch["tokens"].tolist() == [[1, 2, 3, 4, 10, 11, 12]]
+    assert batch["full_loss_masks"].tolist() == [[1, 1, 1, 1, 0, 0, 0]]
+    assert batch["position_ids"] is None
+    assert batch["total_lengths"] == [11]
+    assert batch["max_seq_lens"] == [11]
+    assert batch["cu_seqlens"].tolist() == [0, 4, 11]
+    assert batch["max_seqlen"] == 11
+    assert batch["multimodal_train_inputs"]["pixel_values"].shape == (4, 4)
+    assert batch["multimodal_train_inputs"]["image_grid_thw"].tolist() == [[1, 2, 2]]
+    assert batch["multimodal_train_inputs"]["mm_token_type_ids"].tolist() == [[0, 0, 0, 0, 0, 1, 0]]
+
+
+def test_unsupported_mixed_vlm_fails_before_model_forward():
+    actor = object.__new__(actor_module.FSDPTrainRayActor)
+    actor.processor = None
+    actor._dummy_vision_inputs = None
+    actor._dummy_vision_token_ids = None
+    actor.hf_config = SimpleNamespace(
+        vision_start_token_id=10,
+        image_token_id=11,
+        vision_end_token_id=12,
+    )
+
+    try:
+        actor._get_dummy_vision_inputs()
+    except RuntimeError as error:
+        assert "requires a processor" in str(error)
+    else:
+        raise AssertionError("Expected an explicit RuntimeError")
