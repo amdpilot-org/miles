@@ -199,6 +199,12 @@ class ModelConfig(FrozenStrictBaseModel):
     server_groups: list[ServerGroupConfig]
     update_weights: bool
 
+    @property
+    def effective_model_path(self) -> str | None:
+        if self.server_groups:
+            return self.server_groups[0].model_path
+        return self.model_path
+
     @classmethod
     def resolve(cls, raw: _RawModelConfig, args, offset_cursor: "_OffsetCursor") -> "ModelConfig":
         """Resolve per-group defaults from model-level then args-level values."""

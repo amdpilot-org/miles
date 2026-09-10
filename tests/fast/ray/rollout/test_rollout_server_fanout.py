@@ -13,6 +13,7 @@ class _RecordingCell:
         self.meta = SimpleNamespace(needs_offload=needs_offload, cell_id=cell_id, num_gpus_per_engine=1, gpu_offset=0)
         self.is_pending_weights_or_serving = addressable
         self.calls: list[tuple[str, dict]] = []
+        self.reload_result = {"success": True, "message": "Success"}
 
     async def offload(self, tags):
         self.calls.append(("offload", dict(tags=tags)))
@@ -21,6 +22,10 @@ class _RecordingCell:
     async def onload(self, tags):
         self.calls.append(("onload", dict(tags=tags)))
         return f"onloaded-{self.meta.cell_id}"
+
+    async def reload_weights(self, model_path):
+        self.calls.append(("reload_weights", dict(model_path=model_path)))
+        return self.reload_result
 
     async def check_weights(self, action, allow_quant_error, selector, skip_list):
         self.calls.append(
@@ -78,6 +83,57 @@ class TestMemoryFanOut:
 
         assert gated.calls == []
         assert [name for name, _ in serving.calls] == ["offload"]
+
+    async def test_a_frozen_offloaded_cell_reloads_after_weight_resume(self):
+        cell = _RecordingCell(cell_id="teacher", needs_offload=True)
+        srv = _make_server([cell], model_name="teacher", model_path="/teacher", update_weights=False)
+
+        async with srv.context_lock:
+            await srv.onload(tags=["weights"])
+
+        assert cell.calls == [
+            ("onload", dict(tags=["weights"])),
+            ("reload_weights", dict(model_path="/teacher")),
+        ]
+
+    async def test_an_updatable_cell_waits_for_actor_weight_sync(self):
+        cell = _RecordingCell(cell_id="actor", needs_offload=True)
+        srv = _make_server([cell], model_name="actor", model_path="/actor", update_weights=True)
+
+        async with srv.context_lock:
+            await srv.onload(tags=["weights"])
+
+        assert cell.calls == [("onload", dict(tags=["weights"]))]
+
+    async def test_a_kv_only_resume_does_not_reload_frozen_weights(self):
+        cell = _RecordingCell(cell_id="teacher", needs_offload=True)
+        srv = _make_server([cell], model_name="teacher", model_path="/teacher", update_weights=False)
+
+        async with srv.context_lock:
+            await srv.onload(tags=["kv_cache"])
+
+        assert cell.calls == [("onload", dict(tags=["kv_cache"]))]
+
+    async def test_a_frozen_offloaded_cell_without_a_model_path_fails_closed(self):
+        cell = _RecordingCell(cell_id="teacher", needs_offload=True)
+        srv = _make_server([cell], model_name="teacher", model_path=None, update_weights=False)
+
+        async with srv.context_lock:
+            with pytest.raises(RuntimeError, match="no model_path"):
+                await srv.onload(tags=["weights"])
+
+        assert cell.calls == [("onload", dict(tags=["weights"]))]
+
+    async def test_a_failed_frozen_weight_reload_fails_closed(self):
+        cell = _RecordingCell(cell_id="teacher", needs_offload=True)
+        cell.reload_result = {"success": False, "message": "checkpoint unavailable"}
+        srv = _make_server([cell], model_name="teacher", model_path="/teacher", update_weights=False)
+
+        async with srv.context_lock:
+            with pytest.raises(RuntimeError, match="checkpoint unavailable"):
+                await srv.onload(tags=["weights"])
+
+        assert cell.calls[-1] == ("reload_weights", dict(model_path="/teacher"))
 
 
 class TestCheckWeightsFanOut:

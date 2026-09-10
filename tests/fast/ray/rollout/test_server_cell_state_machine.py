@@ -87,6 +87,9 @@ class _ResultApiClient:
     async def resume_memory_occupation(self, tags=None):
         return await self._record("resume_memory_occupation", dict(tags=tags))
 
+    async def update_weights_from_disk(self, model_path):
+        return await self._record("update_weights_from_disk", dict(model_path=model_path))
+
     async def check_weights(self, action, allow_quant_error=False, selector="all", skip_list=None):
         return await self._record(
             "check_weights",
@@ -769,6 +772,17 @@ class TestMemoryOperations:
 
         assert result_api_client.calls == [("resume_memory_occupation", dict(tags=["weights"]))]
         assert result == dict(resumed="weights")
+
+    async def test_reload_weights_uses_the_frozen_checkpoint_and_returns_the_engine_result(self, result_api_client):
+        """The controller relies on this reply to decide whether a frozen model may serve again."""
+        result_api_client.results["update_weights_from_disk"] = dict(success=True, message="Success")
+        cell = _make_cell()
+        await cell.init()
+
+        result = await cell.reload_weights(model_path="/teacher")
+
+        assert result_api_client.calls == [("update_weights_from_disk", dict(model_path="/teacher"))]
+        assert result == dict(success=True, message="Success")
 
     async def test_an_engine_that_rejects_an_offload_surfaces_the_error_to_the_caller(self, result_api_client):
         """Swallowing it would let the trainer start on gpus the engine still holds."""

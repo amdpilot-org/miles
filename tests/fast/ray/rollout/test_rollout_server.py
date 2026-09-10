@@ -251,6 +251,7 @@ class TestCreateRolloutServersWiring:
         assert (args.sglang_router_ip, args.sglang_router_port) == ("10.0.0.1", 20000)
         assert args.sglang_model_routers == {"actor": ("10.0.0.1", 20000), "ref": ("10.0.0.2", 20001)}
         assert [srv.model_name for srv in servers.values()] == ["actor", "ref"]
+        assert [srv.model_path for srv in servers.values()] == [args.hf_checkpoint, "/fake/ref-model"]
         assert (servers["actor"].update_weights, servers["ref"].update_weights) == (True, False)
         active_and_epoch = ActiveAndEpoch(active=True, epoch=8)
         for srv in servers.values():
