@@ -1,0 +1,65 @@
+{
+  "r3": {
+    "compute_dtype": "torch.float16",
+    "cycles": 64,
+    "learning_rate": 1e-08,
+    "parameter_dtype": "torch.float32",
+    "phase_seconds": {
+      "optimizer": 0.13281195983290672,
+      "r3_off_logprob": 0.27568379044532776,
+      "r3_off_train": 0.6764954784885049,
+      "r3_on_logprob": 0.33796000201255083,
+      "r3_on_train": 0.8149707857519388,
+      "reference": 9.58403199352324
+    },
+    "r3_off": {
+      "all_finite": true,
+      "gradient_vs_reference_max_abs": 0.0010708272457122803,
+      "gradient_vs_reference_mean_of_cycle_maxima": 0.0006419145502150059,
+      "parameter_drift_max": 9.5367431640625e-07,
+      "per_token_abs_error_max": 0.005275726318359375,
+      "per_token_abs_error_mean": 0.0007398370653390884,
+      "per_token_abs_error_p95": 0.0027303695678710938,
+      "per_token_abs_error_p99": 0.00445556640625,
+      "token_count": 2048
+    },
+    "r3_on": {
+      "all_finite": true,
+      "gradient_vs_reference_max_abs": 0.0010708272457122803,
+      "gradient_vs_reference_mean_of_cycle_maxima": 0.0006419145502150059,
+      "parameter_drift_max": 9.5367431640625e-07,
+      "per_token_abs_error_max": 0.005275726318359375,
+      "per_token_abs_error_mean": 0.0007398370653390884,
+      "per_token_abs_error_p95": 0.0027303695678710938,
+      "per_token_abs_error_p99": 0.00445556640625,
+      "token_count": 2048
+    },
+    "r3_on_vs_off": {
+      "all_zero": true,
+      "gradient_max_abs": 0.0,
+      "logprob_max_abs": 0.0
+    },
+    "r3_streams": 1,
+    "routing_equal_all": true,
+    "routing_max_abs": 0.0,
+    "total_seconds": 12.48273606505245,
+    "world_size": 2
+  },
+  "speculative": {
+    "cycles": 64,
+    "first_16_routing_rows_exact_cycles": 64,
+    "routing_exact_cycles": 0,
+    "routing_max_abs": 1,
+    "routing_mismatched_rows_max": 15,
+    "routing_mismatched_rows_min": 15,
+    "routing_mismatched_rows_total": 960,
+    "spec_accepted_drafts": 640,
+    "spec_off_generate_seconds": 8.65152402408421,
+    "spec_off_startup_seconds": 44.0116289453581,
+    "spec_on_generate_seconds": 9.21848998684436,
+    "spec_on_startup_seconds": 33.99236696213484,
+    "spec_proposed_drafts": 640,
+    "spec_verify_ct": 320,
+    "token_mismatches": 0
+  }
+}
