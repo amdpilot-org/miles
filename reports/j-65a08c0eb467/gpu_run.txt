@@ -1,0 +1,33 @@
+
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+*****************************************
+[aiter] WARNING: NUMA balancing is enabled, which may cause errors. It is recommended to disable NUMA balancing by running "sudo sh -c 'echo 0 > /proc/sys/kernel/numa_balancing'" for more details: https://rocm.docs.amd.com/en/latest/how-to/system-optimization/mi300x.html#disable-numa-auto-balancing
+[aiter] import [module_aiter_core] under /sgl-workspace/aiter/aiter/jit/module_aiter_core.so
+[aiter] WARNING: NUMA balancing is enabled, which may cause errors. It is recommended to disable NUMA balancing by running "sudo sh -c 'echo 0 > /proc/sys/kernel/numa_balancing'" for more details: https://rocm.docs.amd.com/en/latest/how-to/system-optimization/mi300x.html#disable-numa-auto-balancing
+[aiter] import [module_aiter_core] under /sgl-workspace/aiter/aiter/jit/module_aiter_core.so
+WARNING:root:deep_ep is not installed, some functionalities may be limited.
+WARNING:root:deep_ep is not installed, some functionalities may be limited.
+/opt/venv/lib/python3.10/site-packages/apex/transformer/functional/fused_rope.py:49: UserWarning: Aiter backend is selected for fused RoPE. This has lower precision. To disable aiter, export USE_ROCM_AITER_ROPE_BACKEND=0
+  warnings.warn("Aiter backend is selected for fused RoPE. This has lower precision. To disable aiter, export USE_ROCM_AITER_ROPE_BACKEND=0", UserWarning)
+/opt/venv/lib/python3.10/site-packages/apex/transformer/functional/fused_rope.py:49: UserWarning: Aiter backend is selected for fused RoPE. This has lower precision. To disable aiter, export USE_ROCM_AITER_ROPE_BACKEND=0
+  warnings.warn("Aiter backend is selected for fused RoPE. This has lower precision. To disable aiter, export USE_ROCM_AITER_ROPE_BACKEND=0", UserWarning)
+WARNING:fla.utils._device:Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+WARNING:fla.utils._device:Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+[ERROR] `cache_position` is part of Qwen3ASRThinkerTextModel.forward's signature, but not documented. Make sure to add it to the docstring of the function in /opt/venv/lib/python3.10/site-packages/megatron/bridge/models/qwen3_asr/hf_qwen3_asr/modeling_qwen3_asr.py.
+[ERROR] `cache_position` is part of Qwen3ASRThinkerForConditionalGeneration.forward's signature, but not documented. Make sure to add it to the docstring of the function in /opt/venv/lib/python3.10/site-packages/megatron/bridge/models/qwen3_asr/hf_qwen3_asr/modeling_qwen3_asr.py.
+[ERROR] `cache_position` is part of Qwen3ASRThinkerTextModel.forward's signature, but not documented. Make sure to add it to the docstring of the function in /opt/venv/lib/python3.10/site-packages/megatron/bridge/models/qwen3_asr/hf_qwen3_asr/modeling_qwen3_asr.py.
+[ERROR] `cache_position` is part of Qwen3ASRThinkerForConditionalGeneration.forward's signature, but not documented. Make sure to add it to the docstring of the function in /opt/venv/lib/python3.10/site-packages/megatron/bridge/models/qwen3_asr/hf_qwen3_asr/modeling_qwen3_asr.py.
+[Gloo] Rank [Gloo] Rank 1 is connected to 1 peer ranks. 0Expected number of connected peer ranks is : 1 is connected to
+1 peer ranks. Expected number of connected peer ranks is : 1
+[tiny-p2p] Update weights: 0it [00:00, ?it/s][tiny-p2p] Update weights: 0it [00:00, ?it/s]ERROR:miles.backends.training_utils.weight_update.protocols.p2p_transfer_utils:[P2P] P2P transfer task 0 failed
+Traceback (most recent call last):
+  File "/job/miles/miles/backends/training_utils/weight_update/protocols/p2p_transfer_utils.py", line 209, in _run_transfer_task
+    fn(*args)
+  File "/job/miles/miles/backends/training_utils/weight_update/protocols/p2p.py", line 391, in _do_p2p_write_one_session
+    raise RuntimeError(f"[P2P-Shared] Transfer failed for session {session_id}, error: {ret}")
+RuntimeError: [P2P-Shared] Transfer failed for session tiny-session, error: -1
+[tiny-p2p] Update weights: 1it [00:00, 591.41it/s]
+ERROR:miles.backends.training_utils.weight_update.protocols.p2p_transfer_utils:[P2P] P2P weight transfer failed on another trainer rank
+[tiny-p2p] Update weights: 1it [00:00, 513.06it/s]
+[tiny-p2p] Update weights: 0it [00:00, ?it/s][tiny-p2p] Update weights: 0it [00:00, ?it/s][tiny-p2p] Update weights: 1it [00:00, 1022.00it/s][tiny-p2p] Update weights: 1it [00:00, 1037.68it/s]
