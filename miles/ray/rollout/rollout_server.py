@@ -4,6 +4,8 @@ import logging
 from collections.abc import Callable
 from typing import Any
 
+from sglang.srt.constants import GPU_MEMORY_TYPE_WEIGHTS
+
 from miles.backends.sglang_utils.sglang_api_client import SGLangApiClient
 from miles.backends.sglang_utils.sglang_config import resolve_sglang_config
 from miles.backends.sglang_utils.sglang_router_api_client import SGLangRouterApiClient
@@ -46,6 +48,7 @@ async def create_rollout_servers(
             router_ip=router_addr.host,
             router_port=router_addr.port,
             model_name=model_cfg.name,
+            model_path=model_cfg.effective_model_path,
             update_weights=model_cfg.update_weights,
             global_health_checker_activeness=global_health_checker_activeness,
             expected_num_cells=model_cfg.num_server_cells,
@@ -70,6 +73,7 @@ class RolloutServer:
     router_ip: str | None = None
     router_port: int | None = None
     model_name: str = "default"
+    model_path: str | None = None
     update_weights: bool = True
     global_health_checker_activeness: Callable[[], ActiveAndEpoch] = lock_exempt(
         lambda: ActiveAndEpoch(active=True, epoch=0)
@@ -135,9 +139,31 @@ class RolloutServer:
 
     @requires_lock
     async def onload(self, tags: list[str] | None = None):
-        return await asyncio.gather(
+        results = await asyncio.gather(
             *[cell.onload(tags=tags) for cell in self._addressable_cells() if cell.meta.needs_offload]
         )
+        if tags is None or GPU_MEMORY_TYPE_WEIGHTS in tags:
+            await self._reload_frozen_weights()
+        return results
+
+    @requires_lock
+    async def _reload_frozen_weights(self) -> None:
+        if self.update_weights:
+            return
+
+        cells = [cell for cell in self._addressable_cells() if cell.meta.needs_offload]
+        if not cells:
+            return
+        if not self.model_path:
+            raise RuntimeError(f"Frozen server {self.model_name!r} has no model_path to restore its offloaded weights")
+
+        results = await asyncio.gather(*[cell.reload_weights(model_path=self.model_path) for cell in cells])
+        for cell, result in zip(cells, results, strict=True):
+            if not result.get("success", False):
+                raise RuntimeError(
+                    f"Failed to restore frozen weights for cell {cell.meta.cell_id!r} "
+                    f"from {self.model_path!r}: {result.get('message', 'unknown error')}"
+                )
 
     @requires_lock
     async def check_weights(
