@@ -1,8 +1,4 @@
 from .padding_remover import remove_padding
-from .quantizer_compressed_tensors import quantize_params_compressed_tensors
-from .quantizer_fp8 import quantize_params_fp8
-from .quantizer_mxfp8 import quantize_params_mxfp8
-from .quantizer_nvfp4 import quantize_params_nvfp4
 
 __all__ = [
     "remove_padding",
@@ -18,11 +14,19 @@ def quantize_params(args, megatron_name, converted_named_params, quantization_co
     if quantization_config is None:
         return converted_named_params
     elif quantization_config["quant_method"] == "fp8":
+        from .quantizer_fp8 import quantize_params_fp8
+
         return quantize_params_fp8(args, megatron_name, converted_named_params, quantization_config)
     elif quantization_config["quant_method"] == "mxfp8":
+        from .quantizer_mxfp8 import quantize_params_mxfp8
+
         return quantize_params_mxfp8(args, megatron_name, converted_named_params, quantization_config)
     elif quantization_config.get("quant_algo") == "NVFP4" or quantization_config["quant_method"] == "nvfp4":
+        from .quantizer_nvfp4 import quantize_params_nvfp4
+
         return quantize_params_nvfp4(args, megatron_name, converted_named_params, quantization_config)
     elif quantization_config["quant_method"] == "compressed-tensors":
+        from .quantizer_compressed_tensors import quantize_params_compressed_tensors
+
         # only int4 at the moment.
         return quantize_params_compressed_tensors(converted_named_params, quantization_config)
