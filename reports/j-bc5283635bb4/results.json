@@ -1,0 +1,89 @@
+{
+  "timestamp": "2026-09-10T02:39:57.957991+00:00",
+  "status": "passed",
+  "return_code": 0,
+  "command": [
+    "/opt/venv/bin/python",
+    "-m",
+    "pytest",
+    "--noconftest",
+    "-q",
+    "/job/miles/tests/fast/backends/megatron_utils/test_canonical_lora_gate.py"
+  ],
+  "process_timeout_seconds": 300,
+  "process_group_timeout_seconds": 60,
+  "gpu": {
+    "assigned_device_count": 1,
+    "visible_devices": null,
+    "name": "AMD Instinct MI350X",
+    "uuid": "63646365-3134-6334-6564-393765333530",
+    "gcn_arch_name": "gfx950:sramecc+:xnack-",
+    "compute_capability": "9.5",
+    "total_memory_bytes": 270566162432,
+    "multi_processor_count": 256,
+    "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+    "torch_hip_version": "7.2.26015-fc0010cf6a",
+    "torch_cuda_version": null
+  },
+  "git": {
+    "commit": "e5125a97e1fd383f005f4de258a5985026e09425",
+    "branch": "amdpilot/j-bc5283635bb4",
+    "dirty_files": "M miles/backends/megatron_utils/lora_utils.py\n?? miles/backends/megatron_utils/canonical_lora_gate.py\n?? reports/\n?? tests/fast/backends/megatron_utils/test_canonical_lora_gate.py"
+  },
+  "packages": {
+    "miles": {
+      "version": "0.1.0",
+      "module_path": "/job/miles/miles/__init__.py"
+    },
+    "megatron_bridge": {
+      "version": "0.5.0+582783a0",
+      "module_path": "/opt/venv/lib/python3.10/site-packages/megatron/bridge/__init__.py"
+    },
+    "sglang": {
+      "version": "0.5.17.dev2157+ga8e5c632f",
+      "module_path": "/sgl-workspace/sglang/python/sglang/__init__.py"
+    },
+    "torch": {
+      "version": "2.9.1+rocm7.2.0.lw.git7e1940d4",
+      "module_path": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py"
+    },
+    "transformer_engine": {
+      "version": "2.17.0",
+      "module_path": "/opt/venv/lib/python3.10/site-packages/transformer_engine/__init__.py"
+    }
+  },
+  "native_modules": {
+    "torch._C": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so",
+    "sgl_kernel.common_ops": "/opt/venv/lib/python3.10/site-packages/sgl_kernel/common_ops.cpython-310-x86_64-linux-gnu.so",
+    "aiter.jit.module_aiter_core": "/sgl-workspace/aiter/aiter/jit/module_aiter_core.so"
+  },
+  "reduced_case": {
+    "hidden_size": 8,
+    "attention_heads": 6,
+    "query_groups": 2,
+    "head_size": 4,
+    "lora_rank": 4,
+    "lora_alpha": 4,
+    "base_output_width": 64,
+    "upstream_adapter_output_width": 40,
+    "candidate_query_gate_adapter_width": 48,
+    "key_adapter_width": 8,
+    "value_adapter_width": 8,
+    "packed_order": "Q heads, Gate heads, K, V per query group"
+  },
+  "coverage": {
+    "upstream_gated_failure": true,
+    "canonical_hf_target_conversion": true,
+    "candidate_forward_parity": true,
+    "candidate_gradient_parity": true,
+    "base_adapter_state_boundaries": true,
+    "non_gated_regression": true
+  },
+  "not_proven": [
+    "full Qwen3.5 or Qwen3.6 model loading",
+    "tensor-parallel sizes greater than one",
+    "distributed checkpoint resharding",
+    "SGLang LoRA publication end to end",
+    "performance equivalence with MI355X"
+  ]
+}
