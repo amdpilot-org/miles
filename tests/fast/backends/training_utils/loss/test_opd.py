@@ -118,6 +118,41 @@ def test_fixed_opd_inputs_are_detached_in_persistent_rollout_data(monkeypatch):
     assert teacher_source.grad is None
 
 
+def test_differentiable_topk_mode_does_not_shape_advantages(monkeypatch):
+    make_parallel_state()
+    precomputed = torch.tensor([0.4, -0.2], requires_grad=True)
+    rollout_data = {
+        "log_probs": [torch.tensor([0.2, 0.4])],
+        "rewards": [0.0],
+        "values": None,
+        "response_lengths": [2],
+        "loss_masks": [torch.ones(2)],
+        "total_lengths": [2],
+        "opd_reverse_kl": [precomputed],
+    }
+    args = Namespace(
+        skip_actor_forward_only=False,
+        use_rollout_logprobs=False,
+        kl_coef=0.0,
+        use_opd=True,
+        opd_type="sglang",
+        opd_kl_coef=0.5,
+        opd_differentiable_top_k_loss=True,
+        normalize_advantages=False,
+    )
+
+    def fake_compute_advantages(**kwargs):
+        ones = torch.ones_like(kwargs["log_probs"][0])
+        return [ones], [ones.clone()]
+
+    monkeypatch.setattr(loss_utils, "compute_advantages", fake_compute_advantages)
+
+    loss_utils.compute_advantages_and_returns(args, rollout_data)
+
+    torch.testing.assert_close(rollout_data["advantages"][0], torch.ones(2))
+    assert rollout_data["opd_reverse_kl"][0] is precomputed
+
+
 def test_noop_when_student_log_probs_none():
     args = _args()
     advantages = [torch.tensor([1.0, 2.0])]

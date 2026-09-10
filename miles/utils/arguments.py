@@ -1691,6 +1691,15 @@ def get_miles_extra_args_provider(add_custom_arguments=None):
                 ),
             )
             parser.add_argument(
+                "--opd-differentiable-top-k-loss",
+                action="store_true",
+                default=False,
+                help=(
+                    "Add the top-k reverse-KL estimate directly to the policy loss using current "
+                    "student logits. The default remains the detached reward-shaping path."
+                ),
+            )
+            parser.add_argument(
                 "--opd-top-k-strategy",
                 type=str,
                 choices=["only-student", "only-teacher", "intersection", "union", "xor"],
@@ -3084,6 +3093,11 @@ def miles_validate_args(args):
                 "--opd-log-prob-top-k with a student-side strategy needs opd_student_top_logprobs, "
                 "which only the v1 rollout produces; set MILES_USE_LEGACY_ROLLOUT_V1=1"
             )
+        if args.opd_differentiable_top_k_loss:
+            if args.opd_log_prob_top_k <= 0:
+                raise ValueError("--opd-differentiable-top-k-loss requires --opd-log-prob-top-k > 0.")
+            if args.opd_type != "sglang":
+                raise ValueError("--opd-differentiable-top-k-loss is currently supported only with --opd-type=sglang.")
         if args.opd_teacher_urls:
             if args.opd_type != "sglang":
                 raise ValueError("--opd-teacher-urls is only supported with --opd-type=sglang.")

@@ -6,7 +6,9 @@ from tests.ci.ci_register import register_cpu_ci
 
 from miles.rollout.on_policy_distillation import (
     _compute_topk_reverse_kl,
+    _compute_topk_reverse_kl_terms,
     _per_position_ids,
+    post_process_rewards,
     _score_payload,
     _teacher_url_for_sample,
     parse_teacher_urls,
@@ -75,6 +77,47 @@ def test_topk_only_student_uses_student_probability_weights():
     expected_1 = 0.7 * math.log(0.7 / 0.4) + 0.3 * math.log(0.3 / 0.6)
 
     assert reverse_kl.tolist() == pytest.approx([expected_0, expected_1])
+
+
+def test_topk_terms_store_controlled_token_sets_for_differentiable_training():
+    terms = _compute_topk_reverse_kl_terms(_args("only-student"), _sample(), _teacher_payload())
+
+    assert terms.counts == [2, 2]
+    assert terms.token_ids == [1, 2, 4, 5]
+    assert terms.teacher_log_probs == pytest.approx(
+        [math.log(0.3), math.log(0.7), math.log(0.4), math.log(0.6)]
+    )
+    assert terms.weights == pytest.approx([0.6, 0.4, 0.7, 0.3])
+
+
+def test_post_process_rewards_populates_differentiable_terms_only_when_opted_in():
+    args = Namespace(
+        opd_log_prob_top_k=2,
+        opd_differentiable_top_k_loss=True,
+        reward_key=None,
+        opd_reward_weight_mode="student_p",
+        opd_top_k_strategy="only-student",
+    )
+    sample = _sample()
+    sample.reward = _teacher_payload()
+
+    post_process_rewards(args, [sample])
+
+    assert sample.opd_reverse_kl is not None
+    assert sample.opd_topk_counts == [2, 2]
+    assert sample.opd_topk_token_ids == [1, 2, 4, 5]
+    assert len(sample.opd_topk_teacher_log_probs) == 4
+    assert len(sample.opd_topk_weights) == 4
+
+    args.opd_differentiable_top_k_loss = False
+    sample = _sample()
+    sample.reward = _teacher_payload()
+
+    post_process_rewards(args, [sample])
+
+    assert sample.opd_reverse_kl is not None
+    assert sample.opd_topk_counts is None
+    assert sample.opd_topk_token_ids is None
 
 
 def test_topk_intersection_uses_overlap_only():
