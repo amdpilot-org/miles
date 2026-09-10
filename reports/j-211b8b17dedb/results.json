@@ -1,0 +1,2809 @@
+{
+  "context_comparison": {
+    "cycle_count": 32,
+    "final_weight_checksum_difference": 0.0,
+    "maximum_output_checksum_difference": 0.0,
+    "outputs_match": true,
+    "weights_match": true
+  },
+  "ray_colocated": {
+    "colocated_peers": [
+      {
+        "device_name": "AMD Instinct MI350X",
+        "final_loss": 1.0181026458740234,
+        "gpu_ms": 1756.437255859375,
+        "iterations": 32,
+        "visible_devices": ""
+      },
+      {
+        "device_name": "AMD Instinct MI350X",
+        "final_loss": 1.0181026458740234,
+        "gpu_ms": 1900.717041015625,
+        "iterations": 32,
+        "visible_devices": ""
+      }
+    ],
+    "ranks": [
+      {
+        "context": "ray_colocated",
+        "custom_all_reduce_path": {
+          "disabled": false,
+          "quick_all_reduce_arch_available": true,
+          "quick_all_reduce_max_size_bytes": 67108864,
+          "quick_all_reduce_quantization": "FP",
+          "selected_class": "QuickAllReduce",
+          "selected_module": "sglang.srt.distributed.device_communicators.quick_all_reduce",
+          "sglang_is_cuda": false,
+          "sglang_is_hip": true,
+          "sglang_v2_dispatched": false,
+          "sglang_v2_env": false
+        },
+        "cycle_count": 32,
+        "cycle_metrics": [
+          {
+            "bytes": 1048576,
+            "capture_ms": 0.8170899748802185,
+            "cycle": 0,
+            "elements": 524288,
+            "forward_backward_ms": 1790.7139892578125,
+            "gradient_allreduce_ms": 0.8878899812698364,
+            "loss": 1.0511234998703003,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 20.809688568115234,
+            "output_checksum": 8912120.0,
+            "output_equal": true,
+            "replay_ms": 0.45692500472068787,
+            "shape": [
+              64,
+              8192
+            ],
+            "weight_checksum": 30.467173246732205,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 2097152,
+            "capture_ms": 0.6243270039558411,
+            "cycle": 1,
+            "elements": 1048576,
+            "forward_backward_ms": 1.5085779428482056,
+            "gradient_allreduce_ms": 0.4692859947681427,
+            "loss": 1.0469300746917725,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.23704299330711365,
+            "output_checksum": 17817510.0,
+            "output_equal": true,
+            "replay_ms": 0.07948099821805954,
+            "shape": [
+              128,
+              8192
+            ],
+            "weight_checksum": 30.467043966030932,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 3145728,
+            "capture_ms": 0.7884500026702881,
+            "cycle": 2,
+            "elements": 1572864,
+            "forward_backward_ms": 1.5250580310821533,
+            "gradient_allreduce_ms": 0.38668400049209595,
+            "loss": 1.0371129512786865,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.22996200621128082,
+            "output_checksum": 26740381.0,
+            "output_equal": true,
+            "replay_ms": 0.08180099725723267,
+            "shape": [
+              192,
+              8192
+            ],
+            "weight_checksum": 30.46903393740937,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 4194304,
+            "capture_ms": 1.1042530536651611,
+            "cycle": 3,
+            "elements": 2097152,
+            "forward_backward_ms": 1.3539760112762451,
+            "gradient_allreduce_ms": 0.3193640112876892,
+            "loss": 1.031764268875122,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.23068200051784515,
+            "output_checksum": 35654931.0,
+            "output_equal": true,
+            "replay_ms": 0.10052099823951721,
+            "shape": [
+              256,
+              8192
+            ],
+            "weight_checksum": 30.46993585781166,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 5242880,
+            "capture_ms": 0.8782100081443787,
+            "cycle": 4,
+            "elements": 2621440,
+            "forward_backward_ms": 1.1958539485931396,
+            "gradient_allreduce_ms": 0.38480401039123535,
+            "loss": 1.032488465309143,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21232199668884277,
+            "output_checksum": 44575146.0,
+            "output_equal": true,
+            "replay_ms": 0.13188199698925018,
+            "shape": [
+              320,
+              8192
+            ],
+            "weight_checksum": 30.470268361503543,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 6291456,
+            "capture_ms": 1.1241730451583862,
+            "cycle": 5,
+            "elements": 3145728,
+            "forward_backward_ms": 1.2428549528121948,
+            "gradient_allreduce_ms": 0.3382839858531952,
+            "loss": 1.039135456085205,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21096199750900269,
+            "output_checksum": 53476633.0,
+            "output_equal": true,
+            "replay_ms": 0.14124199748039246,
+            "shape": [
+              384,
+              8192
+            ],
+            "weight_checksum": 30.470175776564616,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 7340032,
+            "capture_ms": 1.3240159749984741,
+            "cycle": 6,
+            "elements": 3670016,
+            "forward_backward_ms": 1.2515350580215454,
+            "gradient_allreduce_ms": 0.3597249984741211,
+            "loss": 1.038480281829834,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.221002995967865,
+            "output_checksum": 62383814.0,
+            "output_equal": true,
+            "replay_ms": 0.16044199466705322,
+            "shape": [
+              448,
+              8192
+            ],
+            "weight_checksum": 30.47105770130398,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 8388608,
+            "capture_ms": 1.2957340478897095,
+            "cycle": 7,
+            "elements": 4194304,
+            "forward_backward_ms": 1.188454031944275,
+            "gradient_allreduce_ms": 0.3562439978122711,
+            "loss": 1.0394940376281738,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21604199707508087,
+            "output_checksum": 71297205.0,
+            "output_equal": true,
+            "replay_ms": 0.24340300261974335,
+            "shape": [
+              512,
+              8192
+            ],
+            "weight_checksum": 30.47265706657485,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 9437184,
+            "capture_ms": 1.28569495677948,
+            "cycle": 8,
+            "elements": 4718592,
+            "forward_backward_ms": 1.174414038658142,
+            "gradient_allreduce_ms": 0.34608399868011475,
+            "loss": 1.0377987623214722,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21580299735069275,
+            "output_checksum": 80211781.0,
+            "output_equal": true,
+            "replay_ms": 0.19972200691699982,
+            "shape": [
+              576,
+              8192
+            ],
+            "weight_checksum": 30.472459012867187,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 10485760,
+            "capture_ms": 1.1414539813995361,
+            "cycle": 9,
+            "elements": 5242880,
+            "forward_backward_ms": 1.0888930559158325,
+            "gradient_allreduce_ms": 0.4470460116863251,
+            "loss": 1.0395487546920776,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.18340200185775757,
+            "output_checksum": 89101120.0,
+            "output_equal": true,
+            "replay_ms": 0.23328299820423126,
+            "shape": [
+              640,
+              8192
+            ],
+            "weight_checksum": 30.47267790126978,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 11534336,
+            "capture_ms": 1.0882929563522339,
+            "cycle": 10,
+            "elements": 5767168,
+            "forward_backward_ms": 1.2262539863586426,
+            "gradient_allreduce_ms": 0.32804301381111145,
+            "loss": 1.0428208112716675,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.19624200463294983,
+            "output_checksum": 98029913.0,
+            "output_equal": true,
+            "replay_ms": 0.23748299479484558,
+            "shape": [
+              704,
+              8192
+            ],
+            "weight_checksum": 30.474144815540566,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 12582912,
+            "capture_ms": 0.9967319965362549,
+            "cycle": 11,
+            "elements": 6291456,
+            "forward_backward_ms": 1.2358150482177734,
+            "gradient_allreduce_ms": 0.35212498903274536,
+            "loss": 1.0414164066314697,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.19960300624370575,
+            "output_checksum": 106953370.0,
+            "output_equal": true,
+            "replay_ms": 0.26404300332069397,
+            "shape": [
+              768,
+              8192
+            ],
+            "weight_checksum": 30.47461710040696,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 13631488,
+            "capture_ms": 1.2680549621582031,
+            "cycle": 12,
+            "elements": 6815744,
+            "forward_backward_ms": 1.3453359603881836,
+            "gradient_allreduce_ms": 0.37132400274276733,
+            "loss": 1.0426690578460693,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21972200274467468,
+            "output_checksum": 115867896.0,
+            "output_equal": true,
+            "replay_ms": 0.2820430099964142,
+            "shape": [
+              832,
+              8192
+            ],
+            "weight_checksum": 30.475787828709628,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 14680064,
+            "capture_ms": 1.070572018623352,
+            "cycle": 13,
+            "elements": 7340032,
+            "forward_backward_ms": 1.3381359577178955,
+            "gradient_allreduce_ms": 0.400285005569458,
+            "loss": 1.0417397022247314,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.22164300084114075,
+            "output_checksum": 124781578.0,
+            "output_equal": true,
+            "replay_ms": 0.3995240032672882,
+            "shape": [
+              896,
+              8192
+            ],
+            "weight_checksum": 30.47658563407189,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 15728640,
+            "capture_ms": 0.9850109815597534,
+            "cycle": 14,
+            "elements": 7864320,
+            "forward_backward_ms": 1.2381750345230103,
+            "gradient_allreduce_ms": 0.3496040105819702,
+            "loss": 1.0399655103683472,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.20332199335098267,
+            "output_checksum": 133668310.0,
+            "output_equal": true,
+            "replay_ms": 0.3230440020561218,
+            "shape": [
+              960,
+              8192
+            ],
+            "weight_checksum": 30.476775579139893,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 16777216,
+            "capture_ms": 0.9401310086250305,
+            "cycle": 15,
+            "elements": 8388608,
+            "forward_backward_ms": 1.1673729419708252,
+            "gradient_allreduce_ms": 40.76123046875,
+            "loss": 1.0378646850585938,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.23092199862003326,
+            "output_checksum": 142615194.0,
+            "output_equal": true,
+            "replay_ms": 0.3459649980068207,
+            "shape": [
+              1024,
+              8192
+            ],
+            "weight_checksum": 30.476617622627103,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 17825792,
+            "capture_ms": 1.0841330289840698,
+            "cycle": 16,
+            "elements": 8912896,
+            "forward_backward_ms": 1.4410569667816162,
+            "gradient_allreduce_ms": 0.35164400935173035,
+            "loss": 1.0395420789718628,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2191620022058487,
+            "output_checksum": 151517843.0,
+            "output_equal": true,
+            "replay_ms": 0.3632040023803711,
+            "shape": [
+              1088,
+              8192
+            ],
+            "weight_checksum": 30.476859171166453,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 18874368,
+            "capture_ms": 0.9660099744796753,
+            "cycle": 17,
+            "elements": 9437184,
+            "forward_backward_ms": 1.173814058303833,
+            "gradient_allreduce_ms": 0.34684398770332336,
+            "loss": 1.0417684316635132,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21508200466632843,
+            "output_checksum": 160434252.0,
+            "output_equal": true,
+            "replay_ms": 0.36992499232292175,
+            "shape": [
+              1152,
+              8192
+            ],
+            "weight_checksum": 30.477009287493544,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 19922944,
+            "capture_ms": 1.3114949464797974,
+            "cycle": 18,
+            "elements": 9961472,
+            "forward_backward_ms": 1.196213960647583,
+            "gradient_allreduce_ms": 0.42036500573158264,
+            "loss": 1.040812611579895,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21816299855709076,
+            "output_checksum": 169319438.0,
+            "output_equal": true,
+            "replay_ms": 0.4022049903869629,
+            "shape": [
+              1216,
+              8192
+            ],
+            "weight_checksum": 30.478223772107143,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 20971520,
+            "capture_ms": 1.0178920030593872,
+            "cycle": 19,
+            "elements": 10485760,
+            "forward_backward_ms": 1.2402149438858032,
+            "gradient_allreduce_ms": 0.3714050054550171,
+            "loss": 1.0359106063842773,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.22128300368785858,
+            "output_checksum": 178285995.0,
+            "output_equal": true,
+            "replay_ms": 0.41976499557495117,
+            "shape": [
+              1280,
+              8192
+            ],
+            "weight_checksum": 30.47797922681221,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 22020096,
+            "capture_ms": 1.117812991142273,
+            "cycle": 20,
+            "elements": 11010048,
+            "forward_backward_ms": 1.1978139877319336,
+            "gradient_allreduce_ms": 0.35320401191711426,
+            "loss": 1.0377898216247559,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21180200576782227,
+            "output_checksum": 187154102.0,
+            "output_equal": true,
+            "replay_ms": 0.44080498814582825,
+            "shape": [
+              1344,
+              8192
+            ],
+            "weight_checksum": 30.478989820903234,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 23068672,
+            "capture_ms": 1.0103709697723389,
+            "cycle": 21,
+            "elements": 11534336,
+            "forward_backward_ms": 1.2983360290527344,
+            "gradient_allreduce_ms": 0.34924399852752686,
+            "loss": 1.038815975189209,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.20820200443267822,
+            "output_checksum": 196110386.0,
+            "output_equal": true,
+            "replay_ms": 0.47128599882125854,
+            "shape": [
+              1408,
+              8192
+            ],
+            "weight_checksum": 30.478522236048892,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 24117248,
+            "capture_ms": 1.2805759906768799,
+            "cycle": 22,
+            "elements": 12058624,
+            "forward_backward_ms": 1.303536057472229,
+            "gradient_allreduce_ms": 0.3564850091934204,
+            "loss": 1.0398859977722168,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21552300453186035,
+            "output_checksum": 204999047.0,
+            "output_equal": true,
+            "replay_ms": 0.4847260117530823,
+            "shape": [
+              1472,
+              8192
+            ],
+            "weight_checksum": 30.47910389368917,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 25165824,
+            "capture_ms": 1.0852530002593994,
+            "cycle": 23,
+            "elements": 12582912,
+            "forward_backward_ms": 1.2942160367965698,
+            "gradient_allreduce_ms": 0.3680039942264557,
+            "loss": 1.0387417078018188,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.22056299448013306,
+            "output_checksum": 213892444.0,
+            "output_equal": true,
+            "replay_ms": 0.6217269897460938,
+            "shape": [
+              1536,
+              8192
+            ],
+            "weight_checksum": 30.48015774007842,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 26214400,
+            "capture_ms": 0.8557699918746948,
+            "cycle": 24,
+            "elements": 13107200,
+            "forward_backward_ms": 1.1246140003204346,
+            "gradient_allreduce_ms": 0.38220399618148804,
+            "loss": 1.040299654006958,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.18336200714111328,
+            "output_checksum": 222822933.0,
+            "output_equal": true,
+            "replay_ms": 0.5296859741210938,
+            "shape": [
+              1600,
+              8192
+            ],
+            "weight_checksum": 30.480915486719056,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 27262976,
+            "capture_ms": 0.9926109910011292,
+            "cycle": 25,
+            "elements": 13631488,
+            "forward_backward_ms": 1.3211760520935059,
+            "gradient_allreduce_ms": 0.3481239974498749,
+            "loss": 1.0392481088638306,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21788300573825836,
+            "output_checksum": 231730043.0,
+            "output_equal": true,
+            "replay_ms": 0.5432869791984558,
+            "shape": [
+              1664,
+              8192
+            ],
+            "weight_checksum": 30.48116063711308,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 28311552,
+            "capture_ms": 0.9947320222854614,
+            "cycle": 26,
+            "elements": 14155776,
+            "forward_backward_ms": 1.324895977973938,
+            "gradient_allreduce_ms": 0.3787649869918823,
+            "loss": 1.0383001565933228,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.23144300282001495,
+            "output_checksum": 240693670.0,
+            "output_equal": true,
+            "replay_ms": 0.5595669746398926,
+            "shape": [
+              1728,
+              8192
+            ],
+            "weight_checksum": 30.481827753573224,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 29360128,
+            "capture_ms": 0.9502509832382202,
+            "cycle": 27,
+            "elements": 14680064,
+            "forward_backward_ms": 1.2804150581359863,
+            "gradient_allreduce_ms": 0.3588840067386627,
+            "loss": 1.0378402471542358,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21976199746131897,
+            "output_checksum": 249555251.0,
+            "output_equal": true,
+            "replay_ms": 0.5809270143508911,
+            "shape": [
+              1792,
+              8192
+            ],
+            "weight_checksum": 30.482073590155046,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 30408704,
+            "capture_ms": 1.0891729593276978,
+            "cycle": 28,
+            "elements": 15204352,
+            "forward_backward_ms": 1.254654049873352,
+            "gradient_allreduce_ms": 0.34948399662971497,
+            "loss": 1.0382028818130493,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.23308199644088745,
+            "output_checksum": 258482498.0,
+            "output_equal": true,
+            "replay_ms": 0.6012070178985596,
+            "shape": [
+              1856,
+              8192
+            ],
+            "weight_checksum": 30.482330484756584,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 31457280,
+            "capture_ms": 0.9742900133132935,
+            "cycle": 29,
+            "elements": 15728640,
+            "forward_backward_ms": 1.3262159824371338,
+            "gradient_allreduce_ms": 0.3808850049972534,
+            "loss": 1.0362591743469238,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2193630039691925,
+            "output_checksum": 267423646.0,
+            "output_equal": true,
+            "replay_ms": 0.6238880157470703,
+            "shape": [
+              1920,
+              8192
+            ],
+            "weight_checksum": 30.483112126026676,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 32505856,
+            "capture_ms": 0.9211710095405579,
+            "cycle": 30,
+            "elements": 16252928,
+            "forward_backward_ms": 1.1282529830932617,
+            "gradient_allreduce_ms": 0.35000500082969666,
+            "loss": 1.0378714799880981,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.17516200244426727,
+            "output_checksum": 276293079.0,
+            "output_equal": true,
+            "replay_ms": 0.6421679854393005,
+            "shape": [
+              1984,
+              8192
+            ],
+            "weight_checksum": 30.484113422459565,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 33554432,
+            "capture_ms": 1.0514130592346191,
+            "cycle": 31,
+            "elements": 16777216,
+            "forward_backward_ms": 1.3145359754562378,
+            "gradient_allreduce_ms": 0.40092501044273376,
+            "loss": 1.041719675064087,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.24632300436496735,
+            "output_checksum": 285178831.0,
+            "output_equal": true,
+            "replay_ms": 0.6631280183792114,
+            "shape": [
+              2048,
+              8192
+            ],
+            "weight_checksum": 30.484682746187467,
+            "weights_equal_across_ranks": true
+          }
+        ],
+        "device_capability": [
+          9,
+          5
+        ],
+        "device_name": "AMD Instinct MI350X",
+        "final_weight_checksum": 30.484682746187467,
+        "pause_resume": {
+          "passed": true,
+          "reason": "pause/resume preserved tagged GPU memory",
+          "supported": true
+        },
+        "rank": 0,
+        "torch_cuda_version": null,
+        "torch_hip_version": "7.2.26015-fc0010cf6a",
+        "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+        "visible_devices": "0",
+        "world_size": 2
+      },
+      {
+        "context": "ray_colocated",
+        "custom_all_reduce_path": {
+          "disabled": false,
+          "quick_all_reduce_arch_available": true,
+          "quick_all_reduce_max_size_bytes": 67108864,
+          "quick_all_reduce_quantization": "FP",
+          "selected_class": "QuickAllReduce",
+          "selected_module": "sglang.srt.distributed.device_communicators.quick_all_reduce",
+          "sglang_is_cuda": false,
+          "sglang_is_hip": true,
+          "sglang_v2_dispatched": false,
+          "sglang_v2_env": false
+        },
+        "cycle_count": 32,
+        "cycle_metrics": [
+          {
+            "bytes": 1048576,
+            "capture_ms": 0.88093101978302,
+            "cycle": 0,
+            "elements": 524288,
+            "forward_backward_ms": 1695.9296875,
+            "gradient_allreduce_ms": 79.53797912597656,
+            "loss": 1.055250883102417,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 20.94584846496582,
+            "output_checksum": 8912120.0,
+            "output_equal": true,
+            "replay_ms": 0.07224100083112717,
+            "shape": [
+              64,
+              8192
+            ],
+            "weight_checksum": 30.467173246732205,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 2097152,
+            "capture_ms": 0.5303260087966919,
+            "cycle": 1,
+            "elements": 1048576,
+            "forward_backward_ms": 1.5697389841079712,
+            "gradient_allreduce_ms": 0.42376500368118286,
+            "loss": 1.0378702878952026,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.22172200679779053,
+            "output_checksum": 17817510.0,
+            "output_equal": true,
+            "replay_ms": 0.061521001160144806,
+            "shape": [
+              128,
+              8192
+            ],
+            "weight_checksum": 30.467043966030932,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 3145728,
+            "capture_ms": 0.8500900268554688,
+            "cycle": 2,
+            "elements": 1572864,
+            "forward_backward_ms": 1.4310970306396484,
+            "gradient_allreduce_ms": 0.4420450031757355,
+            "loss": 1.03964102268219,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.20748299360275269,
+            "output_checksum": 26740381.0,
+            "output_equal": true,
+            "replay_ms": 0.09088099747896194,
+            "shape": [
+              192,
+              8192
+            ],
+            "weight_checksum": 30.46903393740937,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 4194304,
+            "capture_ms": 1.2746950387954712,
+            "cycle": 3,
+            "elements": 2097152,
+            "forward_backward_ms": 1.2125749588012695,
+            "gradient_allreduce_ms": 0.4268450140953064,
+            "loss": 1.0306506156921387,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.20976200699806213,
+            "output_checksum": 35654931.0,
+            "output_equal": true,
+            "replay_ms": 0.11772099882364273,
+            "shape": [
+              256,
+              8192
+            ],
+            "weight_checksum": 30.46993585781166,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 5242880,
+            "capture_ms": 0.9802520275115967,
+            "cycle": 4,
+            "elements": 2621440,
+            "forward_backward_ms": 1.187574028968811,
+            "gradient_allreduce_ms": 0.33256399631500244,
+            "loss": 1.034635066986084,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21128199994564056,
+            "output_checksum": 44575146.0,
+            "output_equal": true,
+            "replay_ms": 0.1159610003232956,
+            "shape": [
+              320,
+              8192
+            ],
+            "weight_checksum": 30.470268361503543,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 6291456,
+            "capture_ms": 1.1775339841842651,
+            "cycle": 5,
+            "elements": 3145728,
+            "forward_backward_ms": 1.140293002128601,
+            "gradient_allreduce_ms": 0.4544059932231903,
+            "loss": 1.0391476154327393,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.17992199957370758,
+            "output_checksum": 53476633.0,
+            "output_equal": true,
+            "replay_ms": 0.15824200212955475,
+            "shape": [
+              384,
+              8192
+            ],
+            "weight_checksum": 30.470175776564616,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 7340032,
+            "capture_ms": 1.3978170156478882,
+            "cycle": 6,
+            "elements": 3670016,
+            "forward_backward_ms": 1.0490520000457764,
+            "gradient_allreduce_ms": 0.6171280145645142,
+            "loss": 1.0397499799728394,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.18104200065135956,
+            "output_checksum": 62383814.0,
+            "output_equal": true,
+            "replay_ms": 0.19276200234889984,
+            "shape": [
+              448,
+              8192
+            ],
+            "weight_checksum": 30.47105770130398,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 8388608,
+            "capture_ms": 1.3311749696731567,
+            "cycle": 7,
+            "elements": 4194304,
+            "forward_backward_ms": 1.0403319597244263,
+            "gradient_allreduce_ms": 0.49888500571250916,
+            "loss": 1.0360817909240723,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2098419964313507,
+            "output_checksum": 71297205.0,
+            "output_equal": true,
+            "replay_ms": 0.17704200744628906,
+            "shape": [
+              512,
+              8192
+            ],
+            "weight_checksum": 30.47265706657485,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 9437184,
+            "capture_ms": 1.34989595413208,
+            "cycle": 8,
+            "elements": 4718592,
+            "forward_backward_ms": 0.9605309963226318,
+            "gradient_allreduce_ms": 0.5884069800376892,
+            "loss": 1.041788935661316,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.15472200512886047,
+            "output_checksum": 80211781.0,
+            "output_equal": true,
+            "replay_ms": 0.24000200629234314,
+            "shape": [
+              576,
+              8192
+            ],
+            "weight_checksum": 30.472459012867187,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 10485760,
+            "capture_ms": 1.2226539850234985,
+            "cycle": 9,
+            "elements": 5242880,
+            "forward_backward_ms": 1.1346930265426636,
+            "gradient_allreduce_ms": 0.3546440005302429,
+            "loss": 1.041995644569397,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.19004300236701965,
+            "output_checksum": 89101120.0,
+            "output_equal": true,
+            "replay_ms": 0.21448299288749695,
+            "shape": [
+              640,
+              8192
+            ],
+            "weight_checksum": 30.47267790126978,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 11534336,
+            "capture_ms": 1.2112139463424683,
+            "cycle": 10,
+            "elements": 5767168,
+            "forward_backward_ms": 1.0484130382537842,
+            "gradient_allreduce_ms": 0.4606049954891205,
+            "loss": 1.0385613441467285,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.19404199719429016,
+            "output_checksum": 98029913.0,
+            "output_equal": true,
+            "replay_ms": 0.2458830028772354,
+            "shape": [
+              704,
+              8192
+            ],
+            "weight_checksum": 30.474144815540566,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 12582912,
+            "capture_ms": 1.0110119581222534,
+            "cycle": 11,
+            "elements": 6291456,
+            "forward_backward_ms": 1.1140140295028687,
+            "gradient_allreduce_ms": 0.45644500851631165,
+            "loss": 1.0412895679473877,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.20120200514793396,
+            "output_checksum": 106953370.0,
+            "output_equal": true,
+            "replay_ms": 0.25928300619125366,
+            "shape": [
+              768,
+              8192
+            ],
+            "weight_checksum": 30.47461710040696,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 13631488,
+            "capture_ms": 1.1855740547180176,
+            "cycle": 12,
+            "elements": 6815744,
+            "forward_backward_ms": 1.2010940313339233,
+            "gradient_allreduce_ms": 0.5914070010185242,
+            "loss": 1.0357681512832642,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2183219939470291,
+            "output_checksum": 115867896.0,
+            "output_equal": true,
+            "replay_ms": 0.2941640019416809,
+            "shape": [
+              832,
+              8192
+            ],
+            "weight_checksum": 30.475787828709628,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 14680064,
+            "capture_ms": 1.0145319700241089,
+            "cycle": 13,
+            "elements": 7340032,
+            "forward_backward_ms": 1.2203340530395508,
+            "gradient_allreduce_ms": 0.5008860230445862,
+            "loss": 1.0395935773849487,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2408829927444458,
+            "output_checksum": 124781578.0,
+            "output_equal": true,
+            "replay_ms": 0.29700300097465515,
+            "shape": [
+              896,
+              8192
+            ],
+            "weight_checksum": 30.47658563407189,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 15728640,
+            "capture_ms": 0.993332028388977,
+            "cycle": 14,
+            "elements": 7864320,
+            "forward_backward_ms": 1.1353739500045776,
+            "gradient_allreduce_ms": 0.4479660093784332,
+            "loss": 1.0363410711288452,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21216200292110443,
+            "output_checksum": 133668310.0,
+            "output_equal": true,
+            "replay_ms": 0.3348039984703064,
+            "shape": [
+              960,
+              8192
+            ],
+            "weight_checksum": 30.476775579139893,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 16777216,
+            "capture_ms": 1.0087720155715942,
+            "cycle": 15,
+            "elements": 8388608,
+            "forward_backward_ms": 1.5479379892349243,
+            "gradient_allreduce_ms": 0.5960469841957092,
+            "loss": 1.0419261455535889,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.24852299690246582,
+            "output_checksum": 142615194.0,
+            "output_equal": true,
+            "replay_ms": 0.34500399231910706,
+            "shape": [
+              1024,
+              8192
+            ],
+            "weight_checksum": 30.476617622627103,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 17825792,
+            "capture_ms": 0.9817320108413696,
+            "cycle": 16,
+            "elements": 8912896,
+            "forward_backward_ms": 1.1150530576705933,
+            "gradient_allreduce_ms": 0.6520869731903076,
+            "loss": 1.0401722192764282,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.19116200506687164,
+            "output_checksum": 151517843.0,
+            "output_equal": true,
+            "replay_ms": 0.3751640021800995,
+            "shape": [
+              1088,
+              8192
+            ],
+            "weight_checksum": 30.476859171166453,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 18874368,
+            "capture_ms": 0.9564520120620728,
+            "cycle": 17,
+            "elements": 9437184,
+            "forward_backward_ms": 1.0951730012893677,
+            "gradient_allreduce_ms": 0.4215250015258789,
+            "loss": 1.0378384590148926,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.20436300337314606,
+            "output_checksum": 160434252.0,
+            "output_equal": true,
+            "replay_ms": 0.5638070106506348,
+            "shape": [
+              1152,
+              8192
+            ],
+            "weight_checksum": 30.477009287493544,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 19922944,
+            "capture_ms": 1.2540149688720703,
+            "cycle": 18,
+            "elements": 9961472,
+            "forward_backward_ms": 1.2331750392913818,
+            "gradient_allreduce_ms": 0.40680399537086487,
+            "loss": 1.041758418083191,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.22104300558567047,
+            "output_checksum": 169319438.0,
+            "output_equal": true,
+            "replay_ms": 0.42964500188827515,
+            "shape": [
+              1216,
+              8192
+            ],
+            "weight_checksum": 30.478223772107143,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 20971520,
+            "capture_ms": 0.9240109920501709,
+            "cycle": 19,
+            "elements": 10485760,
+            "forward_backward_ms": 1.0195319652557373,
+            "gradient_allreduce_ms": 0.6437280178070068,
+            "loss": 1.0383094549179077,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.19384199380874634,
+            "output_checksum": 178285995.0,
+            "output_equal": true,
+            "replay_ms": 0.4380449950695038,
+            "shape": [
+              1280,
+              8192
+            ],
+            "weight_checksum": 30.47797922681221,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 22020096,
+            "capture_ms": 1.0148520469665527,
+            "cycle": 20,
+            "elements": 11010048,
+            "forward_backward_ms": 1.1827340126037598,
+            "gradient_allreduce_ms": 0.4122850000858307,
+            "loss": 1.0405993461608887,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.19520199298858643,
+            "output_checksum": 187154102.0,
+            "output_equal": true,
+            "replay_ms": 0.4499250054359436,
+            "shape": [
+              1344,
+              8192
+            ],
+            "weight_checksum": 30.478989820903234,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 23068672,
+            "capture_ms": 0.8959299921989441,
+            "cycle": 21,
+            "elements": 11534336,
+            "forward_backward_ms": 1.1509729623794556,
+            "gradient_allreduce_ms": 0.5378860235214233,
+            "loss": 1.038246750831604,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.1910420060157776,
+            "output_checksum": 196110386.0,
+            "output_equal": true,
+            "replay_ms": 0.46176499128341675,
+            "shape": [
+              1408,
+              8192
+            ],
+            "weight_checksum": 30.478522236048892,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 24117248,
+            "capture_ms": 1.0987329483032227,
+            "cycle": 22,
+            "elements": 12058624,
+            "forward_backward_ms": 1.1170929670333862,
+            "gradient_allreduce_ms": 0.5400859713554382,
+            "loss": 1.0404703617095947,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.1965630054473877,
+            "output_checksum": 204999047.0,
+            "output_equal": true,
+            "replay_ms": 0.49256598949432373,
+            "shape": [
+              1472,
+              8192
+            ],
+            "weight_checksum": 30.47910389368917,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 25165824,
+            "capture_ms": 0.9076499938964844,
+            "cycle": 23,
+            "elements": 12582912,
+            "forward_backward_ms": 1.0942130088806152,
+            "gradient_allreduce_ms": 0.6330879926681519,
+            "loss": 1.0379990339279175,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.19036300480365753,
+            "output_checksum": 213892444.0,
+            "output_equal": true,
+            "replay_ms": 0.4979250133037567,
+            "shape": [
+              1536,
+              8192
+            ],
+            "weight_checksum": 30.48015774007842,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 26214400,
+            "capture_ms": 0.9470509886741638,
+            "cycle": 24,
+            "elements": 13107200,
+            "forward_backward_ms": 1.1549739837646484,
+            "gradient_allreduce_ms": 0.34848400950431824,
+            "loss": 1.0406469106674194,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.19832199811935425,
+            "output_checksum": 222822933.0,
+            "output_equal": true,
+            "replay_ms": 0.5265259742736816,
+            "shape": [
+              1600,
+              8192
+            ],
+            "weight_checksum": 30.480915486719056,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 27262976,
+            "capture_ms": 0.9808509945869446,
+            "cycle": 25,
+            "elements": 13631488,
+            "forward_backward_ms": 1.1800140142440796,
+            "gradient_allreduce_ms": 0.5069659948348999,
+            "loss": 1.0383580923080444,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2010830044746399,
+            "output_checksum": 231730043.0,
+            "output_equal": true,
+            "replay_ms": 0.5530470013618469,
+            "shape": [
+              1664,
+              8192
+            ],
+            "weight_checksum": 30.48116063711308,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 28311552,
+            "capture_ms": 0.9077309966087341,
+            "cycle": 26,
+            "elements": 14155776,
+            "forward_backward_ms": 1.0936130285263062,
+            "gradient_allreduce_ms": 0.647167980670929,
+            "loss": 1.0396424531936646,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.19488200545310974,
+            "output_checksum": 240693670.0,
+            "output_equal": true,
+            "replay_ms": 0.5749260187149048,
+            "shape": [
+              1728,
+              8192
+            ],
+            "weight_checksum": 30.481827753573224,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 29360128,
+            "capture_ms": 0.8429700136184692,
+            "cycle": 27,
+            "elements": 14680064,
+            "forward_backward_ms": 1.0526520013809204,
+            "gradient_allreduce_ms": 0.6365669965744019,
+            "loss": 1.037847638130188,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.1894029974937439,
+            "output_checksum": 249555251.0,
+            "output_equal": true,
+            "replay_ms": 0.5944470167160034,
+            "shape": [
+              1792,
+              8192
+            ],
+            "weight_checksum": 30.482073590155046,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 30408704,
+            "capture_ms": 0.874809980392456,
+            "cycle": 28,
+            "elements": 15204352,
+            "forward_backward_ms": 1.1399329900741577,
+            "gradient_allreduce_ms": 0.46076500415802,
+            "loss": 1.038394808769226,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2170030027627945,
+            "output_checksum": 258482498.0,
+            "output_equal": true,
+            "replay_ms": 0.6092069745063782,
+            "shape": [
+              1856,
+              8192
+            ],
+            "weight_checksum": 30.482330484756584,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 31457280,
+            "capture_ms": 0.8766499757766724,
+            "cycle": 29,
+            "elements": 15728640,
+            "forward_backward_ms": 1.1181340217590332,
+            "gradient_allreduce_ms": 0.6429280042648315,
+            "loss": 1.0389084815979004,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2047629952430725,
+            "output_checksum": 267423646.0,
+            "output_equal": true,
+            "replay_ms": 0.6408479809761047,
+            "shape": [
+              1920,
+              8192
+            ],
+            "weight_checksum": 30.483112126026676,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 32505856,
+            "capture_ms": 0.8309299945831299,
+            "cycle": 30,
+            "elements": 16252928,
+            "forward_backward_ms": 1.0140119791030884,
+            "gradient_allreduce_ms": 0.5007659792900085,
+            "loss": 1.0376074314117432,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.1876019984483719,
+            "output_checksum": 276293079.0,
+            "output_equal": true,
+            "replay_ms": 0.6569280028343201,
+            "shape": [
+              1984,
+              8192
+            ],
+            "weight_checksum": 30.484113422459565,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 33554432,
+            "capture_ms": 0.9121310114860535,
+            "cycle": 31,
+            "elements": 16777216,
+            "forward_backward_ms": 1.0588120222091675,
+            "gradient_allreduce_ms": 0.7525290250778198,
+            "loss": 1.041060447692871,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.18428200483322144,
+            "output_checksum": 285178831.0,
+            "output_equal": true,
+            "replay_ms": 0.6819279789924622,
+            "shape": [
+              2048,
+              8192
+            ],
+            "weight_checksum": 30.484682746187467,
+            "weights_equal_across_ranks": true
+          }
+        ],
+        "device_capability": [
+          9,
+          5
+        ],
+        "device_name": "AMD Instinct MI350X",
+        "final_weight_checksum": 30.484682746187467,
+        "pause_resume": {
+          "passed": true,
+          "reason": "pause/resume preserved tagged GPU memory",
+          "supported": true
+        },
+        "rank": 1,
+        "torch_cuda_version": null,
+        "torch_hip_version": "7.2.26015-fc0010cf6a",
+        "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+        "visible_devices": "0",
+        "world_size": 2
+      }
+    ],
+    "summary": {
+      "all_output_equal": true,
+      "capture_ms_max": 1.3240159749984741,
+      "capture_ms_mean": 1.0448484346270561,
+      "custom_all_reduce_path": {
+        "disabled": false,
+        "quick_all_reduce_arch_available": true,
+        "quick_all_reduce_max_size_bytes": 67108864,
+        "quick_all_reduce_quantization": "FP",
+        "selected_class": "QuickAllReduce",
+        "selected_module": "sglang.srt.distributed.device_communicators.quick_all_reduce",
+        "sglang_is_cuda": false,
+        "sglang_is_hip": true,
+        "sglang_v2_dispatched": false,
+        "sglang_v2_env": false
+      },
+      "cycle_count": 32,
+      "final_weight_checksum": 30.484682746187467,
+      "forward_backward_ms_mean": 57.18795804306865,
+      "gradient_allreduce_ms_mean": 1.64764042198658,
+      "maximum_output_difference": 0.0,
+      "optimizer_ms_mean": 0.8592038624919951,
+      "pause_resume": {
+        "passed": true,
+        "reason": "pause/resume preserved tagged GPU memory",
+        "supported": true
+      },
+      "replay_ms_max": 0.6631280183792114,
+      "replay_ms_mean": 0.3749470298644155,
+      "weights_equal_across_ranks": true
+    }
+  },
+  "source_metadata": {
+    "aiter_commit": "d9e5ef7ce08ee7045d583aed768cff41aa9210fe",
+    "aiter_path": "/sgl-workspace/aiter/aiter/__init__.py",
+    "miles_commit": "e5125a97e1fd383f005f4de258a5985026e09425",
+    "quick_all_reduce_native_extension": "/opt/venv/lib/python3.10/site-packages/sgl_kernel/common_ops.cpython-310-x86_64-linux-gnu.so",
+    "quick_all_reduce_native_header": "/sgl-workspace/sglang/python/sglang/kernels/aot/csrc/allreduce/quick_all_reduce_hip.h",
+    "quick_all_reduce_native_source": "/sgl-workspace/sglang/python/sglang/kernels/aot/csrc/allreduce/quick_all_reduce.hip",
+    "quick_all_reduce_python_path": "/sgl-workspace/sglang/python/sglang/srt/distributed/device_communicators/quick_all_reduce.py",
+    "sglang_commit": "a8e5c632fe40555f720d4f2c69771ea8cf24f3c4",
+    "sglang_path": "/sgl-workspace/sglang/python/sglang/__init__.py",
+    "torch_hip_version": "7.2.26015-fc0010cf6a",
+    "torch_path": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+    "torch_version": "2.9.1+rocm7.2.0.git7e1940d4"
+  },
+  "standalone": {
+    "ranks": [
+      {
+        "context": "standalone",
+        "custom_all_reduce_path": {
+          "disabled": false,
+          "quick_all_reduce_arch_available": true,
+          "quick_all_reduce_max_size_bytes": 67108864,
+          "quick_all_reduce_quantization": "FP",
+          "selected_class": "QuickAllReduce",
+          "selected_module": "sglang.srt.distributed.device_communicators.quick_all_reduce",
+          "sglang_is_cuda": false,
+          "sglang_is_hip": true,
+          "sglang_v2_dispatched": false,
+          "sglang_v2_env": false
+        },
+        "cycle_count": 32,
+        "cycle_metrics": [
+          {
+            "bytes": 1048576,
+            "capture_ms": 0.5346469879150391,
+            "cycle": 0,
+            "elements": 524288,
+            "forward_backward_ms": 1903.05078125,
+            "gradient_allreduce_ms": 14.188206672668457,
+            "loss": 1.0511234998703003,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 21.624576568603516,
+            "output_checksum": 8912120.0,
+            "output_equal": true,
+            "replay_ms": 1.9429030418395996,
+            "shape": [
+              64,
+              8192
+            ],
+            "weight_checksum": 30.467173246732205,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 2097152,
+            "capture_ms": 0.5563259720802307,
+            "cycle": 1,
+            "elements": 1048576,
+            "forward_backward_ms": 1.86286199092865,
+            "gradient_allreduce_ms": 0.3671639859676361,
+            "loss": 1.0469300746917725,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2342430055141449,
+            "output_checksum": 17817510.0,
+            "output_equal": true,
+            "replay_ms": 0.07592099905014038,
+            "shape": [
+              128,
+              8192
+            ],
+            "weight_checksum": 30.467043966030932,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 3145728,
+            "capture_ms": 0.8677700161933899,
+            "cycle": 2,
+            "elements": 1572864,
+            "forward_backward_ms": 1.7875009775161743,
+            "gradient_allreduce_ms": 0.43596500158309937,
+            "loss": 1.0371129512786865,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21128299832344055,
+            "output_checksum": 26740381.0,
+            "output_equal": true,
+            "replay_ms": 0.10688100010156631,
+            "shape": [
+              192,
+              8192
+            ],
+            "weight_checksum": 30.46903393740937,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 4194304,
+            "capture_ms": 1.0343719720840454,
+            "cycle": 3,
+            "elements": 2097152,
+            "forward_backward_ms": 1.3004150390625,
+            "gradient_allreduce_ms": 0.5588459968566895,
+            "loss": 1.031764268875122,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.17168200016021729,
+            "output_checksum": 35654931.0,
+            "output_equal": true,
+            "replay_ms": 0.13808199763298035,
+            "shape": [
+              256,
+              8192
+            ],
+            "weight_checksum": 30.46993585781166,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 5242880,
+            "capture_ms": 1.0117709636688232,
+            "cycle": 4,
+            "elements": 2621440,
+            "forward_backward_ms": 1.3155360221862793,
+            "gradient_allreduce_ms": 0.4005250036716461,
+            "loss": 1.032488465309143,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.1862429976463318,
+            "output_checksum": 44575146.0,
+            "output_equal": true,
+            "replay_ms": 0.12024199962615967,
+            "shape": [
+              320,
+              8192
+            ],
+            "weight_checksum": 30.470268361503543,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 6291456,
+            "capture_ms": 1.1951329708099365,
+            "cycle": 5,
+            "elements": 3145728,
+            "forward_backward_ms": 1.400617003440857,
+            "gradient_allreduce_ms": 0.3555639982223511,
+            "loss": 1.039135456085205,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2167620062828064,
+            "output_checksum": 53476633.0,
+            "output_equal": true,
+            "replay_ms": 0.17448200285434723,
+            "shape": [
+              384,
+              8192
+            ],
+            "weight_checksum": 30.470175776564616,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 7340032,
+            "capture_ms": 1.3292560577392578,
+            "cycle": 6,
+            "elements": 3670016,
+            "forward_backward_ms": 1.4572570323944092,
+            "gradient_allreduce_ms": 0.41188499331474304,
+            "loss": 1.038480281829834,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.20728300511837006,
+            "output_checksum": 62383814.0,
+            "output_equal": true,
+            "replay_ms": 0.16044199466705322,
+            "shape": [
+              448,
+              8192
+            ],
+            "weight_checksum": 30.47105770130398,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 8388608,
+            "capture_ms": 1.2877750396728516,
+            "cycle": 7,
+            "elements": 4194304,
+            "forward_backward_ms": 1.2687350511550903,
+            "gradient_allreduce_ms": 0.3136430084705353,
+            "loss": 1.0394940376281738,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.18404200673103333,
+            "output_checksum": 71297205.0,
+            "output_equal": true,
+            "replay_ms": 0.1889220029115677,
+            "shape": [
+              512,
+              8192
+            ],
+            "weight_checksum": 30.47265706657485,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 9437184,
+            "capture_ms": 1.322854995727539,
+            "cycle": 8,
+            "elements": 4718592,
+            "forward_backward_ms": 1.201735019683838,
+            "gradient_allreduce_ms": 0.3642440140247345,
+            "loss": 1.0377987623214722,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.1679220050573349,
+            "output_checksum": 80211781.0,
+            "output_equal": true,
+            "replay_ms": 5.519305229187012,
+            "shape": [
+              576,
+              8192
+            ],
+            "weight_checksum": 30.472459012867187,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 10485760,
+            "capture_ms": 1.1666929721832275,
+            "cycle": 9,
+            "elements": 5242880,
+            "forward_backward_ms": 1.2568949460983276,
+            "gradient_allreduce_ms": 0.33364400267601013,
+            "loss": 1.0395487546920776,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.17940199375152588,
+            "output_checksum": 89101120.0,
+            "output_equal": true,
+            "replay_ms": 1.676419973373413,
+            "shape": [
+              640,
+              8192
+            ],
+            "weight_checksum": 30.47267790126978,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 11534336,
+            "capture_ms": 1.1873739957809448,
+            "cycle": 10,
+            "elements": 5767168,
+            "forward_backward_ms": 1.2488950490951538,
+            "gradient_allreduce_ms": 0.4204849898815155,
+            "loss": 1.0428208112716675,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.18764199316501617,
+            "output_checksum": 98029913.0,
+            "output_equal": true,
+            "replay_ms": 0.3466840088367462,
+            "shape": [
+              704,
+              8192
+            ],
+            "weight_checksum": 30.474144815540566,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 12582912,
+            "capture_ms": 0.9239709973335266,
+            "cycle": 11,
+            "elements": 6291456,
+            "forward_backward_ms": 1.385975956916809,
+            "gradient_allreduce_ms": 0.34288400411605835,
+            "loss": 1.0414164066314697,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.24252299964427948,
+            "output_checksum": 106953370.0,
+            "output_equal": true,
+            "replay_ms": 0.3891650140285492,
+            "shape": [
+              768,
+              8192
+            ],
+            "weight_checksum": 30.47461710040696,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 13631488,
+            "capture_ms": 1.174373984336853,
+            "cycle": 12,
+            "elements": 6815744,
+            "forward_backward_ms": 1.7878609895706177,
+            "gradient_allreduce_ms": 0.4812859892845154,
+            "loss": 1.0426690578460693,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.22936299443244934,
+            "output_checksum": 115867896.0,
+            "output_equal": true,
+            "replay_ms": 3.6321229934692383,
+            "shape": [
+              832,
+              8192
+            ],
+            "weight_checksum": 30.475787828709628,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 14680064,
+            "capture_ms": 0.9232900142669678,
+            "cycle": 13,
+            "elements": 7340032,
+            "forward_backward_ms": 1.5956989526748657,
+            "gradient_allreduce_ms": 0.8166499733924866,
+            "loss": 1.0417397022247314,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.22244299948215485,
+            "output_checksum": 124781578.0,
+            "output_equal": true,
+            "replay_ms": 5.607545852661133,
+            "shape": [
+              896,
+              8192
+            ],
+            "weight_checksum": 30.47658563407189,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 15728640,
+            "capture_ms": 0.9299709796905518,
+            "cycle": 14,
+            "elements": 7864320,
+            "forward_backward_ms": 1.4936579465866089,
+            "gradient_allreduce_ms": 0.5842459797859192,
+            "loss": 1.0399655103683472,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2202419936656952,
+            "output_checksum": 133668310.0,
+            "output_equal": true,
+            "replay_ms": 0.39084500074386597,
+            "shape": [
+              960,
+              8192
+            ],
+            "weight_checksum": 30.476775579139893,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 16777216,
+            "capture_ms": 0.8279299736022949,
+            "cycle": 15,
+            "elements": 8388608,
+            "forward_backward_ms": 1.2666950225830078,
+            "gradient_allreduce_ms": 0.7474089860916138,
+            "loss": 1.0378646850585938,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.17836199700832367,
+            "output_checksum": 142615194.0,
+            "output_equal": true,
+            "replay_ms": 0.38472500443458557,
+            "shape": [
+              1024,
+              8192
+            ],
+            "weight_checksum": 30.476617622627103,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 17825792,
+            "capture_ms": 0.8621699810028076,
+            "cycle": 16,
+            "elements": 8912896,
+            "forward_backward_ms": 1.232854962348938,
+            "gradient_allreduce_ms": 0.5092059969902039,
+            "loss": 1.0395420789718628,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.18576300144195557,
+            "output_checksum": 151517843.0,
+            "output_equal": true,
+            "replay_ms": 0.3642840087413788,
+            "shape": [
+              1088,
+              8192
+            ],
+            "weight_checksum": 30.476859171166453,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 18874368,
+            "capture_ms": 0.9320099949836731,
+            "cycle": 17,
+            "elements": 9437184,
+            "forward_backward_ms": 1.3580559492111206,
+            "gradient_allreduce_ms": 0.3986450135707855,
+            "loss": 1.0417684316635132,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.20388199388980865,
+            "output_checksum": 160434252.0,
+            "output_equal": true,
+            "replay_ms": 0.3876050114631653,
+            "shape": [
+              1152,
+              8192
+            ],
+            "weight_checksum": 30.477009287493544,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 19922944,
+            "capture_ms": 1.1000930070877075,
+            "cycle": 18,
+            "elements": 9961472,
+            "forward_backward_ms": 1.3266960382461548,
+            "gradient_allreduce_ms": 0.42908498644828796,
+            "loss": 1.040812611579895,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2066829949617386,
+            "output_checksum": 169319438.0,
+            "output_equal": true,
+            "replay_ms": 0.42620500922203064,
+            "shape": [
+              1216,
+              8192
+            ],
+            "weight_checksum": 30.478223772107143,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 20971520,
+            "capture_ms": 0.9485710263252258,
+            "cycle": 19,
+            "elements": 10485760,
+            "forward_backward_ms": 1.253654956817627,
+            "gradient_allreduce_ms": 0.5720059871673584,
+            "loss": 1.0359106063842773,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.1994819939136505,
+            "output_checksum": 178285995.0,
+            "output_equal": true,
+            "replay_ms": 0.4942460060119629,
+            "shape": [
+              1280,
+              8192
+            ],
+            "weight_checksum": 30.47797922681221,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 22020096,
+            "capture_ms": 1.0660920143127441,
+            "cycle": 20,
+            "elements": 11010048,
+            "forward_backward_ms": 1.4075369834899902,
+            "gradient_allreduce_ms": 0.41768500208854675,
+            "loss": 1.0377898216247559,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.22484299540519714,
+            "output_checksum": 187154102.0,
+            "output_equal": true,
+            "replay_ms": 0.4514850080013275,
+            "shape": [
+              1344,
+              8192
+            ],
+            "weight_checksum": 30.478989820903234,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 23068672,
+            "capture_ms": 0.99093097448349,
+            "cycle": 21,
+            "elements": 11534336,
+            "forward_backward_ms": 1.3190159797668457,
+            "gradient_allreduce_ms": 0.4060850143432617,
+            "loss": 1.038815975189209,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2040019929409027,
+            "output_checksum": 196110386.0,
+            "output_equal": true,
+            "replay_ms": 0.46672600507736206,
+            "shape": [
+              1408,
+              8192
+            ],
+            "weight_checksum": 30.478522236048892,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 24117248,
+            "capture_ms": 1.1705739498138428,
+            "cycle": 22,
+            "elements": 12058624,
+            "forward_backward_ms": 1.3468159437179565,
+            "gradient_allreduce_ms": 0.36832401156425476,
+            "loss": 1.0398859977722168,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21956199407577515,
+            "output_checksum": 204999047.0,
+            "output_equal": true,
+            "replay_ms": 0.8377299904823303,
+            "shape": [
+              1472,
+              8192
+            ],
+            "weight_checksum": 30.47910389368917,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 25165824,
+            "capture_ms": 0.9451310038566589,
+            "cycle": 23,
+            "elements": 12582912,
+            "forward_backward_ms": 1.3252960443496704,
+            "gradient_allreduce_ms": 0.5245659947395325,
+            "loss": 1.0387417078018188,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21176199615001678,
+            "output_checksum": 213892444.0,
+            "output_equal": true,
+            "replay_ms": 0.5402860045433044,
+            "shape": [
+              1536,
+              8192
+            ],
+            "weight_checksum": 30.48015774007842,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 26214400,
+            "capture_ms": 0.977171003818512,
+            "cycle": 24,
+            "elements": 13107200,
+            "forward_backward_ms": 1.3734560012817383,
+            "gradient_allreduce_ms": 0.4496060013771057,
+            "loss": 1.040299654006958,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2119629979133606,
+            "output_checksum": 222822933.0,
+            "output_equal": true,
+            "replay_ms": 0.6165680289268494,
+            "shape": [
+              1600,
+              8192
+            ],
+            "weight_checksum": 30.480915486719056,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 27262976,
+            "capture_ms": 0.9346500039100647,
+            "cycle": 25,
+            "elements": 13631488,
+            "forward_backward_ms": 1.3154549598693848,
+            "gradient_allreduce_ms": 0.532006025314331,
+            "loss": 1.0392481088638306,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2021230012178421,
+            "output_checksum": 231730043.0,
+            "output_equal": true,
+            "replay_ms": 0.6210870146751404,
+            "shape": [
+              1664,
+              8192
+            ],
+            "weight_checksum": 30.48116063711308,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 28311552,
+            "capture_ms": 1.0246119499206543,
+            "cycle": 26,
+            "elements": 14155776,
+            "forward_backward_ms": 1.4411770105361938,
+            "gradient_allreduce_ms": 0.43096500635147095,
+            "loss": 1.0383001565933228,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.23096300661563873,
+            "output_checksum": 240693670.0,
+            "output_equal": true,
+            "replay_ms": 0.5655270218849182,
+            "shape": [
+              1728,
+              8192
+            ],
+            "weight_checksum": 30.481827753573224,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 29360128,
+            "capture_ms": 0.9506109952926636,
+            "cycle": 27,
+            "elements": 14680064,
+            "forward_backward_ms": 1.3068959712982178,
+            "gradient_allreduce_ms": 1.1180529594421387,
+            "loss": 1.0378402471542358,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.20708200335502625,
+            "output_checksum": 249555251.0,
+            "output_equal": true,
+            "replay_ms": 0.6063269972801208,
+            "shape": [
+              1792,
+              8192
+            ],
+            "weight_checksum": 30.482073590155046,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 30408704,
+            "capture_ms": 0.9554510116577148,
+            "cycle": 28,
+            "elements": 15204352,
+            "forward_backward_ms": 1.153493046760559,
+            "gradient_allreduce_ms": 0.6548479795455933,
+            "loss": 1.0382028818130493,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.23668299615383148,
+            "output_checksum": 258482498.0,
+            "output_equal": true,
+            "replay_ms": 0.5962070226669312,
+            "shape": [
+              1856,
+              8192
+            ],
+            "weight_checksum": 30.482330484756584,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 31457280,
+            "capture_ms": 1.0196510553359985,
+            "cycle": 29,
+            "elements": 15728640,
+            "forward_backward_ms": 1.3755760192871094,
+            "gradient_allreduce_ms": 0.6206070184707642,
+            "loss": 1.0362591743469238,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2454030066728592,
+            "output_checksum": 267423646.0,
+            "output_equal": true,
+            "replay_ms": 0.6744480133056641,
+            "shape": [
+              1920,
+              8192
+            ],
+            "weight_checksum": 30.483112126026676,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 32505856,
+            "capture_ms": 1.1460130214691162,
+            "cycle": 30,
+            "elements": 16252928,
+            "forward_backward_ms": 1.3307750225067139,
+            "gradient_allreduce_ms": 0.35664400458335876,
+            "loss": 1.0378714799880981,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2076829969882965,
+            "output_checksum": 276293079.0,
+            "output_equal": true,
+            "replay_ms": 0.6438480019569397,
+            "shape": [
+              1984,
+              8192
+            ],
+            "weight_checksum": 30.484113422459565,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 33554432,
+            "capture_ms": 0.915930986404419,
+            "cycle": 31,
+            "elements": 16777216,
+            "forward_backward_ms": 1.3139749765396118,
+            "gradient_allreduce_ms": 0.4182850122451782,
+            "loss": 1.041719675064087,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.23992300033569336,
+            "output_checksum": 285178831.0,
+            "output_equal": true,
+            "replay_ms": 0.6755279898643494,
+            "shape": [
+              2048,
+              8192
+            ],
+            "weight_checksum": 30.484682746187467,
+            "weights_equal_across_ranks": true
+          }
+        ],
+        "device_capability": [
+          9,
+          5
+        ],
+        "device_name": "AMD Instinct MI350X",
+        "final_weight_checksum": 30.484682746187467,
+        "pause_resume": {
+          "passed": true,
+          "reason": "pause/resume preserved tagged GPU memory",
+          "supported": true
+        },
+        "rank": 0,
+        "torch_cuda_version": null,
+        "torch_hip_version": "7.2.26015-fc0010cf6a",
+        "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+        "visible_devices": "0",
+        "world_size": 2
+      },
+      {
+        "context": "standalone",
+        "custom_all_reduce_path": {
+          "disabled": false,
+          "quick_all_reduce_arch_available": true,
+          "quick_all_reduce_max_size_bytes": 67108864,
+          "quick_all_reduce_quantization": "FP",
+          "selected_class": "QuickAllReduce",
+          "selected_module": "sglang.srt.distributed.device_communicators.quick_all_reduce",
+          "sglang_is_cuda": false,
+          "sglang_is_hip": true,
+          "sglang_v2_dispatched": false,
+          "sglang_v2_env": false
+        },
+        "cycle_count": 32,
+        "cycle_metrics": [
+          {
+            "bytes": 1048576,
+            "capture_ms": 0.6900479793548584,
+            "cycle": 0,
+            "elements": 524288,
+            "forward_backward_ms": 1915.6905517578125,
+            "gradient_allreduce_ms": 0.9426100254058838,
+            "loss": 1.055250883102417,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 22.176902770996094,
+            "output_checksum": 8912120.0,
+            "output_equal": true,
+            "replay_ms": 0.0724010020494461,
+            "shape": [
+              64,
+              8192
+            ],
+            "weight_checksum": 30.467173246732205,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 2097152,
+            "capture_ms": 0.5429660081863403,
+            "cycle": 1,
+            "elements": 1048576,
+            "forward_backward_ms": 1.8849819898605347,
+            "gradient_allreduce_ms": 0.4127250015735626,
+            "loss": 1.0378702878952026,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2427629977464676,
+            "output_checksum": 17817510.0,
+            "output_equal": true,
+            "replay_ms": 0.06520099937915802,
+            "shape": [
+              128,
+              8192
+            ],
+            "weight_checksum": 30.467043966030932,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 3145728,
+            "capture_ms": 0.8054490089416504,
+            "cycle": 2,
+            "elements": 1572864,
+            "forward_backward_ms": 1.702180027961731,
+            "gradient_allreduce_ms": 0.5657669901847839,
+            "loss": 1.03964102268219,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21692299842834473,
+            "output_checksum": 26740381.0,
+            "output_equal": true,
+            "replay_ms": 0.08260100334882736,
+            "shape": [
+              192,
+              8192
+            ],
+            "weight_checksum": 30.46903393740937,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 4194304,
+            "capture_ms": 1.1236929893493652,
+            "cycle": 3,
+            "elements": 2097152,
+            "forward_backward_ms": 1.5236179828643799,
+            "gradient_allreduce_ms": 0.2973630130290985,
+            "loss": 1.0306506156921387,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21720199286937714,
+            "output_checksum": 35654931.0,
+            "output_equal": true,
+            "replay_ms": 0.10088100284337997,
+            "shape": [
+              256,
+              8192
+            ],
+            "weight_checksum": 30.46993585781166,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 5242880,
+            "capture_ms": 0.9395710229873657,
+            "cycle": 4,
+            "elements": 2621440,
+            "forward_backward_ms": 1.352295994758606,
+            "gradient_allreduce_ms": 0.35540398955345154,
+            "loss": 1.034635066986084,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21444199979305267,
+            "output_checksum": 44575146.0,
+            "output_equal": true,
+            "replay_ms": 0.15668199956417084,
+            "shape": [
+              320,
+              8192
+            ],
+            "weight_checksum": 30.470268361503543,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 6291456,
+            "capture_ms": 1.0443320274353027,
+            "cycle": 5,
+            "elements": 3145728,
+            "forward_backward_ms": 1.3148560523986816,
+            "gradient_allreduce_ms": 0.4708450138568878,
+            "loss": 1.0391476154327393,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21880200505256653,
+            "output_checksum": 53476633.0,
+            "output_equal": true,
+            "replay_ms": 0.1411619931459427,
+            "shape": [
+              384,
+              8192
+            ],
+            "weight_checksum": 30.470175776564616,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 7340032,
+            "capture_ms": 1.2592140436172485,
+            "cycle": 6,
+            "elements": 3670016,
+            "forward_backward_ms": 1.3568170070648193,
+            "gradient_allreduce_ms": 0.5283259749412537,
+            "loss": 1.0397499799728394,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2130420058965683,
+            "output_checksum": 62383814.0,
+            "output_equal": true,
+            "replay_ms": 0.3852440118789673,
+            "shape": [
+              448,
+              8192
+            ],
+            "weight_checksum": 30.47105770130398,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 8388608,
+            "capture_ms": 1.1411739587783813,
+            "cycle": 7,
+            "elements": 4194304,
+            "forward_backward_ms": 1.192613959312439,
+            "gradient_allreduce_ms": 0.4127649962902069,
+            "loss": 1.0360817909240723,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.1878020018339157,
+            "output_checksum": 71297205.0,
+            "output_equal": true,
+            "replay_ms": 0.1836020052433014,
+            "shape": [
+              512,
+              8192
+            ],
+            "weight_checksum": 30.47265706657485,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 9437184,
+            "capture_ms": 1.2002949714660645,
+            "cycle": 8,
+            "elements": 4718592,
+            "forward_backward_ms": 1.2272950410842896,
+            "gradient_allreduce_ms": 0.3376440107822418,
+            "loss": 1.041788935661316,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2008419930934906,
+            "output_checksum": 80211781.0,
+            "output_equal": true,
+            "replay_ms": 0.20024199783802032,
+            "shape": [
+              576,
+              8192
+            ],
+            "weight_checksum": 30.472459012867187,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 10485760,
+            "capture_ms": 1.0213719606399536,
+            "cycle": 9,
+            "elements": 5242880,
+            "forward_backward_ms": 1.1795339584350586,
+            "gradient_allreduce_ms": 0.4347650110721588,
+            "loss": 1.041995644569397,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.19016200304031372,
+            "output_checksum": 89101120.0,
+            "output_equal": true,
+            "replay_ms": 0.21640199422836304,
+            "shape": [
+              640,
+              8192
+            ],
+            "weight_checksum": 30.47267790126978,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 11534336,
+            "capture_ms": 1.0942929983139038,
+            "cycle": 10,
+            "elements": 5767168,
+            "forward_backward_ms": 1.3022949695587158,
+            "gradient_allreduce_ms": 0.35216400027275085,
+            "loss": 1.0385613441467285,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21624299883842468,
+            "output_checksum": 98029913.0,
+            "output_equal": true,
+            "replay_ms": 0.23752300441265106,
+            "shape": [
+              704,
+              8192
+            ],
+            "weight_checksum": 30.474144815540566,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 12582912,
+            "capture_ms": 0.9407709836959839,
+            "cycle": 11,
+            "elements": 6291456,
+            "forward_backward_ms": 1.3476959466934204,
+            "gradient_allreduce_ms": 0.3790450096130371,
+            "loss": 1.0412895679473877,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.27096301317214966,
+            "output_checksum": 106953370.0,
+            "output_equal": true,
+            "replay_ms": 0.2584429979324341,
+            "shape": [
+              768,
+              8192
+            ],
+            "weight_checksum": 30.47461710040696,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 13631488,
+            "capture_ms": 1.3124150037765503,
+            "cycle": 12,
+            "elements": 6815744,
+            "forward_backward_ms": 1.9481430053710938,
+            "gradient_allreduce_ms": 0.6361669898033142,
+            "loss": 1.0357681512832642,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2206829935312271,
+            "output_checksum": 115867896.0,
+            "output_equal": true,
+            "replay_ms": 0.2783229947090149,
+            "shape": [
+              832,
+              8192
+            ],
+            "weight_checksum": 30.475787828709628,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 14680064,
+            "capture_ms": 1.1213719844818115,
+            "cycle": 13,
+            "elements": 7340032,
+            "forward_backward_ms": 1.879822015762329,
+            "gradient_allreduce_ms": 0.4178040027618408,
+            "loss": 1.0395935773849487,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.22120200097560883,
+            "output_checksum": 124781578.0,
+            "output_equal": true,
+            "replay_ms": 0.30196401476860046,
+            "shape": [
+              896,
+              8192
+            ],
+            "weight_checksum": 30.47658563407189,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 15728640,
+            "capture_ms": 0.9883310198783875,
+            "cycle": 14,
+            "elements": 7864320,
+            "forward_backward_ms": 1.6884989738464355,
+            "gradient_allreduce_ms": 0.40148499608039856,
+            "loss": 1.0363410711288452,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.24552300572395325,
+            "output_checksum": 133668310.0,
+            "output_equal": true,
+            "replay_ms": 0.326884001493454,
+            "shape": [
+              960,
+              8192
+            ],
+            "weight_checksum": 30.476775579139893,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 16777216,
+            "capture_ms": 0.9415709972381592,
+            "cycle": 15,
+            "elements": 8388608,
+            "forward_backward_ms": 1.5750590562820435,
+            "gradient_allreduce_ms": 0.36680400371551514,
+            "loss": 1.0419261455535889,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21476300060749054,
+            "output_checksum": 142615194.0,
+            "output_equal": true,
+            "replay_ms": 0.348004013299942,
+            "shape": [
+              1024,
+              8192
+            ],
+            "weight_checksum": 30.476617622627103,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 17825792,
+            "capture_ms": 0.9353309869766235,
+            "cycle": 16,
+            "elements": 8912896,
+            "forward_backward_ms": 1.3753759860992432,
+            "gradient_allreduce_ms": 0.3361240029335022,
+            "loss": 1.0401722192764282,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21628199517726898,
+            "output_checksum": 151517843.0,
+            "output_equal": true,
+            "replay_ms": 0.4117650091648102,
+            "shape": [
+              1088,
+              8192
+            ],
+            "weight_checksum": 30.476859171166453,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 18874368,
+            "capture_ms": 0.9811710119247437,
+            "cycle": 17,
+            "elements": 9437184,
+            "forward_backward_ms": 1.4544179439544678,
+            "gradient_allreduce_ms": 0.33832401037216187,
+            "loss": 1.0378384590148926,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.20996299386024475,
+            "output_checksum": 160434252.0,
+            "output_equal": true,
+            "replay_ms": 0.3912839889526367,
+            "shape": [
+              1152,
+              8192
+            ],
+            "weight_checksum": 30.477009287493544,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 19922944,
+            "capture_ms": 1.157014012336731,
+            "cycle": 18,
+            "elements": 9961472,
+            "forward_backward_ms": 1.3596559762954712,
+            "gradient_allreduce_ms": 0.3726849853992462,
+            "loss": 1.041758418083191,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21184200048446655,
+            "output_checksum": 169319438.0,
+            "output_equal": true,
+            "replay_ms": 0.407925009727478,
+            "shape": [
+              1216,
+              8192
+            ],
+            "weight_checksum": 30.478223772107143,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 20971520,
+            "capture_ms": 1.0193320512771606,
+            "cycle": 19,
+            "elements": 10485760,
+            "forward_backward_ms": 1.356335997581482,
+            "gradient_allreduce_ms": 0.39328500628471375,
+            "loss": 1.0383094549179077,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.22324299812316895,
+            "output_checksum": 178285995.0,
+            "output_equal": true,
+            "replay_ms": 0.4261249899864197,
+            "shape": [
+              1280,
+              8192
+            ],
+            "weight_checksum": 30.47797922681221,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 22020096,
+            "capture_ms": 1.1944940090179443,
+            "cycle": 20,
+            "elements": 11010048,
+            "forward_backward_ms": 1.3902159929275513,
+            "gradient_allreduce_ms": 0.4561249911785126,
+            "loss": 1.0405993461608887,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.23384200036525726,
+            "output_checksum": 187154102.0,
+            "output_equal": true,
+            "replay_ms": 0.4464859962463379,
+            "shape": [
+              1344,
+              8192
+            ],
+            "weight_checksum": 30.478989820903234,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 23068672,
+            "capture_ms": 1.110653042793274,
+            "cycle": 21,
+            "elements": 11534336,
+            "forward_backward_ms": 1.3336559534072876,
+            "gradient_allreduce_ms": 0.41512399911880493,
+            "loss": 1.038246750831604,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.22104200720787048,
+            "output_checksum": 196110386.0,
+            "output_equal": true,
+            "replay_ms": 0.48004600405693054,
+            "shape": [
+              1408,
+              8192
+            ],
+            "weight_checksum": 30.478522236048892,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 24117248,
+            "capture_ms": 1.1843739748001099,
+            "cycle": 22,
+            "elements": 12058624,
+            "forward_backward_ms": 1.3261760473251343,
+            "gradient_allreduce_ms": 0.5932869911193848,
+            "loss": 1.0404703617095947,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.23284199833869934,
+            "output_checksum": 204999047.0,
+            "output_equal": true,
+            "replay_ms": 0.4866049885749817,
+            "shape": [
+              1472,
+              8192
+            ],
+            "weight_checksum": 30.47910389368917,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 25165824,
+            "capture_ms": 1.135293960571289,
+            "cycle": 23,
+            "elements": 12582912,
+            "forward_backward_ms": 1.4248969554901123,
+            "gradient_allreduce_ms": 0.39444500207901,
+            "loss": 1.0379990339279175,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2302830070257187,
+            "output_checksum": 213892444.0,
+            "output_equal": true,
+            "replay_ms": 0.5088859796524048,
+            "shape": [
+              1536,
+              8192
+            ],
+            "weight_checksum": 30.48015774007842,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 26214400,
+            "capture_ms": 1.0722119808197021,
+            "cycle": 24,
+            "elements": 13107200,
+            "forward_backward_ms": 1.4298969507217407,
+            "gradient_allreduce_ms": 0.3743239939212799,
+            "loss": 1.0406469106674194,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2282020002603531,
+            "output_checksum": 222822933.0,
+            "output_equal": true,
+            "replay_ms": 0.5211660265922546,
+            "shape": [
+              1600,
+              8192
+            ],
+            "weight_checksum": 30.480915486719056,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 27262976,
+            "capture_ms": 0.9984920024871826,
+            "cycle": 25,
+            "elements": 13631488,
+            "forward_backward_ms": 1.4278169870376587,
+            "gradient_allreduce_ms": 0.40872400999069214,
+            "loss": 1.0383580923080444,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.23404300212860107,
+            "output_checksum": 231730043.0,
+            "output_equal": true,
+            "replay_ms": 0.5417659878730774,
+            "shape": [
+              1664,
+              8192
+            ],
+            "weight_checksum": 30.48116063711308,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 28311552,
+            "capture_ms": 1.073091983795166,
+            "cycle": 26,
+            "elements": 14155776,
+            "forward_backward_ms": 1.5151779651641846,
+            "gradient_allreduce_ms": 0.37716400623321533,
+            "loss": 1.0396424531936646,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.23716199398040771,
+            "output_checksum": 240693670.0,
+            "output_equal": true,
+            "replay_ms": 0.6014469861984253,
+            "shape": [
+              1728,
+              8192
+            ],
+            "weight_checksum": 30.481827753573224,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 29360128,
+            "capture_ms": 1.0170120000839233,
+            "cycle": 27,
+            "elements": 14680064,
+            "forward_backward_ms": 1.538938045501709,
+            "gradient_allreduce_ms": 0.8179290294647217,
+            "loss": 1.037847638130188,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.25192299485206604,
+            "output_checksum": 249555251.0,
+            "output_equal": true,
+            "replay_ms": 0.5825669765472412,
+            "shape": [
+              1792,
+              8192
+            ],
+            "weight_checksum": 30.482073590155046,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 30408704,
+            "capture_ms": 1.0030109882354736,
+            "cycle": 28,
+            "elements": 15204352,
+            "forward_backward_ms": 1.3216149806976318,
+            "gradient_allreduce_ms": 0.41980499029159546,
+            "loss": 1.038394808769226,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.21188299357891083,
+            "output_checksum": 258482498.0,
+            "output_equal": true,
+            "replay_ms": 0.771369993686676,
+            "shape": [
+              1856,
+              8192
+            ],
+            "weight_checksum": 30.482330484756584,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 31457280,
+            "capture_ms": 1.0040509700775146,
+            "cycle": 29,
+            "elements": 15728640,
+            "forward_backward_ms": 1.5078580379486084,
+            "gradient_allreduce_ms": 0.4366849958896637,
+            "loss": 1.0389084815979004,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.24600300192832947,
+            "output_checksum": 267423646.0,
+            "output_equal": true,
+            "replay_ms": 0.6253669857978821,
+            "shape": [
+              1920,
+              8192
+            ],
+            "weight_checksum": 30.483112126026676,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 32505856,
+            "capture_ms": 0.9461709856987,
+            "cycle": 30,
+            "elements": 16252928,
+            "forward_backward_ms": 1.2773350477218628,
+            "gradient_allreduce_ms": 0.3865239918231964,
+            "loss": 1.0376074314117432,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.2058819979429245,
+            "output_checksum": 276293079.0,
+            "output_equal": true,
+            "replay_ms": 0.6575279831886292,
+            "shape": [
+              1984,
+              8192
+            ],
+            "weight_checksum": 30.484113422459565,
+            "weights_equal_across_ranks": true
+          },
+          {
+            "bytes": 33554432,
+            "capture_ms": 1.1408530473709106,
+            "cycle": 31,
+            "elements": 16777216,
+            "forward_backward_ms": 1.3227360248565674,
+            "gradient_allreduce_ms": 0.3913649916648865,
+            "loss": 1.041060447692871,
+            "max_abs_difference": 0.0,
+            "optimizer_ms": 0.24100199341773987,
+            "output_checksum": 285178831.0,
+            "output_equal": true,
+            "replay_ms": 0.6665279865264893,
+            "shape": [
+              2048,
+              8192
+            ],
+            "weight_checksum": 30.484682746187467,
+            "weights_equal_across_ranks": true
+          }
+        ],
+        "device_capability": [
+          9,
+          5
+        ],
+        "device_name": "AMD Instinct MI350X",
+        "final_weight_checksum": 30.484682746187467,
+        "pause_resume": {
+          "passed": true,
+          "reason": "pause/resume preserved tagged GPU memory",
+          "supported": true
+        },
+        "rank": 1,
+        "torch_cuda_version": null,
+        "torch_hip_version": "7.2.26015-fc0010cf6a",
+        "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+        "visible_devices": "1",
+        "world_size": 2
+      }
+    ],
+    "summary": {
+      "all_output_equal": true,
+      "capture_ms_max": 1.3292560577392578,
+      "capture_ms_mean": 1.0066615585237741,
+      "custom_all_reduce_path": {
+        "disabled": false,
+        "quick_all_reduce_arch_available": true,
+        "quick_all_reduce_max_size_bytes": 67108864,
+        "quick_all_reduce_quantization": "FP",
+        "selected_class": "QuickAllReduce",
+        "selected_module": "sglang.srt.distributed.device_communicators.quick_all_reduce",
+        "sglang_is_cuda": false,
+        "sglang_is_hip": true,
+        "sglang_v2_dispatched": false,
+        "sglang_v2_env": false
+      },
+      "cycle_count": 32,
+      "final_weight_checksum": 30.484682746187467,
+      "forward_backward_ms_mean": 60.80818275362253,
+      "gradient_allreduce_ms_mean": 0.9165394566953182,
+      "maximum_output_difference": 0.0,
+      "optimizer_ms_mean": 0.8781817355193198,
+      "pause_resume": {
+        "passed": true,
+        "reason": "pause/resume preserved tagged GPU memory",
+        "supported": true
+      },
+      "replay_ms_max": 5.607545852661133,
+      "replay_ms_mean": 0.9319623515475541,
+      "weights_equal_across_ranks": true
+    }
+  }
+}
