@@ -1,0 +1,239 @@
+{
+  "desynchronized": {
+    "bounded_timeout_seconds": 30,
+    "rank_0_all_gather_order": [
+      "embedding",
+      "vision",
+      "language_block_0",
+      "language_block_1",
+      "output"
+    ],
+    "rank_0_event_count": 18,
+    "rank_1_all_gather_order": [
+      "embedding",
+      "language_block_0",
+      "language_block_1",
+      "output"
+    ],
+    "rank_1_event_count": 15
+  },
+  "synchronized": {
+    "collective_order_comparison": {
+      "cycles_compared": 64,
+      "mismatch_count": 0,
+      "mismatches": [],
+      "operations_compared": [
+        "unshard",
+        "wait_for_unshard",
+        "all_gather_into_tensor",
+        "reduce_scatter_tensor"
+      ]
+    },
+    "rank_0": {
+      "backward_timing": {
+        "maximum_ms": 1159.299517981708,
+        "mean_ms": 21.64953552710358,
+        "minimum_ms": 3.2551083713769913
+      },
+      "commit": "e5125a97e1fd383f005f4de258a5985026e09425",
+      "config": {
+        "check_every": 8,
+        "cycles": 64,
+        "learning_rate": 0.001,
+        "mode": "sync",
+        "seed": 3011329,
+        "timeout_seconds": 30,
+        "vision_regularization": 0.001
+      },
+      "cycle_count": 64,
+      "device_capability": [
+        9,
+        5
+      ],
+      "device_name": "AMD Instinct MI350X",
+      "event_count": 2560,
+      "first_cycle": {
+        "backward_ms": 1159.299517981708,
+        "cycle": 0,
+        "execute_vision": true,
+        "forward_ms": 990.5330175533891,
+        "gradient_comparison": {
+          "maximum_absolute_error": 0.0,
+          "maximum_relative_error": 0.0,
+          "parameter_count": 15
+        },
+        "has_image": true,
+        "image_weight": 1.0,
+        "loss": 3.534029722213745,
+        "masked_sample_index": 1,
+        "optimizer_ms": 0.009150244295597076,
+        "rank": 0,
+        "reference_loss": 3.534029722213745,
+        "reference_ms": 4.588130861520767,
+        "vision_regularization_loss": 0.06372657418251038,
+        "weight_comparison": null
+      },
+      "forward_timing": {
+        "maximum_ms": 990.5330175533891,
+        "mean_ms": 19.282035500509664,
+        "minimum_ms": 3.5360632464289665
+      },
+      "gradient_maximum_absolute_error": 0.0,
+      "gradient_maximum_relative_error": 0.0,
+      "hip_version": "7.2.26015-fc0010cf6a",
+      "last_cycle": {
+        "backward_ms": 3.4721922129392624,
+        "cycle": 63,
+        "execute_vision": true,
+        "forward_ms": 3.6624232307076454,
+        "gradient_comparison": {
+          "maximum_absolute_error": 0.0,
+          "maximum_relative_error": 0.0,
+          "parameter_count": 15
+        },
+        "has_image": false,
+        "image_weight": 0.0,
+        "loss": 3.510289192199707,
+        "masked_sample_index": 1,
+        "optimizer_ms": 0.0071497634053230286,
+        "rank": 0,
+        "reference_loss": 3.510289192199707,
+        "reference_ms": 2.1771499887108803,
+        "vision_regularization_loss": 0.05531303584575653,
+        "weight_comparison": {
+          "maximum_absolute_error": 0.0,
+          "maximum_relative_error": 0.0,
+          "parameter_count": 15
+        }
+      },
+      "nccl_version": [
+        2,
+        27,
+        7
+      ],
+      "optimizer_timing": {
+        "maximum_ms": 0.01019984483718872,
+        "mean_ms": 0.007226684829220176,
+        "minimum_ms": 0.006509944796562195
+      },
+      "rank": 0,
+      "reference_timing": {
+        "maximum_ms": 4.588130861520767,
+        "mean_ms": 2.1323052933439612,
+        "minimum_ms": 1.8511470407247543
+      },
+      "source_paths": {
+        "fsdp_collectives": "/opt/venv/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py",
+        "fsdp_param_group": "/opt/venv/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+        "torch": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py"
+      },
+      "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+      "weight_comparison_count": 8,
+      "weight_maximum_absolute_error": 0.0,
+      "weight_maximum_relative_error": 0.0
+    },
+    "rank_1": {
+      "backward_timing": {
+        "maximum_ms": 1148.3799992129207,
+        "mean_ms": 21.467563914484344,
+        "minimum_ms": 3.3606700599193573
+      },
+      "commit": "e5125a97e1fd383f005f4de258a5985026e09425",
+      "config": {
+        "check_every": 8,
+        "cycles": 64,
+        "learning_rate": 0.001,
+        "mode": "sync",
+        "seed": 3011329,
+        "timeout_seconds": 30,
+        "vision_regularization": 0.001
+      },
+      "cycle_count": 64,
+      "device_capability": [
+        9,
+        5
+      ],
+      "device_name": "AMD Instinct MI350X",
+      "event_count": 2560,
+      "first_cycle": {
+        "backward_ms": 1148.3799992129207,
+        "cycle": 0,
+        "execute_vision": true,
+        "forward_ms": 1006.6115325316787,
+        "gradient_comparison": {
+          "maximum_absolute_error": 0.0,
+          "maximum_relative_error": 0.0,
+          "parameter_count": 15
+        },
+        "has_image": false,
+        "image_weight": 0.0,
+        "loss": 3.47983717918396,
+        "masked_sample_index": 1,
+        "optimizer_ms": 0.008519738912582397,
+        "rank": 1,
+        "reference_loss": 3.47983717918396,
+        "reference_ms": 3.846215084195137,
+        "vision_regularization_loss": 0.06387881189584732,
+        "weight_comparison": null
+      },
+      "forward_timing": {
+        "maximum_ms": 1006.6115325316787,
+        "mean_ms": 19.64737409434747,
+        "minimum_ms": 3.6588236689567566
+      },
+      "gradient_maximum_absolute_error": 0.0,
+      "gradient_maximum_relative_error": 0.0,
+      "hip_version": "7.2.26015-fc0010cf6a",
+      "last_cycle": {
+        "backward_ms": 3.4611718729138374,
+        "cycle": 63,
+        "execute_vision": true,
+        "forward_ms": 3.79832461476326,
+        "gradient_comparison": {
+          "maximum_absolute_error": 0.0,
+          "maximum_relative_error": 0.0,
+          "parameter_count": 15
+        },
+        "has_image": true,
+        "image_weight": 1.0,
+        "loss": 3.430614471435547,
+        "masked_sample_index": 1,
+        "optimizer_ms": 0.0066999346017837524,
+        "rank": 1,
+        "reference_loss": 3.430614471435547,
+        "reference_ms": 1.993119716644287,
+        "vision_regularization_loss": 0.04473719745874405,
+        "weight_comparison": {
+          "maximum_absolute_error": 0.0,
+          "maximum_relative_error": 0.0,
+          "parameter_count": 15
+        }
+      },
+      "nccl_version": [
+        2,
+        27,
+        7
+      ],
+      "optimizer_timing": {
+        "maximum_ms": 0.008519738912582397,
+        "mean_ms": 0.007133843610063195,
+        "minimum_ms": 0.00654999166727066
+      },
+      "rank": 1,
+      "reference_timing": {
+        "maximum_ms": 3.846215084195137,
+        "mean_ms": 2.1089803776703775,
+        "minimum_ms": 1.9042575731873512
+      },
+      "source_paths": {
+        "fsdp_collectives": "/opt/venv/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py",
+        "fsdp_param_group": "/opt/venv/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+        "torch": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py"
+      },
+      "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+      "weight_comparison_count": 8,
+      "weight_maximum_absolute_error": 0.0,
+      "weight_maximum_relative_error": 0.0
+    }
+  }
+}
