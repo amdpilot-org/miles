@@ -10,6 +10,7 @@ import torch
 import torch.distributed as dist
 
 from miles.backends.training_utils.parallel import get_parallel_state
+from miles.backends.megatron_utils.adapter_checkpoint import megatron_shard_name
 from miles.ray.multi_lora.controller import get_multi_lora_controller
 from miles.utils.adapter_config import AdapterRun
 from miles.utils.distributed_utils import get_gloo_group
@@ -46,15 +47,6 @@ def create_multi_lora_instance(args: Namespace):
         lora_A_init_method=getattr(args, "lora_A_init_method", "xavier"),
         lora_B_init_method=getattr(args, "lora_B_init_method", "zero"),
     )
-
-
-def megatron_shard_name(tp_rank: int, pp_rank: int, ep_rank: int, ep_size: int) -> str:
-    """Adapter shard name for one (tp, pp, ep) coordinate; EP ranks hold different local
-    experts. The ep suffix is omitted at ep_size == 1 so legacy checkpoints stay loadable."""
-    name = f"adapter_megatron_tp{tp_rank}_pp{pp_rank}"
-    if ep_size > 1:
-        name += f"_ep{ep_rank}"
-    return name + ".pt"
 
 
 def adapter_shard_topology() -> tuple[bool, tuple[tuple[int, int, int], ...]]:
