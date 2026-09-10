@@ -257,7 +257,7 @@ def main() -> None:
                         num_rollouts=global_batch_size,
                     )
 
-                (loss, _metrics), elapsed = timed(local_forward)
+                (loss, _normalizer, _metrics), elapsed = timed(local_forward)
                 forward_ms += elapsed
 
                 def local_backward() -> None:
@@ -282,7 +282,7 @@ def main() -> None:
 
             def reference_forward_backward() -> None:
                 logits = reference_model(reference_tokens)
-                loss, _metrics = loss_function(
+                loss, _normalizer, _metrics = loss_function(
                     args,
                     reference_batch,
                     num_microbatches=1,
