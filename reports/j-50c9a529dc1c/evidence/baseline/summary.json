@@ -1,0 +1,667 @@
+{
+  "admitted_requests": 7,
+  "all_engine_tensors_checked_cycles": 2,
+  "baseline": true,
+  "checksum_mismatch_cycles": 0,
+  "completed_requests": 7,
+  "connect_update_group_seconds": {
+    "a": 0.0348136518150568,
+    "b": null
+  },
+  "cycles": [
+    {
+      "checksum": {
+        "a": {
+          "actor_only_tensor_count": 16,
+          "actor_only_tensors": [
+            "model.layers.0.mlp.gate_proj.weight",
+            "model.layers.0.mlp.up_proj.weight",
+            "model.layers.0.self_attn.k_proj.bias",
+            "model.layers.0.self_attn.k_proj.weight",
+            "model.layers.0.self_attn.q_proj.bias",
+            "model.layers.0.self_attn.q_proj.weight",
+            "model.layers.0.self_attn.v_proj.bias",
+            "model.layers.0.self_attn.v_proj.weight",
+            "model.layers.1.mlp.gate_proj.weight",
+            "model.layers.1.mlp.up_proj.weight",
+            "model.layers.1.self_attn.k_proj.bias",
+            "model.layers.1.self_attn.k_proj.weight",
+            "model.layers.1.self_attn.q_proj.bias",
+            "model.layers.1.self_attn.q_proj.weight",
+            "model.layers.1.self_attn.v_proj.bias",
+            "model.layers.1.self_attn.v_proj.weight"
+          ],
+          "actor_overall_checksum": "704fb3dc34e42d2449e125221c83a4b75be5a82e12b8028f61702b5f599c282e",
+          "actor_tensor_count": 27,
+          "all_engine_tensors_checked": true,
+          "common_tensor_count": 17,
+          "engine_overall_checksum": "644650ab392ce89259133b5ce525bcd8b7f21061254fd4e8d06b0fbc275c1e4b",
+          "engine_tensor_count": 17,
+          "expected_engine_overall_checksum": "644650ab392ce89259133b5ce525bcd8b7f21061254fd4e8d06b0fbc275c1e4b",
+          "fused_expected_tensor_count": 6,
+          "mismatch_count": 0,
+          "mismatched_tensors": [],
+          "unexpected_engine_tensor_count": 0,
+          "unexpected_engine_tensors": []
+        },
+        "b": {
+          "actor_only_tensor_count": 16,
+          "actor_only_tensors": [
+            "model.layers.0.mlp.gate_proj.weight",
+            "model.layers.0.mlp.up_proj.weight",
+            "model.layers.0.self_attn.k_proj.bias",
+            "model.layers.0.self_attn.k_proj.weight",
+            "model.layers.0.self_attn.q_proj.bias",
+            "model.layers.0.self_attn.q_proj.weight",
+            "model.layers.0.self_attn.v_proj.bias",
+            "model.layers.0.self_attn.v_proj.weight",
+            "model.layers.1.mlp.gate_proj.weight",
+            "model.layers.1.mlp.up_proj.weight",
+            "model.layers.1.self_attn.k_proj.bias",
+            "model.layers.1.self_attn.k_proj.weight",
+            "model.layers.1.self_attn.q_proj.bias",
+            "model.layers.1.self_attn.q_proj.weight",
+            "model.layers.1.self_attn.v_proj.bias",
+            "model.layers.1.self_attn.v_proj.weight"
+          ],
+          "actor_overall_checksum": "704fb3dc34e42d2449e125221c83a4b75be5a82e12b8028f61702b5f599c282e",
+          "actor_tensor_count": 27,
+          "all_engine_tensors_checked": true,
+          "common_tensor_count": 17,
+          "engine_overall_checksum": "644650ab392ce89259133b5ce525bcd8b7f21061254fd4e8d06b0fbc275c1e4b",
+          "engine_tensor_count": 17,
+          "expected_engine_overall_checksum": "644650ab392ce89259133b5ce525bcd8b7f21061254fd4e8d06b0fbc275c1e4b",
+          "fused_expected_tensor_count": 6,
+          "mismatch_count": 0,
+          "mismatched_tensors": [],
+          "unexpected_engine_tensor_count": 0,
+          "unexpected_engine_tensors": []
+        }
+      },
+      "control": {
+        "log_probs": [
+          -9.981456756591797,
+          -9.97789192199707,
+          -9.997044563293457,
+          -9.944231033325195
+        ],
+        "seconds": 0.10188323211669922,
+        "tokens": [
+          38926,
+          9060,
+          45694,
+          15490
+        ]
+      },
+      "cycle": 1,
+      "cycle_seconds": 13.783455561846495,
+      "engine_weight_version": {
+        "a": "1",
+        "b": "1"
+      },
+      "output": {
+        "a": {
+          "max_abs_log_prob_difference": 0.0038709640502929688,
+          "tokens": [
+            38926,
+            9060,
+            45694,
+            15490
+          ],
+          "tokens_equal": true
+        },
+        "b": {
+          "max_abs_log_prob_difference": 0.07209396362304688,
+          "tokens": [
+            9581,
+            6505,
+            47431,
+            32402
+          ],
+          "tokens_equal": false
+        }
+      },
+      "release": {
+        "after": {
+          "free_bytes": 261621809152,
+          "torch_allocated_bytes": 0,
+          "torch_reserved_bytes": 0,
+          "total_bytes": 270566162432
+        },
+        "before": {
+          "free_bytes": 208532406272,
+          "torch_allocated_bytes": 0,
+          "torch_reserved_bytes": 0,
+          "total_bytes": 270566162432
+        },
+        "released_bytes": 53089402880,
+        "seconds": 0.019617551006376743
+      },
+      "requests": [
+        {
+          "completed_monotonic": 4279401.139624643,
+          "completion_tokens": 4,
+          "error_message": null,
+          "error_type": null,
+          "finish_reason": {
+            "length": 4,
+            "type": "length"
+          },
+          "latency_seconds": 0.08598043583333492,
+          "num_retractions": 0,
+          "output_log_probs": [
+            -9.920831680297852,
+            -9.886112213134766,
+            -9.827417373657227,
+            -9.925457000732422
+          ],
+          "output_tokens": [
+            26364,
+            11807,
+            690,
+            28164
+          ],
+          "phase": "before_release",
+          "prompt_tokens": 8,
+          "request_id": 0,
+          "server_url": "http://127.0.0.1:51629",
+          "status": "completed",
+          "submitted_monotonic": 4279401.053644207,
+          "time_stats": {},
+          "use_router": false,
+          "weight_version": "default",
+          "weight_versions": [
+            {
+              "end": 4,
+              "start": 0,
+              "version": "default"
+            }
+          ]
+        },
+        {
+          "completed_monotonic": 4279401.18351077,
+          "completion_tokens": 4,
+          "error_message": null,
+          "error_type": null,
+          "finish_reason": {
+            "length": 4,
+            "type": "length"
+          },
+          "latency_seconds": 0.038865179754793644,
+          "num_retractions": 0,
+          "output_log_probs": [
+            -9.924739837646484,
+            -9.886112213134766,
+            -9.827417373657227,
+            -9.925457000732422
+          ],
+          "output_tokens": [
+            26364,
+            11807,
+            690,
+            28164
+          ],
+          "phase": "during_release",
+          "prompt_tokens": 8,
+          "request_id": 1,
+          "server_url": "http://127.0.0.1:56639",
+          "status": "completed",
+          "submitted_monotonic": 4279401.14464559,
+          "time_stats": {},
+          "use_router": true,
+          "weight_version": "default",
+          "weight_versions": [
+            {
+              "end": 4,
+              "start": 0,
+              "version": "default"
+            }
+          ]
+        },
+        {
+          "completed_monotonic": 4279401.184035635,
+          "completion_tokens": 4,
+          "error_message": null,
+          "error_type": null,
+          "finish_reason": {
+            "length": 4,
+            "type": "length"
+          },
+          "latency_seconds": 0.03918944299221039,
+          "num_retractions": 0,
+          "output_log_probs": [
+            -9.924739837646484,
+            -9.886112213134766,
+            -9.827417373657227,
+            -9.925457000732422
+          ],
+          "output_tokens": [
+            26364,
+            11807,
+            690,
+            28164
+          ],
+          "phase": "during_release",
+          "prompt_tokens": 8,
+          "request_id": 2,
+          "server_url": "http://127.0.0.1:56639",
+          "status": "completed",
+          "submitted_monotonic": 4279401.144846192,
+          "time_stats": {},
+          "use_router": true,
+          "weight_version": "default",
+          "weight_versions": [
+            {
+              "end": 4,
+              "start": 0,
+              "version": "default"
+            }
+          ]
+        },
+        {
+          "completed_monotonic": 4279414.792644817,
+          "completion_tokens": 4,
+          "error_message": null,
+          "error_type": null,
+          "finish_reason": {
+            "length": 4,
+            "type": "length"
+          },
+          "latency_seconds": 0.025258603505790234,
+          "num_retractions": 0,
+          "output_log_probs": [
+            -9.977585792541504,
+            -9.977789878845215,
+            -9.997061729431152,
+            -9.944196701049805
+          ],
+          "output_tokens": [
+            38926,
+            9060,
+            45694,
+            15490
+          ],
+          "phase": "after_wake",
+          "prompt_tokens": 8,
+          "request_id": 4,
+          "server_url": "http://127.0.0.1:51629",
+          "status": "completed",
+          "submitted_monotonic": 4279414.767386214,
+          "time_stats": {},
+          "use_router": false,
+          "weight_version": "1",
+          "weight_versions": [
+            {
+              "end": 4,
+              "start": 0,
+              "version": "1"
+            }
+          ]
+        },
+        {
+          "completed_monotonic": 4279414.818294665,
+          "completion_tokens": 4,
+          "error_message": null,
+          "error_type": null,
+          "finish_reason": {
+            "length": 4,
+            "type": "length"
+          },
+          "latency_seconds": 0.02260702010244131,
+          "num_retractions": 0,
+          "output_log_probs": [
+            -9.966926574707031,
+            -9.946450233459473,
+            -9.92495059967041,
+            -9.935911178588867
+          ],
+          "output_tokens": [
+            9581,
+            6505,
+            47431,
+            32402
+          ],
+          "phase": "after_wake",
+          "prompt_tokens": 8,
+          "request_id": 5,
+          "server_url": "http://127.0.0.1:51629",
+          "status": "completed",
+          "submitted_monotonic": 4279414.795687645,
+          "time_stats": {},
+          "use_router": true,
+          "weight_version": "1",
+          "weight_versions": [
+            {
+              "end": 4,
+              "start": 0,
+              "version": "1"
+            }
+          ]
+        },
+        {
+          "completed_monotonic": 4279401.138836856,
+          "completion_tokens": 4,
+          "error_message": null,
+          "error_type": null,
+          "finish_reason": {
+            "length": 4,
+            "type": "length"
+          },
+          "latency_seconds": 0.08525032922625542,
+          "num_retractions": 0,
+          "output_log_probs": [
+            -9.920831680297852,
+            -9.886112213134766,
+            -9.827417373657227,
+            -9.925457000732422
+          ],
+          "output_tokens": [
+            26364,
+            11807,
+            690,
+            28164
+          ],
+          "phase": "before_release",
+          "prompt_tokens": 8,
+          "request_id": 0,
+          "server_url": "http://127.0.0.1:56639",
+          "status": "completed",
+          "submitted_monotonic": 4279401.053586527,
+          "time_stats": {},
+          "use_router": false,
+          "weight_version": "default",
+          "weight_versions": [
+            {
+              "end": 4,
+              "start": 0,
+              "version": "default"
+            }
+          ]
+        },
+        {
+          "completed_monotonic": 4279414.802587029,
+          "completion_tokens": 4,
+          "error_message": null,
+          "error_type": null,
+          "finish_reason": {
+            "length": 4,
+            "type": "length"
+          },
+          "latency_seconds": 0.024462475441396236,
+          "num_retractions": 0,
+          "output_log_probs": [
+            -9.966926574707031,
+            -9.946450233459473,
+            -9.92495059967041,
+            -9.935911178588867
+          ],
+          "output_tokens": [
+            9581,
+            6505,
+            47431,
+            32402
+          ],
+          "phase": "after_wake",
+          "prompt_tokens": 8,
+          "request_id": 4,
+          "server_url": "http://127.0.0.1:56639",
+          "status": "completed",
+          "submitted_monotonic": 4279414.778124553,
+          "time_stats": {},
+          "use_router": false,
+          "weight_version": "1",
+          "weight_versions": [
+            {
+              "end": 4,
+              "start": 0,
+              "version": "1"
+            }
+          ]
+        }
+      ],
+      "router_admission": true,
+      "router_after_urls": [
+        "http://127.0.0.1:56639",
+        "http://127.0.0.1:51629"
+      ],
+      "router_before_urls": [
+        "http://127.0.0.1:51629",
+        "http://127.0.0.1:56639"
+      ],
+      "router_during_urls": [
+        "http://127.0.0.1:56639"
+      ],
+      "train": {
+        "backward_ms": 3121.181640625,
+        "forward_ms": 3174.831298828125,
+        "global_grad_norm": 6.547276973724365,
+        "local_grad_norm": 4.629623889923096,
+        "loss": 10.793440818786621,
+        "optimizer_ms": 65.22450256347656
+      },
+      "update": {
+        "a": {
+          "end_monotonic": 4279414.229473873,
+          "failed": false,
+          "failure_message": null,
+          "failure_type": null,
+          "start_monotonic": 4279410.717442265,
+          "timings": {
+            "begin_seconds": 0.002252780832350254,
+            "broadcast_seconds": 3.4994446923956275,
+            "end_seconds": 0.004063867032527924,
+            "pause_seconds": 0.0021072188392281532,
+            "resume_seconds": 0.0017904965206980705,
+            "total_seconds": 3.512031238526106,
+            "transfer_bytes": 26347776,
+            "version_seconds": 0.0023685507476329803
+          },
+          "version": 1
+        },
+        "b": {
+          "end_monotonic": 4279410.702413276,
+          "failed": false,
+          "failure_message": null,
+          "failure_type": null,
+          "start_monotonic": 4279407.695237242,
+          "timings": {
+            "begin_seconds": 0.003348040394484997,
+            "broadcast_seconds": 2.9909642646089196,
+            "end_seconds": 0.0042403386905789375,
+            "pause_seconds": 0.004563262686133385,
+            "resume_seconds": 0.0017665959894657135,
+            "total_seconds": 3.0071756038814783,
+            "transfer_bytes": 26347776,
+            "version_seconds": 0.002289162017405033
+          },
+          "version": 1
+        }
+      },
+      "version_consistent": true,
+      "wake": {
+        "after": {
+          "free_bytes": 205015482368,
+          "torch_allocated_bytes": 0,
+          "torch_reserved_bytes": 0,
+          "total_bytes": 270566162432
+        },
+        "before": {
+          "free_bytes": 258947940352,
+          "torch_allocated_bytes": 0,
+          "torch_reserved_bytes": 0,
+          "total_bytes": 270566162432
+        },
+        "failed": false,
+        "failure_message": null,
+        "failure_type": null,
+        "resumed_cost_bytes": 53932457984,
+        "seconds": 0.013601517304778099
+      },
+      "weight_norm": 5911.41015625,
+      "weight_norm_delta": null
+    }
+  ],
+  "expected_engine_checksum_match_cycles": 2,
+  "failed_requests": 0,
+  "failed_update_cycle": null,
+  "failed_updates": 0,
+  "failed_wake_cycle": null,
+  "gpu_phase_timings": {
+    "control_forward_seconds": {
+      "count": 1,
+      "max_seconds": 0.10188323211669922,
+      "mean_seconds": 0.10188323211669922,
+      "min_seconds": 0.10188323211669922
+    },
+    "release_seconds": {
+      "count": 1,
+      "max_seconds": 0.019617551006376743,
+      "mean_seconds": 0.019617551006376743,
+      "min_seconds": 0.019617551006376743
+    },
+    "train_backward_ms": {
+      "count": 1,
+      "max_seconds": 3121.181640625,
+      "mean_seconds": 3121.181640625,
+      "min_seconds": 3121.181640625
+    },
+    "train_forward_ms": {
+      "count": 1,
+      "max_seconds": 3174.831298828125,
+      "mean_seconds": 3174.831298828125,
+      "min_seconds": 3174.831298828125
+    },
+    "train_optimizer_ms": {
+      "count": 1,
+      "max_seconds": 65.22450256347656,
+      "mean_seconds": 65.22450256347656,
+      "min_seconds": 65.22450256347656
+    },
+    "transfer_bytes_per_update": [
+      26347776,
+      26347776
+    ],
+    "update_phase_seconds": {
+      "a": {
+        "begin_seconds": {
+          "count": 1,
+          "max_seconds": 0.002252780832350254,
+          "mean_seconds": 0.002252780832350254,
+          "min_seconds": 0.002252780832350254
+        },
+        "broadcast_seconds": {
+          "count": 1,
+          "max_seconds": 3.4994446923956275,
+          "mean_seconds": 3.4994446923956275,
+          "min_seconds": 3.4994446923956275
+        },
+        "end_seconds": {
+          "count": 1,
+          "max_seconds": 0.004063867032527924,
+          "mean_seconds": 0.004063867032527924,
+          "min_seconds": 0.004063867032527924
+        },
+        "pause_seconds": {
+          "count": 1,
+          "max_seconds": 0.0021072188392281532,
+          "mean_seconds": 0.0021072188392281532,
+          "min_seconds": 0.0021072188392281532
+        },
+        "resume_seconds": {
+          "count": 1,
+          "max_seconds": 0.0017904965206980705,
+          "mean_seconds": 0.0017904965206980705,
+          "min_seconds": 0.0017904965206980705
+        },
+        "total_seconds": {
+          "count": 1,
+          "max_seconds": 3.512031238526106,
+          "mean_seconds": 3.512031238526106,
+          "min_seconds": 3.512031238526106
+        },
+        "version_seconds": {
+          "count": 1,
+          "max_seconds": 0.0023685507476329803,
+          "mean_seconds": 0.0023685507476329803,
+          "min_seconds": 0.0023685507476329803
+        }
+      },
+      "b": {
+        "begin_seconds": {
+          "count": 1,
+          "max_seconds": 0.003348040394484997,
+          "mean_seconds": 0.003348040394484997,
+          "min_seconds": 0.003348040394484997
+        },
+        "broadcast_seconds": {
+          "count": 1,
+          "max_seconds": 2.9909642646089196,
+          "mean_seconds": 2.9909642646089196,
+          "min_seconds": 2.9909642646089196
+        },
+        "end_seconds": {
+          "count": 1,
+          "max_seconds": 0.0042403386905789375,
+          "mean_seconds": 0.0042403386905789375,
+          "min_seconds": 0.0042403386905789375
+        },
+        "pause_seconds": {
+          "count": 1,
+          "max_seconds": 0.004563262686133385,
+          "mean_seconds": 0.004563262686133385,
+          "min_seconds": 0.004563262686133385
+        },
+        "resume_seconds": {
+          "count": 1,
+          "max_seconds": 0.0017665959894657135,
+          "mean_seconds": 0.0017665959894657135,
+          "min_seconds": 0.0017665959894657135
+        },
+        "total_seconds": {
+          "count": 1,
+          "max_seconds": 3.0071756038814783,
+          "mean_seconds": 3.0071756038814783,
+          "min_seconds": 3.0071756038814783
+        },
+        "version_seconds": {
+          "count": 1,
+          "max_seconds": 0.002289162017405033,
+          "mean_seconds": 0.002289162017405033,
+          "min_seconds": 0.002289162017405033
+        }
+      }
+    },
+    "wake_seconds": {
+      "count": 1,
+      "max_seconds": 0.013601517304778099,
+      "mean_seconds": 0.013601517304778099,
+      "min_seconds": 0.013601517304778099
+    }
+  },
+  "local_rank": 0,
+  "mixed_weight_version_requests": 0,
+  "output_equal_cycles": 1,
+  "rank": 0,
+  "real_weight_update_events": 2,
+  "release_positive_cycles": 1,
+  "request_failures": [],
+  "request_phase_counts": {
+    "after_wake": 3,
+    "before_release": 2,
+    "during_release": 2
+  },
+  "request_weight_version_span_counts": {
+    "1": 7
+  },
+  "router_admission_cycles": 1,
+  "successful_updates": 2,
+  "timeout_causes": [],
+  "unique_actor_overall_checksums": 1,
+  "unique_engine_a_overall_checksums": 1,
+  "unique_engine_b_overall_checksums": 1,
+  "unique_train_losses": 1,
+  "update_failures": [],
+  "update_recovery_successful": null,
+  "version_consistent_cycles": 1,
+  "wake_recovery_successful": null
+}

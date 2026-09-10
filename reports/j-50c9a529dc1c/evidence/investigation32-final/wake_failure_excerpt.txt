@@ -1,0 +1,19 @@
+1961-  File "/opt/venv/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+1962-    return func(*args, **kwargs)
+1963-  File "/sgl-workspace/sglang/python/sglang/srt/managers/scheduler.py", line 1873, in event_loop_overlap
+1964-    self.process_input_requests(recv_reqs)
+1965-  File "/sgl-workspace/sglang/python/sglang/srt/utils/nvtx_utils.py", line 109, in wrapper
+1966-    return func(*args, **kwargs)
+1967-  File "/sgl-workspace/sglang/python/sglang/srt/managers/scheduler.py", line 2001, in process_input_requests
+1968-    output = self._request_dispatcher(recv_req)
+1969-  File "/sgl-workspace/sglang/python/sglang/utils.py", line 636, in __call__
+1970-    return fn(obj)
+1971-  File "/sgl-workspace/sglang/python/sglang/srt/managers/scheduler_components/weight_updater.py", line 548, in resume_memory_occupation
+1972-    self.offload_tags.remove(tag)
+1973:KeyError: 'bogus'
+1974-
+1975-[2026-09-10 21:27:56] SIGQUIT received. signum=None, frame=None. It usually means one child failed.
+1976-[2026-09-10 21:27:56] Sleeping 5 seconds before crash diagnostics to let GPU activity settle.
+1977-[rank0]:[W910 21:27:57.094291747 ProcessGroupNCCL.cpp:1524] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+1978-[2026-09-10 21:28:01] No live scheduler processes found; skipping py-spy and CUDA coredump.
+1979-[2026-09-10 21:28:01] kill_process_tree called: parent_pid=16821, include_parent=True, pid=16821

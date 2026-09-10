@@ -1,0 +1,43 @@
+{
+  "downloaded_bytes": 29909617,
+  "gpus": [
+    {
+      "capability": [
+        9,
+        5
+      ],
+      "index": 0,
+      "name": "AMD Instinct MI350X"
+    },
+    {
+      "capability": [
+        9,
+        5
+      ],
+      "index": 1,
+      "name": "AMD Instinct MI350X"
+    }
+  ],
+  "hip_version": "7.2.26015-fc0010cf6a",
+  "miles_commit": "df0e677f6dd51fa551d48d37860812ece904cd8f",
+  "miles_source": "/job/miles/miles",
+  "model_bytes_on_disk": 29909617,
+  "model_path": "/job/miles/reports/j-50c9a529dc1c/model",
+  "output_dir": "/job/artifacts/j-50c9a529dc1c/investigation32-final",
+  "python": "/opt/venv/bin/python",
+  "runtime_image": "amdpilotv2/miles-job:gbt350-d957-20260909",
+  "sglang_commit": "a8e5c632fe40555f720d4f2c69771ea8cf24f3c4",
+  "sglang_source": "/sgl-workspace/sglang/python/sglang",
+  "sglang_version": "0.5.17.dev2157+ga8e5c632f",
+  "torch_memory_saver_preload": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver_hook_mode_preload.abi3.so",
+  "torch_memory_saver_version": "0.0.10b1",
+  "torch_source": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+  "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+  "transformers_source": "/opt/venv/lib/python3.10/site-packages/transformers/__init__.py",
+  "transformers_version": "5.12.1",
+  "wake_recovery": {
+    "health_timeout_seconds": 300.0,
+    "restart_count": 1,
+    "restart_limit": 1
+  }
+}
