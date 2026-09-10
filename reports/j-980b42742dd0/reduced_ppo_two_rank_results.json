@@ -1,0 +1,92 @@
+{
+  "actor_checkpoint_load_difference": {
+    "exact_equal": true,
+    "l2_norm": 0.0,
+    "max_abs": 0.0
+  },
+  "actor_parameter_delta": {
+    "finite": true,
+    "l2_norm": 3.5080652236938477,
+    "max_abs": 0.13822674751281738,
+    "nonzero_count": 10432
+  },
+  "actor_resume_difference": {
+    "exact_equal": true,
+    "l2_norm": 0.0,
+    "max_abs": 0.0
+  },
+  "actor_split_intermediate_difference": {
+    "exact_equal": true,
+    "l2_norm": 0.0,
+    "max_abs": 0.0
+  },
+  "config": {
+    "batch_size": 4,
+    "checkpoint_dir": "/job/reduced-ppo-checkpoint",
+    "eps_clip": 0.2,
+    "eps_clip_high": 0.2,
+    "gamma": 0.99,
+    "hidden_size": 64,
+    "input_size": 32,
+    "lambd": 0.95,
+    "learning_rate": 0.002,
+    "resume_split": 128,
+    "steps": 256,
+    "vocab_size": 128
+  },
+  "critic_checkpoint_load_difference": {
+    "exact_equal": true,
+    "l2_norm": 0.0,
+    "max_abs": 0.0
+  },
+  "critic_parameter_delta": {
+    "finite": true,
+    "l2_norm": 0.8332765698438752,
+    "max_abs": 0.0950658917427063,
+    "nonzero_count": 2177
+  },
+  "critic_resume_difference": {
+    "exact_equal": true,
+    "l2_norm": 0.0,
+    "max_abs": 0.0
+  },
+  "critic_split_intermediate_difference": {
+    "exact_equal": true,
+    "l2_norm": 0.0,
+    "max_abs": 0.0
+  },
+  "devices": [
+    "AMD Instinct MI350X",
+    "AMD Instinct MI350X"
+  ],
+  "hip_version": "7.2.26015-fc0010cf6a",
+  "optimizer_steps_after_checkpoint": 128,
+  "optimizer_steps_before_checkpoint": 128,
+  "optimizer_steps_uninterrupted": 256,
+  "process_group_backend": "nccl",
+  "process_group_timeout_seconds": 180,
+  "resumed_final_checks": {
+    "actor_loss": -0.1749095767736435,
+    "clip_fraction_mean": 0.42500001192092896,
+    "critic_loss": 2.559025287628174,
+    "global_tokens": 74
+  },
+  "timings_seconds": {
+    "backward": 3.7458116356283426,
+    "checkpoint_load": 0.014838095754384995,
+    "checkpoint_save": 0.12143276166170835,
+    "forward": 0.23532244376838207,
+    "gae_and_reference": 4.158927697688341,
+    "optimizer": 0.25829692371189594,
+    "setup": 2.6389261884614825,
+    "total": 11.562702177092433
+  },
+  "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+  "uninterrupted_final_checks": {
+    "actor_loss": -0.1749095767736435,
+    "clip_fraction_mean": 0.42500001192092896,
+    "critic_loss": 2.559025287628174,
+    "global_tokens": 74
+  },
+  "world_size": 2
+}
