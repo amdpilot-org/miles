@@ -1,0 +1,9 @@
+{"event":"environment","git_commit":"e5125a97e1fd383f005f4de258a5985026e09425","gpu_count":2,"gpu_names":["AMD Instinct MI355X","AMD Instinct MI355X"],"megatron_path":"/root/Megatron-LM/megatron/core/__init__.py","miles_path":"/job/miles/miles/__init__.py","sequence":1,"sglang_path":"/sgl-workspace/sglang/python/sglang/__init__.py","sglang_version":"0.5.17.dev2157+ga8e5c632f","torch_native_path":"/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so","torch_path":"/opt/venv/lib/python3.10/site-packages/torch/__init__.py","torch_version":"2.9.1+rocm7.2.0.git7e1940d4","world_size":2}
+{"event":"rank_one_engine_ready","passed":true,"readiness":1,"sequence":2}
+{"cell_one_state":"StatePendingWeights","cell_zero_state":"StatePendingWeights","event":"initial_cells_pending_before_first_sync","passed":true,"sequence":3}
+{"event":"no_traffic_admitted_before_first_sync","passed":true,"registered_workers":[],"sequence":4}
+{"event":"first_sync_admits_new_weights","output":13.0,"passed":true,"sequence":5,"weight_version":"new-v2","worker_url":"http://127.0.0.1:31000"}
+{"event":"recovered_engine_unregistered_until_sync","passed":true,"recovered_direct_version":"old-v1","recovered_state":"StatePendingWeights","router_output":13.0,"router_version":"new-v2","router_worker_url":"http://127.0.0.1:31000","sequence":6}
+{"engine_versions":["new-v2","new-v2"],"event":"recovered_engine_admitted_after_sync","passed":true,"router_output":13.0,"router_version":"new-v2","sequence":7}
+{"event":"failed_sync_leaves_recovered_engine_unadmitted","passed":true,"recovered_direct_version":"old-v1","recovered_state":"StatePendingWeights","router_output":13.0,"router_version":"new-v2","router_worker_url":"http://127.0.0.1:31000","sequence":8,"update_failures":["dict","HTTPStatusError"]}
+{"event":"fixture_complete","passed":true,"sequence":9}
