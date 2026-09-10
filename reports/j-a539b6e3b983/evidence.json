@@ -1,0 +1,282 @@
+{
+  "events": [
+    {
+      "sequence": 1,
+      "time_utc": "2026-09-10T03:01:54.528763+00:00",
+      "step": "environment",
+      "assigned_gpu_count": 2,
+      "gpu_names": [
+        "AMD Instinct MI350X",
+        "AMD Instinct MI350X"
+      ],
+      "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+      "torch_module": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+      "torch_native_module": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so",
+      "miles_module": "/job/miles/miles/__init__.py",
+      "sglang_module": "/sgl-workspace/sglang/python/sglang/__init__.py",
+      "sglang_version": "0.5.17.dev2157+ga8e5c632f",
+      "megatron_path": [
+        "/opt/venv/lib/python3.10/site-packages/megatron",
+        "__editable__.megatron_core-0.19.0+8c1e05747.finder.__path_hook__"
+      ],
+      "git_commit": "e5125a97e1fd383f005f4de258a5985026e09425",
+      "process_group_created": false
+    },
+    {
+      "sequence": 2,
+      "time_utc": "2026-09-10T03:02:10.603734+00:00",
+      "step": "worker_started",
+      "worker_id": "worker-0",
+      "gpu_id": 0,
+      "gpu_name": "AMD Instinct MI350X",
+      "gpu_uuid": "35666234-3266-6639-3038-363630363065",
+      "url": "http://127.0.0.1:36545"
+    },
+    {
+      "sequence": 3,
+      "time_utc": "2026-09-10T03:02:26.867351+00:00",
+      "step": "worker_started",
+      "worker_id": "worker-1",
+      "gpu_id": 1,
+      "gpu_name": "AMD Instinct MI350X",
+      "gpu_uuid": "63623362-3766-3833-6433-616137383764",
+      "url": "http://127.0.0.1:51739"
+    },
+    {
+      "sequence": 4,
+      "time_utc": "2026-09-10T03:02:26.893898+00:00",
+      "step": "router_started",
+      "url": "http://127.0.0.1:50779"
+    },
+    {
+      "sequence": 5,
+      "time_utc": "2026-09-10T03:02:26.939322+00:00",
+      "step": "recovered_engine_pending_weights",
+      "cell_id": "rollout-cell-0",
+      "state": "StatePendingWeights",
+      "direct_output": {
+        "text": "old",
+        "value": 1.0,
+        "weight_version": "old-v0",
+        "worker_id": "worker-0",
+        "gpu_id": 0,
+        "gpu_name": "AMD Instinct MI350X"
+      }
+    },
+    {
+      "sequence": 6,
+      "time_utc": "2026-09-10T03:02:26.944597+00:00",
+      "step": "recovered_engine_pending_weights",
+      "cell_id": "rollout-cell-1",
+      "state": "StatePendingWeights",
+      "direct_output": {
+        "text": "old",
+        "value": 1.0,
+        "weight_version": "old-v0",
+        "worker_id": "worker-1",
+        "gpu_id": 1,
+        "gpu_name": "AMD Instinct MI350X"
+      }
+    },
+    {
+      "sequence": 7,
+      "time_utc": "2026-09-10T03:02:26.946433+00:00",
+      "step": "router_before_first_update",
+      "workers": []
+    },
+    {
+      "sequence": 8,
+      "time_utc": "2026-09-10T03:02:26.949485+00:00",
+      "step": "traffic_rejected_before_synchronization",
+      "status_code": 500,
+      "response_body": "Internal Server Error"
+    },
+    {
+      "sequence": 9,
+      "time_utc": "2026-09-10T03:02:26.957782+00:00",
+      "step": "first_update_completed",
+      "returned_weight_version": "new-v1"
+    },
+    {
+      "sequence": 10,
+      "time_utc": "2026-09-10T03:02:26.959089+00:00",
+      "step": "router_after_first_update",
+      "workers": [
+        "http://127.0.0.1:36545",
+        "http://127.0.0.1:51739"
+      ]
+    },
+    {
+      "sequence": 11,
+      "time_utc": "2026-09-10T03:02:26.967791+00:00",
+      "step": "first_synchronized_traffic",
+      "outputs": [
+        {
+          "text": "new",
+          "value": 2.0,
+          "weight_version": "new-v1",
+          "worker_id": "worker-0",
+          "gpu_id": 0,
+          "gpu_name": "AMD Instinct MI350X"
+        },
+        {
+          "text": "new",
+          "value": 2.0,
+          "weight_version": "new-v1",
+          "worker_id": "worker-1",
+          "gpu_id": 1,
+          "gpu_name": "AMD Instinct MI350X"
+        },
+        {
+          "text": "new",
+          "value": 2.0,
+          "weight_version": "new-v1",
+          "worker_id": "worker-0",
+          "gpu_id": 0,
+          "gpu_name": "AMD Instinct MI350X"
+        },
+        {
+          "text": "new",
+          "value": 2.0,
+          "weight_version": "new-v1",
+          "worker_id": "worker-1",
+          "gpu_id": 1,
+          "gpu_name": "AMD Instinct MI350X"
+        }
+      ]
+    },
+    {
+      "sequence": 12,
+      "time_utc": "2026-09-10T03:02:29.883890+00:00",
+      "step": "old_engine_stopped",
+      "cell_id": "rollout-cell-1"
+    },
+    {
+      "sequence": 13,
+      "time_utc": "2026-09-10T03:02:45.979386+00:00",
+      "step": "replacement_recovered_before_update",
+      "cell_id": "rollout-cell-1",
+      "state": "StatePendingWeights",
+      "direct_output": {
+        "text": "old",
+        "value": 1.0,
+        "weight_version": "old-v0",
+        "worker_id": "worker-1-replacement",
+        "gpu_id": 1,
+        "gpu_name": "AMD Instinct MI350X"
+      },
+      "router_workers": [
+        "http://127.0.0.1:36545"
+      ]
+    },
+    {
+      "sequence": 14,
+      "time_utc": "2026-09-10T03:02:45.989510+00:00",
+      "step": "traffic_during_recovery_window",
+      "outputs": [
+        {
+          "text": "new",
+          "value": 2.0,
+          "weight_version": "new-v1",
+          "worker_id": "worker-0",
+          "gpu_id": 0,
+          "gpu_name": "AMD Instinct MI350X"
+        },
+        {
+          "text": "new",
+          "value": 2.0,
+          "weight_version": "new-v1",
+          "worker_id": "worker-0",
+          "gpu_id": 0,
+          "gpu_name": "AMD Instinct MI350X"
+        },
+        {
+          "text": "new",
+          "value": 2.0,
+          "weight_version": "new-v1",
+          "worker_id": "worker-0",
+          "gpu_id": 0,
+          "gpu_name": "AMD Instinct MI350X"
+        },
+        {
+          "text": "new",
+          "value": 2.0,
+          "weight_version": "new-v1",
+          "worker_id": "worker-0",
+          "gpu_id": 0,
+          "gpu_name": "AMD Instinct MI350X"
+        }
+      ]
+    },
+    {
+      "sequence": 15,
+      "time_utc": "2026-09-10T03:02:45.990563+00:00",
+      "step": "negative_failed_update_left_replacement_unavailable",
+      "error": "injected fixture actor weight-update failure",
+      "replacement_state": "StatePendingWeights",
+      "router_workers": [
+        "http://127.0.0.1:36545"
+      ]
+    },
+    {
+      "sequence": 16,
+      "time_utc": "2026-09-10T03:02:45.995254+00:00",
+      "step": "recovery_update_completed",
+      "returned_weight_version": "new-v1"
+    },
+    {
+      "sequence": 17,
+      "time_utc": "2026-09-10T03:02:45.996170+00:00",
+      "step": "router_after_recovery_update",
+      "workers": [
+        "http://127.0.0.1:36545",
+        "http://127.0.0.1:33919"
+      ]
+    },
+    {
+      "sequence": 18,
+      "time_utc": "2026-09-10T03:02:46.003470+00:00",
+      "step": "final_synchronized_traffic",
+      "outputs": [
+        {
+          "text": "new",
+          "value": 2.0,
+          "weight_version": "new-v1",
+          "worker_id": "worker-0",
+          "gpu_id": 0,
+          "gpu_name": "AMD Instinct MI350X"
+        },
+        {
+          "text": "new",
+          "value": 2.0,
+          "weight_version": "new-v1",
+          "worker_id": "worker-1-replacement",
+          "gpu_id": 1,
+          "gpu_name": "AMD Instinct MI350X"
+        },
+        {
+          "text": "new",
+          "value": 2.0,
+          "weight_version": "new-v1",
+          "worker_id": "worker-0",
+          "gpu_id": 0,
+          "gpu_name": "AMD Instinct MI350X"
+        },
+        {
+          "text": "new",
+          "value": 2.0,
+          "weight_version": "new-v1",
+          "worker_id": "worker-0",
+          "gpu_id": 0,
+          "gpu_name": "AMD Instinct MI350X"
+        }
+      ]
+    },
+    {
+      "sequence": 19,
+      "time_utc": "2026-09-10T03:02:46.005388+00:00",
+      "step": "rollout_server_disposed",
+      "cell_ids": []
+    }
+  ]
+}
