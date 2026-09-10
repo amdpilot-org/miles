@@ -245,7 +245,7 @@ def convert_target_modules_to_megatron(
     If input is already in Megatron format, returns as-is.
     """
     class_name = _get_lora_class_name(lora_type)
-    is_canonical = class_name == "CanonicalLoRA"
+    is_canonical = class_name in {"CanonicalLoRA", "GatedCanonicalLoRA"}
 
     all_modules = _CANONICAL_LORA_ALL_MODULES if is_canonical else _STANDARD_LORA_ALL_MODULES
     hf_to_megatron = _CANONICAL_LORA_HF_TO_MEGATRON if is_canonical else _STANDARD_LORA_HF_TO_MEGATRON
@@ -354,13 +354,13 @@ def create_lora_instance(args: Namespace):
     Returns:
         A LoRA/CanonicalLoRA dataclass instance ready to be applied to a model.
     """
-    from megatron.bridge.peft.canonical_lora import CanonicalLoRA
+    from miles.backends.megatron_utils.canonical_lora_gate import GatedCanonicalLoRA
     from megatron.bridge.peft.lora import LoRA
 
     lora_type_name = getattr(args, "lora_type", "lora").lower()
 
     if lora_type_name == "canonical_lora":
-        lora_cls = CanonicalLoRA
+        lora_cls = GatedCanonicalLoRA
     else:
         lora_cls = LoRA
 
