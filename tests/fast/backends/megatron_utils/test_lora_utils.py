@@ -7,8 +7,10 @@ exclude-module parsing, and LoRA sync config building — all without GPU.
 from argparse import Namespace
 from unittest.mock import MagicMock
 
+import torch
 import pytest
 
+from miles.backends.megatron_utils.lora_utils import load_lora_adapter, standard_lora_resume_iteration
 from miles.backends.megatron_utils.lora_utils import (
     _get_lora_class_name,
     _is_adapter_param_name,
@@ -18,7 +20,37 @@ from miles.backends.megatron_utils.lora_utils import (
     is_lora_enabled,
     parse_exclude_modules,
 )
+from miles.backends.training_utils.parallel import ParallelState, set_parallel_state
+from miles.utils.ft_utils.process_group_utils import GroupInfo
 from miles.utils.lora import LORA_ADAPTER_NAME, is_lora_weight_name
+
+
+class AdapterModule(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.module = torch.nn.Module()
+        self.module.adapter = torch.nn.Module()
+        self.module.adapter.linear_in = torch.nn.Linear(2, 2, bias=False)
+        self.module.adapter.linear_out = torch.nn.Linear(2, 2, bias=False)
+
+
+@pytest.fixture
+def serial_parallel_state(monkeypatch):
+    trivial = GroupInfo(rank=0, size=1, group=None)
+    set_parallel_state(
+        ParallelState(
+            intra_dp=trivial,
+            intra_dp_cp=trivial,
+            cp=trivial,
+            tp=trivial,
+            pp=trivial,
+            ep=trivial,
+            etp=trivial,
+            indep_dp=trivial,
+        )
+    )
+    yield trivial
+    set_parallel_state(None)
 
 # ---------------------------------------------------------------------------
 # _get_lora_class_name
@@ -40,6 +72,81 @@ class TestGetLoraClassName:
             pass
 
         assert _get_lora_class_name(FakeLoRA()) == "FakeLoRA"
+
+
+class TestNativeLoRALoad:
+    def test_standard_resume_iteration(self, tmp_path):
+        adapter = tmp_path / "iter_0000064" / "adapter"
+        adapter.mkdir(parents=True)
+        assert standard_lora_resume_iteration(adapter) == 64
+
+    def test_warm_start_path_is_not_resume(self, tmp_path):
+        warm = tmp_path / "warm-adapter"
+        warm.mkdir()
+        assert standard_lora_resume_iteration(warm) is None
+
+    def test_loads_matching_tensors(self, tmp_path, serial_parallel_state):
+        model = AdapterModule()
+        adapter_dir = tmp_path / "adapter"
+        adapter_dir.mkdir()
+        state = {
+            name: torch.ones_like(parameter)
+            for name, parameter in model.named_parameters()
+            if _is_adapter_param_name(name)
+        }
+        torch.save(state, adapter_dir / "adapter_megatron_rank0.pt")
+
+        loaded, iteration = load_lora_adapter([model], adapter_dir)
+
+        assert loaded is True
+        assert iteration is None
+        assert all(torch.equal(parameter, torch.ones_like(parameter)) for parameter in state.values())
+
+    def test_rejects_missing_tensor(self, tmp_path, serial_parallel_state):
+        model = AdapterModule()
+        adapter_dir = tmp_path / "adapter"
+        adapter_dir.mkdir()
+        state = {
+            name: torch.ones_like(parameter)
+            for name, parameter in model.named_parameters()
+            if _is_adapter_param_name(name)
+        }
+        state.pop(next(iter(state)))
+        torch.save(state, adapter_dir / "adapter_megatron_rank0.pt")
+
+        with pytest.raises(RuntimeError, match="missing="):
+            load_lora_adapter([model], adapter_dir)
+
+    def test_rejects_unexpected_tensor(self, tmp_path, serial_parallel_state):
+        model = AdapterModule()
+        adapter_dir = tmp_path / "adapter"
+        adapter_dir.mkdir()
+        state = {
+            name: torch.ones_like(parameter)
+            for name, parameter in model.named_parameters()
+            if _is_adapter_param_name(name)
+        }
+        state["module.adapter.linear_in.extra"] = torch.ones(1)
+        torch.save(state, adapter_dir / "adapter_megatron_rank0.pt")
+
+        with pytest.raises(RuntimeError, match="unexpected="):
+            load_lora_adapter([model], adapter_dir)
+
+    def test_rejects_non_finite_tensor(self, tmp_path, serial_parallel_state):
+        model = AdapterModule()
+        adapter_dir = tmp_path / "adapter"
+        adapter_dir.mkdir()
+        state = {
+            name: torch.ones_like(parameter)
+            for name, parameter in model.named_parameters()
+            if _is_adapter_param_name(name)
+        }
+        first_name = next(iter(state))
+        state[first_name].fill_(float("nan"))
+        torch.save(state, adapter_dir / "adapter_megatron_rank0.pt")
+
+        with pytest.raises(RuntimeError, match="non-finite"):
+            load_lora_adapter([model], adapter_dir)
 
 
 # ---------------------------------------------------------------------------

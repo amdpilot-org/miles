@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 from argparse import Namespace
 from collections.abc import Sequence
 from pathlib import Path
@@ -14,6 +15,8 @@ from miles.backends.training_utils.parallel import get_parallel_state
 from miles.utils.lora import is_lora_enabled, lora_rollout_enabled  # noqa: F401  (re-exported)
 
 logger = logging.getLogger(__name__)
+
+_STANDARD_RESUME_ITERATION = re.compile(r"iter_(\d{7})")
 
 # ---------------------------------------------------------------------------
 # Unified HF <-> Megatron module name mappings
@@ -178,6 +181,27 @@ def is_lora_model(model: Sequence[torch.nn.Module]) -> bool:
 def _is_adapter_param_name(name: str) -> bool:
     """Check if a parameter name belongs to a LoRA adapter (Megatron internal naming)."""
     return "lora_" in name or (".adapter." in name and ("linear_in" in name or "linear_out" in name))
+
+
+def standard_lora_resume_iteration(adapter_path: str | os.PathLike[str]) -> int | None:
+    """Return the rollout iteration encoded by a native LoRA resume directory."""
+    path = Path(adapter_path)
+    if not path.is_dir() or path.name != "adapter":
+        return None
+    match = _STANDARD_RESUME_ITERATION.fullmatch(path.parent.name)
+    return int(match.group(1)) if match else None
+
+
+def _adapter_parameters(model: Sequence[torch.nn.Module]) -> dict[str, torch.nn.Parameter]:
+    parameters: dict[str, torch.nn.Parameter] = {}
+    for model_chunk in model:
+        for name, parameter in model_chunk.named_parameters():
+            if not _is_adapter_param_name(name):
+                continue
+            if name in parameters:
+                raise RuntimeError(f"Duplicate LoRA parameter name {name!r} cannot be represented by a native shard")
+            parameters[name] = parameter
+    return parameters
 
 
 _param_grad_buffer_patched = False
@@ -438,11 +462,7 @@ def save_lora_checkpoint(
     if dist.is_initialized():
         dist.barrier()
 
-    adapter_state: dict[str, torch.Tensor] = {}
-    for model_chunk in model:
-        for name, param in model_chunk.named_parameters():
-            if _is_adapter_param_name(name):
-                adapter_state[name] = param.data.cpu()
+    adapter_state = {name: parameter.data.cpu() for name, parameter in _adapter_parameters(model).items()}
 
     global_rank = dist.get_rank() if dist.is_initialized() else 0
     native_path = save_path / f"adapter_megatron_rank{global_rank}.pt"
@@ -557,12 +577,24 @@ def load_lora_adapter(
             native_path = legacy
     if native_path.exists():
         state_dict = torch.load(native_path, map_location="cpu", weights_only=True)
-        loaded = 0
-        for model_chunk in model:
-            for name, param in model_chunk.named_parameters():
-                if name in state_dict:
-                    param.data.copy_(state_dict[name].to(device=param.device))
-                    loaded += 1
+        expected = _adapter_parameters(model)
+        missing = sorted(set(expected) - set(state_dict))
+        unexpected = sorted(set(state_dict) - set(expected))
+        if missing or unexpected:
+            raise RuntimeError(
+                f"LoRA shard {native_path} does not match this rank's parameters: "
+                f"missing={missing}, unexpected={unexpected}"
+            )
+        for name, parameter in expected.items():
+            value = state_dict[name]
+            if value.shape != parameter.shape:
+                raise RuntimeError(
+                    f"LoRA parameter {name!r} has shape {tuple(value.shape)}, expected {tuple(parameter.shape)}"
+                )
+            if not torch.isfinite(value).all():
+                raise RuntimeError(f"LoRA shard {native_path} contains non-finite tensor {name!r}")
+            parameter.data.copy_(value.to(device=parameter.device))
+        loaded = len(expected)
         logger.info(f"Loaded {loaded} adapter tensors from Megatron-native checkpoint: {native_path}")
 
         iteration = _load_training_state(adapter_dir, optimizer, opt_param_scheduler)
