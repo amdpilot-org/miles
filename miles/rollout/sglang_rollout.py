@@ -152,6 +152,20 @@ async def generate(args: Namespace, sample: Sample, sampling_params: dict[str, A
         sample.status == Sample.Status.PENDING or sample.status == Sample.Status.ABORTED
     ), f"Sample status is {sample.status}"
 
+    payload = await _build_generate_payload(args, state, sample, sampling_params)
+    if payload is None:
+        return sample
+
+    output = await post(url, payload, headers=compute_routing_headers(args, sample))
+    return _apply_generate_output(args, sample, output)
+
+
+async def _build_generate_payload(
+    args: Namespace,
+    state: GenerateState,
+    sample: Sample,
+    sampling_params: dict[str, Any],
+) -> dict[str, Any] | None:
     if state.processor and (
         isinstance(sample.prompt, (list, tuple))
         or (sample.multimodal_inputs and any(v is not None for v in sample.multimodal_inputs.values()))
@@ -163,6 +177,7 @@ async def generate(args: Namespace, sample: Sample, sampling_params: dict[str, A
     else:
         prompt_ids = state.tokenizer.encode(sample.prompt, add_special_tokens=False)
 
+    sampling_params = sampling_params.copy()
     if len(sample.response) > 0:
         sampling_params["max_new_tokens"] -= len(sample.tokens) - len(prompt_ids)
 
@@ -171,9 +186,8 @@ async def generate(args: Namespace, sample: Sample, sampling_params: dict[str, A
     ), f"max_new_tokens: {sampling_params['max_new_tokens']} should not be less than 0"
     if sampling_params["max_new_tokens"] == 0:
         sample.status = Sample.Status.TRUNCATED
-        return sample
+        return None
 
-    # Prepare payload for sglang server
     payload = {
         "sampling_params": sampling_params,
         "return_logprob": True,
@@ -187,14 +201,12 @@ async def generate(args: Namespace, sample: Sample, sampling_params: dict[str, A
         from miles.ray.multi_lora.controller import AdaptersCache
 
         if (adapter := await AdaptersCache().get(sample.adapter.name)) is None:
-            # Adapter deregistered: don't POST, or an orphan the abort round can't see
-            # would keep decoding under the slot's next tenant and pollute its group.
             logger.warning(
                 f"Dropping generation for adapter '{sample.adapter.name}' (slot {sample.adapter.slot}): "
                 "adapter is no longer sampleable"
             )
             sample.status = Sample.Status.ABORTED
-            return sample
+            return None
         payload["lora_path"] = slot_lora_name(sample.adapter.slot)
         payload["rid"] = make_rid(sample.adapter.name)
         payload["extra_key"] = f"{sample.adapter.name}:v{adapter.version}"
@@ -217,7 +229,6 @@ async def generate(args: Namespace, sample: Sample, sampling_params: dict[str, A
             f"data:audio;base64,{_b64.b64encode(a).decode('ascii')}" for a in sample.multimodal_inputs["audios"]
         ]
 
-    # Use existing tokens for multi-turn or tokenize the new prompt
     if len(sample.response) > 0:
         payload["input_ids"] = sample.tokens
     else:
@@ -225,9 +236,12 @@ async def generate(args: Namespace, sample: Sample, sampling_params: dict[str, A
         if not sample.tokens:  # Initialize sample.tokens for the first turn
             sample.tokens = prompt_ids
 
-    headers = compute_routing_headers(args, sample)
+    return payload
 
-    output = await post(url, payload, headers=headers)
+
+def _apply_generate_output(args: Namespace, sample: Sample, output: dict[str, Any]) -> Sample:
+    opd_top_k = getattr(args, "opd_log_prob_top_k", 0) or 0
+    opd_top_k_strategy = getattr(args, "opd_top_k_strategy", "only-student")
     if getattr(args, "use_opd", False) and opd_top_k > 0 and opd_top_k_strategy != "only-teacher":
         output_top_logprobs = output.get("meta_info", {}).get("output_top_logprobs")
         if output_top_logprobs is not None:
@@ -277,6 +291,60 @@ async def generate(args: Namespace, sample: Sample, sampling_params: dict[str, A
     sample.update_from_meta_info(args, output["meta_info"])
 
     return sample
+
+
+def _can_batch_generate_group(args: Namespace, group: list[Sample]) -> bool:
+    if getattr(args, "custom_generate_function_path", None) is not None:
+        return False
+    if getattr(args, "sglang_enable_deterministic_inference", False):
+        return False
+    if policy_uses_routing_key(args) or lora_rollout_enabled(args):
+        return False
+    return not any(
+        len(sample.response) > 0
+        or sample.adapter is not None
+        or getattr(sample, "generate_function_path", None) is not None
+        or (sample.multimodal_inputs and any(value is not None for value in sample.multimodal_inputs.values()))
+        for sample in group
+    )
+
+
+async def generate_batch(
+    args: Namespace,
+    samples: list[Sample],
+    sampling_params: dict[str, Any],
+) -> list[Sample]:
+    state = GenerateState(args)
+    url = f"http://{args.sglang_router_ip}:{args.sglang_router_port}/generate"
+
+    payloads = []
+    samples_to_update = []
+    for sample in samples:
+        if sample.status in {Sample.Status.COMPLETED, Sample.Status.TRUNCATED}:
+            continue
+        assert sample.status in {Sample.Status.PENDING, Sample.Status.ABORTED}, f"Sample status is {sample.status}"
+        payload = await _build_generate_payload(args, state, sample, sampling_params)
+        if payload is None:
+            continue
+        payloads.append(payload)
+        samples_to_update.append(sample)
+
+    if not payloads:
+        return samples
+
+    batch_payload = payloads[0].copy()
+    batch_payload["input_ids"] = [payload["input_ids"] for payload in payloads]
+    outputs = await post(url, batch_payload)
+    if not isinstance(outputs, list):
+        raise ValueError(f"SGLang batch generate returned {type(outputs).__name__}, expected list")
+    if len(outputs) != len(samples_to_update):
+        raise ValueError(
+            f"SGLang batch generate output count mismatch: expected {len(samples_to_update)}, got {len(outputs)}"
+        )
+
+    for sample, output in zip(samples_to_update, outputs, strict=True):
+        _apply_generate_output(args, sample, output)
+    return samples
 
 
 async def generate_and_rm(
@@ -370,17 +438,41 @@ async def generate_and_rm_group(
             if sample.routing_key is None:
                 sample.routing_key = str(uuid.uuid4())
 
-    tasks = []
-    for idx, sample in enumerate(group):
-        current_sampling_params = sampling_params.copy()
-        if getattr(args, "sglang_enable_deterministic_inference", False):
-            seed = state.group_sampling_seeds[idx]
-            current_sampling_params["sampling_seed"] = seed
-        tasks.append(
-            asyncio.create_task(generate_and_rm(args, sample, current_sampling_params, evaluation=evaluation))
-        )
+    if _can_batch_generate_group(args, group):
+        sink = None if evaluation else TrajectoryLifecycle().sink
+        if sink is not None:
+            for sample in group:
+                sink.attempt_start(sample)
+        async with state.semaphore:
+            if state.aborted:
+                for sample in group:
+                    sample.status = Sample.Status.ABORTED
+            else:
+                if sink is not None:
+                    for sample in group:
+                        sink.gen_start(sample)
+                with state.dp_rank_context():
+                    group = await generate_batch(args, group, sampling_params)
+        if sink is not None:
+            for sample in group:
+                sink.attempt_end(sample)
+        if not state.aborted and not args.group_rm:
+            samples_need_reward = [sample for sample in group if sample.reward is None]
+            rewards = await asyncio.gather(*[async_rm(args, sample) for sample in samples_need_reward])
+            for sample, reward in zip(samples_need_reward, rewards, strict=False):
+                sample.reward = reward
+    else:
+        tasks = []
+        for idx, sample in enumerate(group):
+            current_sampling_params = sampling_params.copy()
+            if getattr(args, "sglang_enable_deterministic_inference", False):
+                seed = state.group_sampling_seeds[idx]
+                current_sampling_params["sampling_seed"] = seed
+            tasks.append(
+                asyncio.create_task(generate_and_rm(args, sample, current_sampling_params, evaluation=evaluation))
+            )
 
-    group = await asyncio.gather(*tasks)
+        group = await asyncio.gather(*tasks)
 
     # for the rm that need the whole group, we will do the rm here
     if not state.aborted and args.group_rm:
