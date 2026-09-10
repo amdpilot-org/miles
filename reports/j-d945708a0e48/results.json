@@ -1,0 +1,126 @@
+{
+  "configuration": {
+    "block_k": 128,
+    "blocks_per_rank": 38,
+    "dtype": "torch.bfloat16",
+    "full_k": 9728,
+    "local_k": 4864,
+    "megatron_parallel_timeout_minutes": 2,
+    "output_size": 128,
+    "process_group_timeout_seconds": 120,
+    "tokens": 2,
+    "world_size": 2
+  },
+  "gradients": {
+    "input_megatron_vs_reference": {
+      "bitwise_equal": true,
+      "max_abs_difference": 0.0,
+      "mean_abs_difference": 0.0,
+      "mismatched_elements": 0
+    },
+    "sglang_backward_available": false,
+    "upstream_pattern": "row 0 alternates +1/-1; row 1 is 0.5 times row 0",
+    "weight_megatron_vs_reference": {
+      "bitwise_equal": true,
+      "max_abs_difference": 0.0,
+      "mean_abs_difference": 0.0,
+      "mismatched_elements": 0
+    }
+  },
+  "metadata": {
+    "aiter_native_module": "/sgl-workspace/aiter/aiter/jit/module_aiter_core.so",
+    "cuda_version": null,
+    "device_count": 2,
+    "devices": [
+      {
+        "gcn_arch_name": "gfx950:sramecc+:xnack-",
+        "index": 0,
+        "major": 9,
+        "minor": 5,
+        "multi_processor_count": 256,
+        "name": "AMD Instinct MI350X",
+        "total_memory_bytes": 270566162432
+      },
+      {
+        "gcn_arch_name": "gfx950:sramecc+:xnack-",
+        "index": 1,
+        "major": 9,
+        "minor": 5,
+        "multi_processor_count": 256,
+        "name": "AMD Instinct MI350X",
+        "total_memory_bytes": 270566162432
+      }
+    ],
+    "hip_version": "7.2.26015-fc0010cf6a",
+    "module_paths": {
+      "megatron": null,
+      "megatron.core": "/root/Megatron-LM/megatron/core/__init__.py",
+      "miles": "/job/miles/miles/__init__.py",
+      "sglang": "/sgl-workspace/sglang/python/sglang/__init__.py",
+      "transformer_engine": "/opt/venv/lib/python3.10/site-packages/transformer_engine/__init__.py",
+      "triton": "/sgl-workspace/triton-custom/python/triton/__init__.py"
+    },
+    "native_libraries": {
+      "amdhip64": "/opt/rocm-7.2.0/lib/libamdhip64.so.7",
+      "hipblaslt": "/opt/rocm-7.2.0/lib/libhipblaslt.so.1",
+      "hiprtc": "/opt/rocm-7.2.0/lib/libhiprtc.so.7",
+      "rccl": "/opt/rocm-7.2.0/lib/librccl.so.1",
+      "rocblas": "/opt/rocm-7.2.0/lib/librocblas.so.5",
+      "rocm_smi64": "/opt/rocm-7.2.0/lib/librocm_smi64.so.1",
+      "torch_hip": "/opt/venv/lib/python3.10/site-packages/torch/lib/libtorch_hip.so"
+    },
+    "package_versions": {
+      "megatron-core": "0.19.0+8c1e05747",
+      "miles": "0.1.0",
+      "sglang": "0.5.17.dev2157+ga8e5c632f",
+      "torch": "2.9.1+rocm7.2.0.lw.git7e1940d4",
+      "transformer-engine": "2.17.0",
+      "triton": "3.6.0+git42270451"
+    },
+    "sglang_use_aiter_override": "0",
+    "source_revisions": {
+      "aiter": "d9e5ef7ce08ee7045d583aed768cff41aa9210fe",
+      "megatron": "8c1e05747eb612b382df2632783df5c83a853646",
+      "miles": "e5125a97e1fd383f005f4de258a5985026e09425",
+      "sglang": "a8e5c632fe40555f720d4f2c69771ea8cf24f3c4",
+      "triton": "42270451990532c67e69d753fbd026f28fcc4840"
+    },
+    "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+    "triton_cache_dir": "/job/cache/triton"
+  },
+  "outputs": {
+    "megatron_vs_sglang": {
+      "bitwise_equal": false,
+      "max_abs_difference": 0.015625,
+      "mean_abs_difference": 0.015625,
+      "mismatched_elements": 256
+    },
+    "sglang_kernel_requires_grad": false
+  },
+  "reduction_order": {
+    "global_miles_fold_vs_sglang": {
+      "bitwise_equal": false,
+      "max_abs_difference": 0.09375,
+      "mean_abs_difference": 0.09375,
+      "mismatched_elements": 256
+    },
+    "local_miles_fold_vs_sglang": {
+      "bitwise_equal": false,
+      "max_abs_difference": 0.0625,
+      "mean_abs_difference": 0.0625,
+      "mismatched_elements": 256
+    },
+    "sglang_global_vs_two_level_reference": {
+      "bitwise_equal": true,
+      "max_abs_difference": 0.0,
+      "mean_abs_difference": 0.0,
+      "mismatched_elements": 0
+    },
+    "sglang_kernel_vs_two_level_fold_bitwise": true
+  },
+  "weights": {
+    "miles_converter_bitwise": true,
+    "miles_converter_name": "model.layers.0.mlp.down_proj.weight",
+    "sglang_loader_bitwise": true
+  }
+}
