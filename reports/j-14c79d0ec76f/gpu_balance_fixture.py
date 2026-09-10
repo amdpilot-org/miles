@@ -156,7 +156,9 @@ def make_reference_batch(data: dict, device: torch.device) -> dict:
         "response_lengths": data["response_lengths"],
         "loss_masks": [torch.tensor(mask, dtype=torch.float32, device=device) for mask in data["loss_masks"]],
         "total_lengths": data["total_lengths"],
-        "rollout_mask_sums": data["rollout_mask_sums"],
+        "rollout_mask_sums": [
+            torch.tensor(value, dtype=torch.float32, device=device) for value in data["rollout_mask_sums"]
+        ],
         "dynamic_global_batch_size": data["dynamic_global_batch_size"],
     }
 
@@ -236,7 +238,10 @@ def main() -> None:
                     "response_lengths": values["response_lengths"],
                     "loss_masks": [torch.tensor(mask, device=device) for mask in values["loss_masks"]],
                     "total_lengths": values["total_lengths"],
-                    "rollout_mask_sums": values["rollout_mask_sums"],
+                    "rollout_mask_sums": [
+                        torch.tensor(value, dtype=torch.float32, device=device)
+                        for value in values["rollout_mask_sums"]
+                    ],
                     "dynamic_global_batch_size": global_batch_size,
                 }
                 tokens = torch.tensor([token for sample in batch["tokens"] for token in sample], device=device)
