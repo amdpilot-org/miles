@@ -1,0 +1,1862 @@
+{
+  "aggregate": {
+    "admitted_requests": 384,
+    "all_engine_tensors_checked_cycles": 32,
+    "checksum_mismatch_cycles": 0,
+    "completed_requests": 384,
+    "connect_update_group_seconds": 0.03635493293404579,
+    "expected_engine_checksum_match_cycles": 32,
+    "failed_requests": 0,
+    "failed_update_cycle": 16,
+    "failed_updates": 1,
+    "gpu_phase_timings": {
+      "train_seconds": {
+        "count": 32,
+        "max_seconds": 6.2088679345324636,
+        "mean_seconds": 0.7658860559167806,
+        "min_seconds": 0.5582247395068407
+      },
+      "transfer_bytes_per_update": [
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768,
+        1503264768
+      ],
+      "update_phase_seconds": {
+        "begin_seconds": {
+          "count": 32,
+          "max_seconds": 0.016953286714851856,
+          "mean_seconds": 0.014094441459747031,
+          "min_seconds": 0.012445361353456974
+        },
+        "broadcast_seconds": {
+          "count": 32,
+          "max_seconds": 2.3506628572940826,
+          "mean_seconds": 0.10786465831915848,
+          "min_seconds": 0.03501262981444597
+        },
+        "end_seconds": {
+          "count": 32,
+          "max_seconds": 0.006270135752856731,
+          "mean_seconds": 0.004409096640301868,
+          "min_seconds": 0.003984336741268635
+        },
+        "pause_seconds": {
+          "count": 32,
+          "max_seconds": 0.005820531398057938,
+          "mean_seconds": 0.0031431161041837186,
+          "min_seconds": 0.002180119976401329
+        },
+        "resume_seconds": {
+          "count": 32,
+          "max_seconds": 0.0017258049920201302,
+          "mean_seconds": 0.0012356452061794698,
+          "min_seconds": 0.001132730394601822
+        },
+        "total_seconds": {
+          "count": 32,
+          "max_seconds": 2.380134830251336,
+          "mean_seconds": 0.13224247231846675,
+          "min_seconds": 0.05689759459346533
+        },
+        "version_seconds": {
+          "count": 32,
+          "max_seconds": 0.002392251044511795,
+          "mean_seconds": 0.0014921031252015382,
+          "min_seconds": 0.0013439413160085678
+        }
+      }
+    },
+    "local_rank": 0,
+    "mixed_weight_version_requests": 0,
+    "rank": 0,
+    "real_weight_update_events": 32,
+    "recovery_successful": true,
+    "request_failures": [],
+    "request_phase_counts": {
+      "after_update": 64,
+      "before_update": 64,
+      "during_update": 256
+    },
+    "request_weight_version_span_counts": {
+      "1": 384
+    },
+    "successful_updates": 31,
+    "timeout_causes": [],
+    "unique_actor_overall_checksums": 32,
+    "unique_engine_overall_checksums": 32,
+    "unique_train_losses": 32,
+    "update_failures": [
+      {
+        "cycle": 16,
+        "failure_message": "Client error '400 Bad Request' for url 'http://127.0.0.1:60231/end_weight_update'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
+        "failure_type": "HTTPStatusError"
+      }
+    ],
+    "version_consistent_cycles": 32
+  },
+  "cycles": [
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "019d931dcea48b85c709f61f019fc316dee698371095297822e276a11623b45e",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "019d931dcea48b85c709f61f019fc316dee698371095297822e276a11623b45e",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 1,
+      "engine_weight_version": "1",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 102.5,
+        "loss": 14.919879913330078,
+        "seconds": 6.2088679345324636
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.013257858343422413,
+          "broadcast_seconds": 2.3506628572940826,
+          "end_seconds": 0.006270135752856731,
+          "pause_seconds": 0.005820531398057938,
+          "resume_seconds": 0.0017258049920201302,
+          "total_seconds": 2.380134830251336,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.002392251044511795
+        },
+        "version": 1
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": null
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "26e8f87fd29497e6df0996907edc9ac4b0bd3a83f9ddb5d100cb403800fc969a",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "26e8f87fd29497e6df0996907edc9ac4b0bd3a83f9ddb5d100cb403800fc969a",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 2,
+      "engine_weight_version": "2",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 89.5,
+        "loss": 14.211760520935059,
+        "seconds": 0.6570318890735507
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.012656782753765583,
+          "broadcast_seconds": 0.03540830500423908,
+          "end_seconds": 0.00429884810000658,
+          "pause_seconds": 0.004599051550030708,
+          "resume_seconds": 0.0012519815936684608,
+          "total_seconds": 0.059695521369576454,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.001476832665503025
+        },
+        "version": 2
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "f9649117c22ce47ec652b74b628c3b3389d5ee48d81b413df637c10b9118a559",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "f9649117c22ce47ec652b74b628c3b3389d5ee48d81b413df637c10b9118a559",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 3,
+      "engine_weight_version": "3",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 94.0,
+        "loss": 14.326563835144043,
+        "seconds": 0.6004570871591568
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.013424539007246494,
+          "broadcast_seconds": 0.035365323536098,
+          "end_seconds": 0.004445989616215229,
+          "pause_seconds": 0.004530889913439751,
+          "resume_seconds": 0.001241251826286316,
+          "total_seconds": 0.06052878685295582,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0015155533328652382
+        },
+        "version": 3
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "3af0adbae32dc2dc350c4e7cf753f944b70e46c8b6e5908f8ba9e01c0a8a475b",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "3af0adbae32dc2dc350c4e7cf753f944b70e46c8b6e5908f8ba9e01c0a8a475b",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 4,
+      "engine_weight_version": "4",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 82.5,
+        "loss": 14.403300285339355,
+        "seconds": 0.5940153785049915
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014469909481704235,
+          "broadcast_seconds": 0.03539323341101408,
+          "end_seconds": 0.004287748597562313,
+          "pause_seconds": 0.0034313201904296875,
+          "resume_seconds": 0.0012153498828411102,
+          "total_seconds": 0.060256125405430794,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014543822035193443
+        },
+        "version": 4
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "c0a6a524853009131ea6793c60b13568911e44d18736d001d7bc85ec5e532635",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "c0a6a524853009131ea6793c60b13568911e44d18736d001d7bc85ec5e532635",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 5,
+      "engine_weight_version": "5",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 112.5,
+        "loss": 15.344759941101074,
+        "seconds": 0.6057612830772996
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.012445361353456974,
+          "broadcast_seconds": 0.035188112407922745,
+          "end_seconds": 0.004227587021887302,
+          "pause_seconds": 0.0023203501477837563,
+          "resume_seconds": 0.0012251613661646843,
+          "total_seconds": 0.05689759459346533,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014881528913974762
+        },
+        "version": 5
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "2433e508620561bce7db51b03466c4bcbb95215763085af4e96fafa13c0eaa04",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "2433e508620561bce7db51b03466c4bcbb95215763085af4e96fafa13c0eaa04",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 6,
+      "engine_weight_version": "6",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 101.5,
+        "loss": 14.848834991455078,
+        "seconds": 0.6273536756634712
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.01532379537820816,
+          "broadcast_seconds": 0.03524094354361296,
+          "end_seconds": 0.004529010504484177,
+          "pause_seconds": 0.002458161674439907,
+          "resume_seconds": 0.0012648608535528183,
+          "total_seconds": 0.06025555543601513,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014356235042214394
+        },
+        "version": 6
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "d89c3bc3dcbc6f07143561db27871856b5c35ebe19beb0f30f7e371dcb2907cc",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "d89c3bc3dcbc6f07143561db27871856b5c35ebe19beb0f30f7e371dcb2907cc",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 7,
+      "engine_weight_version": "7",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 102.0,
+        "loss": 14.187748908996582,
+        "seconds": 0.6015824163332582
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.012557720765471458,
+          "broadcast_seconds": 0.03526266384869814,
+          "end_seconds": 0.004550890997052193,
+          "pause_seconds": 0.002408062107861042,
+          "resume_seconds": 0.0013605020940303802,
+          "total_seconds": 0.05813463684171438,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.00199245847761631
+        },
+        "version": 7
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "a2f9b459cc92c0d09ad5f22074846b9a9a53a8cb086b9cbb8476b44327075854",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "a2f9b459cc92c0d09ad5f22074846b9a9a53a8cb086b9cbb8476b44327075854",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 8,
+      "engine_weight_version": "8",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 84.5,
+        "loss": 14.482246398925781,
+        "seconds": 0.5665305638685822
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014201805926859379,
+          "broadcast_seconds": 0.03513644263148308,
+          "end_seconds": 0.004144756123423576,
+          "pause_seconds": 0.002209000289440155,
+          "resume_seconds": 0.0011444399133324623,
+          "total_seconds": 0.05818292871117592,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0013439413160085678
+        },
+        "version": 8
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "65d371b95514dbf327e2aa98eed7952f284fbb39a806850bdecbfd513ef02ac0",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "65d371b95514dbf327e2aa98eed7952f284fbb39a806850bdecbfd513ef02ac0",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 9,
+      "engine_weight_version": "9",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 105.5,
+        "loss": 14.220104217529297,
+        "seconds": 0.561619239859283
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014047437347471714,
+          "broadcast_seconds": 0.035041979514062405,
+          "end_seconds": 0.0043566301465034485,
+          "pause_seconds": 0.0021942397579550743,
+          "resume_seconds": 0.0011989716440439224,
+          "total_seconds": 0.058202832005918026,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0013606427237391472
+        },
+        "version": 9
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "c6ded554a2a204857bee7649a6367562bf1eeecb8944e73e5f26e8e743fad248",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "c6ded554a2a204857bee7649a6367562bf1eeecb8944e73e5f26e8e743fad248",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 10,
+      "engine_weight_version": "10",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 91.0,
+        "loss": 14.629354476928711,
+        "seconds": 0.5979329207912087
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014108638279139996,
+          "broadcast_seconds": 0.03514022100716829,
+          "end_seconds": 0.004455740563571453,
+          "pause_seconds": 0.002321460284292698,
+          "resume_seconds": 0.0013453727588057518,
+          "total_seconds": 0.05895055830478668,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.001575513742864132
+        },
+        "version": 10
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "7f6666d2e3fd8fb2a3e773d091346da0870ecbd5e926e82705d2360f9fe17405",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "7f6666d2e3fd8fb2a3e773d091346da0870ecbd5e926e82705d2360f9fe17405",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 11,
+      "engine_weight_version": "11",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 119.0,
+        "loss": 15.123462677001953,
+        "seconds": 0.6070019844919443
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014639932662248611,
+          "broadcast_seconds": 0.03515293076634407,
+          "end_seconds": 0.004269078373908997,
+          "pause_seconds": 0.002793276682496071,
+          "resume_seconds": 0.0012757517397403717,
+          "total_seconds": 0.05966703500598669,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.001533222384750843
+        },
+        "version": 11
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "5ce35c855e3371a088d00faa5cf3d870aa1f3f7caf931e8b45dd3eb8c6f3f738",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "5ce35c855e3371a088d00faa5cf3d870aa1f3f7caf931e8b45dd3eb8c6f3f738",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 12,
+      "engine_weight_version": "12",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 103.0,
+        "loss": 14.25686264038086,
+        "seconds": 0.563496976159513
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014364921487867832,
+          "broadcast_seconds": 0.03525209240615368,
+          "end_seconds": 0.004776744171977043,
+          "pause_seconds": 0.0033174604177474976,
+          "resume_seconds": 0.001183999702334404,
+          "total_seconds": 0.06031875126063824,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014209533110260963
+        },
+        "version": 12
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "27f0932e50b1f62f938cd665ac04cf3ac26aea6af5973aaa1ef5350a901dcd9b",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "27f0932e50b1f62f938cd665ac04cf3ac26aea6af5973aaa1ef5350a901dcd9b",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 13,
+      "engine_weight_version": "13",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 99.5,
+        "loss": 14.829597473144531,
+        "seconds": 0.5752465538680553
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.013907177373766899,
+          "broadcast_seconds": 0.03528317157179117,
+          "end_seconds": 0.004329809918999672,
+          "pause_seconds": 0.003647162578999996,
+          "resume_seconds": 0.001158430241048336,
+          "total_seconds": 0.059743854217231274,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014156326651573181
+        },
+        "version": 13
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "fc9c6207d5a8711707957433c1fb19aeab4a11646b85583c6bd3bbde9aba1ba4",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "fc9c6207d5a8711707957433c1fb19aeab4a11646b85583c6bd3bbde9aba1ba4",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 14,
+      "engine_weight_version": "14",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 89.5,
+        "loss": 14.630305290222168,
+        "seconds": 0.5610133148729801
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.013581213541328907,
+          "broadcast_seconds": 0.035163260996341705,
+          "end_seconds": 0.004222937859594822,
+          "pause_seconds": 0.0032539600506424904,
+          "resume_seconds": 0.00117564108222723,
+          "total_seconds": 0.0588114270940423,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014118030667304993
+        },
+        "version": 14
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "64ac09aa721370f424722ef22a4b6100f849f71386e8e3594c03a3e806e42c86",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "64ac09aa721370f424722ef22a4b6100f849f71386e8e3594c03a3e806e42c86",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 15,
+      "engine_weight_version": "15",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 89.5,
+        "loss": 14.432023048400879,
+        "seconds": 0.5582247395068407
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014915397390723228,
+          "broadcast_seconds": 0.03503604885190725,
+          "end_seconds": 0.004245818592607975,
+          "pause_seconds": 0.002557862550020218,
+          "resume_seconds": 0.0012843506410717964,
+          "total_seconds": 0.05939842201769352,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0013565728440880775
+        },
+        "version": 15
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "0d73e0e2cc1536106b45e9dbd1b8741285b77c9f6b0a4c63460c5daaf943e167",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "0d73e0e2cc1536106b45e9dbd1b8741285b77c9f6b0a4c63460c5daaf943e167",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 16,
+      "engine_weight_version": "16",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 84.0,
+        "loss": 14.834521293640137,
+        "seconds": 0.6047418834641576
+      },
+      "update": {
+        "failed": true,
+        "failure_type": "HTTPStatusError",
+        "timings": {
+          "begin_seconds": 0.015025706961750984,
+          "broadcast_seconds": 0.035125681199133396,
+          "end_seconds": 0.004188498482108116,
+          "pause_seconds": 0.0028496859595179558,
+          "resume_seconds": 0.0011602900922298431,
+          "total_seconds": 0.05987213645130396,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0015199938789010048
+        },
+        "version": 16
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "8a14340cd89a8421b3447637bea6e5e67e1b8ed955d995aa711233b5f1bcc0c6",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "8a14340cd89a8421b3447637bea6e5e67e1b8ed955d995aa711233b5f1bcc0c6",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 17,
+      "engine_weight_version": "17",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 93.5,
+        "loss": 14.467935562133789,
+        "seconds": 0.5992994541302323
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014365310780704021,
+          "broadcast_seconds": 0.03501262981444597,
+          "end_seconds": 0.003984336741268635,
+          "pause_seconds": 0.0027919160202145576,
+          "resume_seconds": 0.0011553000658750534,
+          "total_seconds": 0.058724645525217056,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014125928282737732
+        },
+        "version": 17
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "bdce7b345d7fdfa4db1f1aa390c62a442219a3d0b62e0fe9ee5ad884d350fca1",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "bdce7b345d7fdfa4db1f1aa390c62a442219a3d0b62e0fe9ee5ad884d350fca1",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 18,
+      "engine_weight_version": "18",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 96.5,
+        "loss": 14.711823463439941,
+        "seconds": 0.5779367480427027
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.01468285359442234,
+          "broadcast_seconds": 0.03509526140987873,
+          "end_seconds": 0.004187118262052536,
+          "pause_seconds": 0.002180119976401329,
+          "resume_seconds": 0.0011681104078888893,
+          "total_seconds": 0.0587287861853838,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014125732704997063
+        },
+        "version": 18
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "601edf586323a4be0e5b9a0cf9813fc228a05fa7fff4e468d976b79b01077843",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "601edf586323a4be0e5b9a0cf9813fc228a05fa7fff4e468d976b79b01077843",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 19,
+      "engine_weight_version": "19",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 117.5,
+        "loss": 15.082208633422852,
+        "seconds": 0.598456165753305
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.01470643375068903,
+          "broadcast_seconds": 0.03514853119850159,
+          "end_seconds": 0.004423469305038452,
+          "pause_seconds": 0.00284571573138237,
+          "resume_seconds": 0.0012015514075756073,
+          "total_seconds": 0.05980043578892946,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.001472022384405136
+        },
+        "version": 19
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "c5fe74d78171e152c557843ffc72656890b912c5ba2197ec64575e4059acfbcd",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "c5fe74d78171e152c557843ffc72656890b912c5ba2197ec64575e4059acfbcd",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 20,
+      "engine_weight_version": "20",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 91.5,
+        "loss": 14.93165111541748,
+        "seconds": 0.60525774769485
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.013568203896284103,
+          "broadcast_seconds": 0.03540341276675463,
+          "end_seconds": 0.004642152227461338,
+          "pause_seconds": 0.003992477431893349,
+          "resume_seconds": 0.0012283623218536377,
+          "total_seconds": 0.06032063066959381,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014818934723734856
+        },
+        "version": 20
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "0d9d418d253d2d91e833e395f80c4d04081c0a7e744008215d8a7f0f3ffee6de",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "0d9d418d253d2d91e833e395f80c4d04081c0a7e744008215d8a7f0f3ffee6de",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 21,
+      "engine_weight_version": "21",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 84.0,
+        "loss": 14.33497428894043,
+        "seconds": 0.5779600087553263
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014312941581010818,
+          "broadcast_seconds": 0.035280492156744,
+          "end_seconds": 0.004225138574838638,
+          "pause_seconds": 0.0033481400460004807,
+          "resume_seconds": 0.0012155212461948395,
+          "total_seconds": 0.059819545596838,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014324430376291275
+        },
+        "version": 21
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "ac20562e9d2cacdd15b7bd1fe709a5b76d6717550860e0292c8915212237071a",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "ac20562e9d2cacdd15b7bd1fe709a5b76d6717550860e0292c8915212237071a",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 22,
+      "engine_weight_version": "22",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 91.0,
+        "loss": 14.365039825439453,
+        "seconds": 0.5715787298977375
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.016953286714851856,
+          "broadcast_seconds": 0.03563208505511284,
+          "end_seconds": 0.0042338985949754715,
+          "pause_seconds": 0.0032805195078253746,
+          "resume_seconds": 0.0011784303933382034,
+          "total_seconds": 0.06267950218170881,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0013966131955385208
+        },
+        "version": 22
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "f76abe8eb817a291d25dd778d45bbdd7b47ce4c7295f236093597f6f3845a2c8",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "f76abe8eb817a291d25dd778d45bbdd7b47ce4c7295f236093597f6f3845a2c8",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 23,
+      "engine_weight_version": "23",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 98.5,
+        "loss": 14.544583320617676,
+        "seconds": 0.5675884438678622
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014236358925700188,
+          "broadcast_seconds": 0.04325086995959282,
+          "end_seconds": 0.004194398410618305,
+          "pause_seconds": 0.003967585042119026,
+          "resume_seconds": 0.00123636145144701,
+          "total_seconds": 0.06833742652088404,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.001447613351047039
+        },
+        "version": 23
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "3fcdd724b8feec82cad4a0542efa5ec40984f6a68f5c7156b987bb7d99691af6",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "3fcdd724b8feec82cad4a0542efa5ec40984f6a68f5c7156b987bb7d99691af6",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 24,
+      "engine_weight_version": "24",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 91.5,
+        "loss": 14.471695899963379,
+        "seconds": 0.5804466791450977
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014320328831672668,
+          "broadcast_seconds": 0.035299467854201794,
+          "end_seconds": 0.004593471996486187,
+          "pause_seconds": 0.003129708580672741,
+          "resume_seconds": 0.0012967921793460846,
+          "total_seconds": 0.06022669281810522,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.001581304706633091
+        },
+        "version": 24
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "f8093734bf740641ad79c764896d15cd06884606160af958d2472de4b08acc6d",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "f8093734bf740641ad79c764896d15cd06884606160af958d2472de4b08acc6d",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 25,
+      "engine_weight_version": "25",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 82.5,
+        "loss": 14.394701957702637,
+        "seconds": 0.561924702487886
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.01424860954284668,
+          "broadcast_seconds": 0.03545419964939356,
+          "end_seconds": 0.004821262322366238,
+          "pause_seconds": 0.002990446984767914,
+          "resume_seconds": 0.0012186216190457344,
+          "total_seconds": 0.06017251219600439,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014335233718156815
+        },
+        "version": 25
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "58187b5178c96a18472bb6fd3d36e14863d6920fb78ced6325ba85774542b27b",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "58187b5178c96a18472bb6fd3d36e14863d6920fb78ced6325ba85774542b27b",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 26,
+      "engine_weight_version": "26",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 97.0,
+        "loss": 14.84005069732666,
+        "seconds": 0.5694763520732522
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.013774623163044453,
+          "broadcast_seconds": 0.035351067781448364,
+          "end_seconds": 0.004375309683382511,
+          "pause_seconds": 0.00356278195977211,
+          "resume_seconds": 0.001212790608406067,
+          "total_seconds": 0.059731367975473404,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014522336423397064
+        },
+        "version": 26
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "5ed30b97299fe9eaeeb27f24c7e0d309a69511c9966c140f3f17c61effcdced1",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "5ed30b97299fe9eaeeb27f24c7e0d309a69511c9966c140f3f17c61effcdced1",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 27,
+      "engine_weight_version": "27",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 99.5,
+        "loss": 14.7853364944458,
+        "seconds": 0.5894448403269053
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014608021825551987,
+          "broadcast_seconds": 0.035267448984086514,
+          "end_seconds": 0.004434389062225819,
+          "pause_seconds": 0.0026354938745498657,
+          "resume_seconds": 0.0011497493833303452,
+          "total_seconds": 0.059464036487042904,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0013662129640579224
+        },
+        "version": 27
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "0feff4d28d75f0b3a99eeda08a1bafb526e7d57f28f734bb9fbb2489aa7cc854",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "0feff4d28d75f0b3a99eeda08a1bafb526e7d57f28f734bb9fbb2489aa7cc854",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 28,
+      "engine_weight_version": "28",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 96.0,
+        "loss": 14.978708267211914,
+        "seconds": 0.60194381326437
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.01410913746803999,
+          "broadcast_seconds": 0.03507364634424448,
+          "end_seconds": 0.004158517345786095,
+          "pause_seconds": 0.0022944798693060875,
+          "resume_seconds": 0.001132730394601822,
+          "total_seconds": 0.05811974313110113,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.001349012367427349
+        },
+        "version": 28
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "8a4011ee0ef1cb6886ed1f5a802b45b280a12ad633271a15d5690f0472b45b77",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "8a4011ee0ef1cb6886ed1f5a802b45b280a12ad633271a15d5690f0472b45b77",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 29,
+      "engine_weight_version": "29",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 87.5,
+        "loss": 14.72078800201416,
+        "seconds": 0.6066646166145802
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.01323148887604475,
+          "broadcast_seconds": 0.035023635253310204,
+          "end_seconds": 0.004391590133309364,
+          "pause_seconds": 0.004118107259273529,
+          "resume_seconds": 0.0011928407475352287,
+          "total_seconds": 0.059395975433290005,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.001435813494026661
+        },
+        "version": 29
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "513fbdf98bab3b7a1e27513ac9a265d658281b6f28ba6aa92ec0b2e8ff9804cc",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "513fbdf98bab3b7a1e27513ac9a265d658281b6f28ba6aa92ec0b2e8ff9804cc",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 30,
+      "engine_weight_version": "30",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 90.0,
+        "loss": 14.468652725219727,
+        "seconds": 0.6066469568759203
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.014346149750053883,
+          "broadcast_seconds": 0.035373227670788765,
+          "end_seconds": 0.004348699934780598,
+          "pause_seconds": 0.0034223198890686035,
+          "resume_seconds": 0.0011525508016347885,
+          "total_seconds": 0.06005614157766104,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014099916443228722
+        },
+        "version": 30
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "25ffb3f954dc62064d08d4f6f41164d0360d87933bd97e8e837950f504c59303",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "25ffb3f954dc62064d08d4f6f41164d0360d87933bd97e8e837950f504c59303",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 31,
+      "engine_weight_version": "31",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 92.0,
+        "loss": 14.614653587341309,
+        "seconds": 0.602473839186132
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.013525481335818768,
+          "broadcast_seconds": 0.03582905326038599,
+          "end_seconds": 0.004201187752187252,
+          "pause_seconds": 0.002794085070490837,
+          "resume_seconds": 0.0013418719172477722,
+          "total_seconds": 0.059180193580687046,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.0014844033867120743
+        },
+        "version": 31
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    },
+    {
+      "checksum": {
+        "actor_only_tensor_count": 141,
+        "actor_tensor_count": 311,
+        "all_engine_tensors_checked": true,
+        "common_tensor_count": 226,
+        "engine_overall_checksum": "7916cb227ee9d6c5f0db6efc2ec839c6480603ec6e3a1b9fd98623849e08a595",
+        "engine_tensor_count": 226,
+        "expected_engine_overall_checksum": "7916cb227ee9d6c5f0db6efc2ec839c6480603ec6e3a1b9fd98623849e08a595",
+        "fused_expected_tensor_count": 56,
+        "mismatch_count": 0,
+        "unexpected_engine_tensor_count": 0
+      },
+      "cycle": 32,
+      "engine_weight_version": "32",
+      "requests": {
+        "admitted": 12,
+        "completed": 12,
+        "failed": 0,
+        "phase_counts": {
+          "after_update": 2,
+          "before_update": 2,
+          "during_update": 8
+        },
+        "timeout_causes": [],
+        "weight_version_span_counts": {
+          "1": 12
+        }
+      },
+      "train": {
+        "grad_norm": 96.5,
+        "loss": 14.753081321716309,
+        "seconds": 0.6003768499940634
+      },
+      "update": {
+        "failed": false,
+        "failure_type": null,
+        "timings": {
+          "begin_seconds": 0.013104698620736599,
+          "broadcast_seconds": 0.0353207690641284,
+          "end_seconds": 0.004275927320122719,
+          "pause_seconds": 0.002513342536985874,
+          "resume_seconds": 0.0012469012290239334,
+          "total_seconds": 0.057950482703745365,
+          "transfer_bytes": 1503264768,
+          "version_seconds": 0.001485522836446762
+        },
+        "version": 32
+      },
+      "version_consistent": true,
+      "weight_norm": 2075996.75,
+      "weight_norm_delta": 0.0
+    }
+  ],
+  "environment": {
+    "gpus": [
+      {
+        "capability": [
+          9,
+          5
+        ],
+        "gfx": "gfx950",
+        "index": 0,
+        "name": "AMD Instinct MI350X"
+      },
+      {
+        "capability": [
+          9,
+          5
+        ],
+        "gfx": "gfx950",
+        "index": 1,
+        "name": "AMD Instinct MI350X"
+      }
+    ],
+    "hip_version": "7.2.26015-fc0010cf6a",
+    "miles_commit": "e5125a97e1fd383f005f4de258a5985026e09425",
+    "miles_source_path": "/job/miles/miles",
+    "model": {
+      "download_size_bytes": 1503300328,
+      "path": "/job/cache/models/Qwen3-0.6B"
+    },
+    "python": "/opt/venv/bin/python",
+    "rccl_version": "2.27.7",
+    "runtime_image": "amdpilotv2/miles-job:gbt350-d957-20260909",
+    "sglang_commit": "a8e5c632fe40555f720d4f2c69771ea8cf24f3c4",
+    "sglang_source_path": "/sgl-workspace/sglang/python/sglang",
+    "torch_source_path": "/opt/venv/lib/python3.10/site-packages/torch",
+    "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+    "transformers_source_path": "/opt/venv/lib/python3.10/site-packages/transformers",
+    "transformers_version": "5.12.1"
+  }
+}
