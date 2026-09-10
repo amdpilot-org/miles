@@ -81,6 +81,7 @@ class TestSaveCheckpointWithLoRA:
         mock_save_lora.assert_called_once()
         call_args = mock_save_lora.call_args
         assert "adapter" in call_args[1].get("save_dir", call_args[0][2] if len(call_args[0]) > 2 else "")
+        assert (tmp_path / "latest_checkpointed_iteration.txt").read_text() == "42"
 
     @patch("miles.backends.megatron_utils.checkpoint.get_args")
     @patch("miles.backends.megatron_utils.checkpoint.save_checkpoint")

@@ -172,6 +172,13 @@ def save_checkpoint_with_lora(iteration, model, optimizer, opt_param_scheduler):
             opt_param_scheduler=opt_param_scheduler,
             iteration=iteration,
         )
+        global_rank = dist.get_rank() if dist.is_initialized() else 0
+        if global_rank == 0:
+            latest_path = Path(args.save) / "latest_checkpointed_iteration.txt"
+            latest_path.parent.mkdir(parents=True, exist_ok=True)
+            latest_path.write_text(str(iteration))
+        if dist.is_initialized():
+            dist.barrier()
     else:
         save_checkpoint(iteration, model, optimizer, opt_param_scheduler)
 

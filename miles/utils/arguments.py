@@ -9,6 +9,7 @@ from sglang_router.launch_router import RouterArgs
 
 from miles.backends.sglang_utils.arguments import add_sglang_arguments, collect_eval_sglang_overrides
 from miles.backends.sglang_utils.arguments import validate_args as sglang_validate_args
+from miles.backends.megatron_utils.lora_utils import standard_lora_resume_iteration
 from miles.dashboard.args import add_dashboard_arguments, validate_dashboard_args
 from miles.rollout.checkpoint_eval import is_checkpoint_eval_fn
 from miles.utils.chat_template_utils.tito_tokenizer import TITOTokenizerType
@@ -3132,6 +3133,11 @@ def miles_validate_args(args):
         ):
             args.load = args.ref_load or args.hf_checkpoint
             args.start_rollout_id = 0
+        if is_lora_enabled(args):
+            resume_iteration = standard_lora_resume_iteration(getattr(args, "lora_adapter_path", ""))
+            if resume_iteration is not None:
+                args.start_rollout_id = resume_iteration
+                args.load = args.ref_load or args.hf_checkpoint
     else:
         if (
             args.load is None
