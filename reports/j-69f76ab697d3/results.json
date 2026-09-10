@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "fixture": {
+    "attention_backend": "aiter-default",
+    "cuda_graph": "disabled",
+    "direct_engine_no_router": true,
+    "gpu": "AMD Instinct MI355X (gfx950), 1 assigned GPU",
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "model_download_bytes": 966000000,
+    "radix_cache": "disabled",
+    "server_random_seed": 1567
+  },
+  "settings": {
+    "groups": 16,
+    "logprob_tolerance": 1e-6,
+    "max_new_tokens": 8,
+    "runs": 3,
+    "samples_per_group": 4,
+    "seed": 1567,
+    "temperature": 0.0,
+    "top_k": 1,
+    "top_p": 1.0,
+    "warmups": 1
+  },
+  "summary": {
+    "all_runs_functional_parity": false,
+    "grouped_latency_median_s": 0.16595510207116604,
+    "grouped_requests_total": 48,
+    "individual_latency_median_s": 0.41540159191936255,
+    "individual_requests_total": 192,
+    "latency_speedup_median": 2.503096239495108
+  },
+  "runs": [
+    {
+      "run": 0,
+      "individual": {
+        "identity_preserved": true,
+        "latency_s": 0.1796580689260736,
+        "requests": 64,
+        "sample_count": 64,
+        "status_counts": {
+          "truncated": 64
+        },
+        "total_output_tokens": 512
+      },
+      "grouped": {
+        "identity_preserved": true,
+        "latency_s": 0.16595510207116604,
+        "requests": 16,
+        "sample_count": 64,
+        "status_counts": {
+          "truncated": 64
+        },
+        "total_output_tokens": 512
+      },
+      "parity": {
+        "logprobs_aligned": false,
+        "max_abs_logprob_difference": 2.85689315199852,
+        "mean_abs_logprob_difference": 0.11769075602205703,
+        "response_cap_respected": true,
+        "response_lengths_aligned": true,
+        "response_mismatch_count": 11,
+        "sample_identity_by_index": true,
+        "statuses_aligned": true,
+        "token_mismatch_count": 11,
+        "tokens_aligned": false,
+        "truncated_samples_reach_cap": true
+      }
+    },
+    {
+      "run": 1,
+      "individual": {
+        "identity_preserved": true,
+        "latency_s": 0.41540159191936255,
+        "requests": 64,
+        "sample_count": 64,
+        "status_counts": {
+          "truncated": 64
+        },
+        "total_output_tokens": 512
+      },
+      "grouped": {
+        "identity_preserved": true,
+        "latency_s": 0.1678482280112803,
+        "requests": 16,
+        "sample_count": 64,
+        "status_counts": {
+          "truncated": 64
+        },
+        "total_output_tokens": 512
+      },
+      "parity": {
+        "logprobs_aligned": false,
+        "max_abs_logprob_difference": 2.515449583530426,
+        "mean_abs_logprob_difference": 0.04809013906196924,
+        "response_cap_respected": true,
+        "response_lengths_aligned": true,
+        "response_mismatch_count": 4,
+        "sample_identity_by_index": true,
+        "statuses_aligned": true,
+        "token_mismatch_count": 4,
+        "tokens_aligned": false,
+        "truncated_samples_reach_cap": true
+      }
+    },
+    {
+      "run": 2,
+      "individual": {
+        "identity_preserved": true,
+        "latency_s": 0.41639105998910964,
+        "requests": 64,
+        "sample_count": 64,
+        "status_counts": {
+          "truncated": 64
+        },
+        "total_output_tokens": 512
+      },
+      "grouped": {
+        "identity_preserved": true,
+        "latency_s": 0.16482114605605602,
+        "requests": 16,
+        "sample_count": 64,
+        "status_counts": {
+          "truncated": 64
+        },
+        "total_output_tokens": 512
+      },
+      "parity": {
+        "logprobs_aligned": false,
+        "max_abs_logprob_difference": 2.611786127090454,
+        "mean_abs_logprob_difference": 0.14808204865767038,
+        "response_cap_respected": true,
+        "response_lengths_aligned": true,
+        "response_mismatch_count": 10,
+        "sample_identity_by_index": true,
+        "statuses_aligned": true,
+        "token_mismatch_count": 10,
+        "tokens_aligned": false,
+        "truncated_samples_reach_cap": true
+      }
+    }
+  ]
+}
