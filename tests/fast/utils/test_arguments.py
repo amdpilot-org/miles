@@ -19,6 +19,7 @@ from miles.utils.arguments import (
     miles_validate_args,
     resolve_rollout_function_paths,
     validate_async_off_policy_correction,
+    validate_fully_async_batch_semantics,
     validate_skip_actor_forward_only,
 )
 from miles.utils.ft_utils.health_checker import SimpleHealthCheckerConfig
@@ -218,6 +219,26 @@ def test_fully_async_rejects_abort_pause_mode():
 
     args.pause_generation_mode = "retract"
     _resolve_rollout_functions(args)
+
+
+def test_fully_async_batch_semantics_warns_only_for_compounded_off_policy(caplog):
+    """Multi-step fully-async training is valid, but staleness filtering does not remove it."""
+    args = SimpleNamespace(
+        fully_async=True,
+        num_steps_per_rollout=2,
+        max_weight_staleness=1,
+        use_dynamic_global_batch_size=True,
+    )
+    with caplog.at_level(logging.INFO, logger="miles.utils.arguments"):
+        validate_fully_async_batch_semantics(args)
+    assert any("compounds off-policyness" in record.message for record in caplog.records)
+    assert any("forces one optimizer step" in record.message for record in caplog.records)
+
+    caplog.clear()
+    args.num_steps_per_rollout = 1
+    with caplog.at_level(logging.WARNING, logger="miles.utils.arguments"):
+        validate_fully_async_batch_semantics(args)
+    assert not any("compounds off-policyness" in record.message for record in caplog.records)
 
 
 def test_recompute_logprobs_via_prefill_flag_is_parsed():
