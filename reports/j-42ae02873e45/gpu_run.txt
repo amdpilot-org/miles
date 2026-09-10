@@ -1,0 +1,218 @@
+
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
+[Gloo] Rank [Gloo] Rank 1 is connected to 1 peer ranks. Expected number of connected peer ranks is : 1
+0 is connected to 1 peer ranks. Expected number of connected peer ranks is : 1
+[aiter] WARNING: NUMA balancing is enabled, which may cause errors. It is recommended to disable NUMA balancing by running "sudo sh -c 'echo 0 > /proc/sys/kernel/numa_balancing'" for more details: https://rocm.docs.amd.com/en/latest/how-to/system-optimization/mi300x.html#disable-numa-auto-balancing
+[aiter] import [module_aiter_core] under /sgl-workspace/aiter/aiter/jit/module_aiter_core.so
+WARNING:root:deep_ep is not installed, some functionalities may be limited.
+/opt/venv/lib/python3.10/site-packages/apex/transformer/functional/fused_rope.py:49: UserWarning: Aiter backend is selected for fused RoPE. This has lower precision. To disable aiter, export USE_ROCM_AITER_ROPE_BACKEND=0
+  warnings.warn("Aiter backend is selected for fused RoPE. This has lower precision. To disable aiter, export USE_ROCM_AITER_ROPE_BACKEND=0", UserWarning)
+WARNING:fla.utils._device:Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+[ERROR] `cache_position` is part of Qwen3ASRThinkerTextModel.forward's signature, but not documented. Make sure to add it to the docstring of the function in /opt/venv/lib/python3.10/site-packages/megatron/bridge/models/qwen3_asr/hf_qwen3_asr/modeling_qwen3_asr.py.
+[ERROR] `cache_position` is part of Qwen3ASRThinkerForConditionalGeneration.forward's signature, but not documented. Make sure to add it to the docstring of the function in /opt/venv/lib/python3.10/site-packages/megatron/bridge/models/qwen3_asr/hf_qwen3_asr/modeling_qwen3_asr.py.
+WARNING:sglang.srt.arg_groups.overrides:The current platform does not support Intel AMX, will fallback to torch_native backend.
+WARNING:sglang.srt.models.registry:Ignore import error when loading sglang.srt.models.inkling: No module named 'cutlass'
+WARNING:sglang.srt.layers.quantization.unquant:aiter CK fused-MoE does not support intermediate_size_per_partition=8; using triton MoE runner.
+[rank0]:[W910 02:51:39.275799646 ProcessGroupNCCL.cpp:4004] Warning: An unbatched P2P op (send/recv) was called on this ProcessGroup with size 2.  In lazy initialization mode, this will result in a new 2-rank NCCL communicator to be created. (function operator())
+[rank1]:[W910 02:51:39.276906722 ProcessGroupNCCL.cpp:4004] Warning: An unbatched P2P op (send/recv) was called on this ProcessGroup with size 2.  In lazy initialization mode, this will result in a new 2-rank NCCL communicator to be created. (function operator())
+[rank0]:[W910 02:51:40.716544592 ProcessGroupNCCL.cpp:4004] Warning: An unbatched P2P op (send/recv) was called on this ProcessGroup with size 2.  In lazy initialization mode, this will result in a new 2-rank NCCL communicator to be created. (function operator())
+[rank1]:[W910 02:51:40.717433581 ProcessGroupNCCL.cpp:4004] Warning: An unbatched P2P op (send/recv) was called on this ProcessGroup with size 2.  In lazy initialization mode, this will result in a new 2-rank NCCL communicator to be created. (function operator())
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+I0910 02:51:40.335855  4554 transfer_engine_py.cpp:80] Selected HIP memory allocator
+I0910 02:51:40.335891  4554 transfer_engine_impl.cpp:887] Metrics reporting is disabled (set MC_TE_METRIC=1 to enable)
+I0910 02:51:40.335896  4554 transfer_engine_impl.cpp:116] Transfer Engine parseHostNameWithPort. server_name: 10.235.27.177 port: 12001
+I0910 02:51:40.335922  4554 transfer_engine_impl.cpp:183] Transfer Engine RPC using P2P handshake, listening on 10.235.27.177:15179
+I0910 02:51:40.335969  4554 transfer_engine_impl.cpp:259] Auto-discovering topology...
+W0910 02:51:40.336012  4554 topology.cpp:205] No RDMA devices found, check your device installation
+I0910 02:51:40.336038  4554 transfer_engine_impl.cpp:274] Topology discovery complete. Found 0 HCAs.
+E0910 02:51:40.336048  4554 transfer_metadata.cpp:912] Local segment descriptor not found
+I0910 02:51:40.336066  4554 tcp_transport.cpp:692] TcpTransport: listen on port 16332
+I0910 02:51:40.336310  4554 transfer_engine_impl.cpp:413] HIP transport installed for intra-node GPU P2P
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+I0910 02:51:40.337313  4555 transfer_engine_py.cpp:80] Selected HIP memory allocator
+I0910 02:51:40.337360  4555 transfer_engine_impl.cpp:887] Metrics reporting is disabled (set MC_TE_METRIC=1 to enable)
+I0910 02:51:40.337364  4555 transfer_engine_impl.cpp:116] Transfer Engine parseHostNameWithPort. server_name: 10.235.27.177 port: 12001
+I0910 02:51:40.337378  4555 transfer_engine_impl.cpp:183] Transfer Engine RPC using P2P handshake, listening on 10.235.27.177:16627
+I0910 02:51:40.337442  4555 transfer_engine_impl.cpp:259] Auto-discovering topology...
+W0910 02:51:40.337483  4555 topology.cpp:205] No RDMA devices found, check your device installation
+I0910 02:51:40.337518  4555 transfer_engine_impl.cpp:274] Topology discovery complete. Found 0 HCAs.
+E0910 02:51:40.337528  4555 transfer_metadata.cpp:912] Local segment descriptor not found
+I0910 02:51:40.337538  4555 tcp_transport.cpp:692] TcpTransport: listen on port 15865
+I0910 02:51:40.337677  4555 transfer_engine_impl.cpp:413] HIP transport installed for intra-node GPU P2P
+I0910 02:51:40.345542  4554 transfer_engine_py.cpp:442] transferSync, cache not found, openSegment with target 10.235.27.177:16627
+I0910 02:51:40.346588  4554 transfer_metadata.cpp:494] removeSegmentDesc 10.235.27.177:15179 finish
+I0910 02:51:40.346637  4555 transfer_metadata.cpp:494] removeSegmentDesc 10.235.27.177:16627 finish
+{
+  "rank": 0,
+  "status": "pass",
+  "issue": "radixark/miles#2856",
+  "timeout_seconds": 30,
+  "world_size": 2,
+  "process_groups": {
+    "default_backend": "nccl",
+    "gloo_backend": "gloo",
+    "nccl_backend": "nccl"
+  },
+  "cpu_replica": {
+    "constructed": true,
+    "model_class": "Qwen3MoeForCausalLM",
+    "parameter_count": 3472,
+    "state_dict_bytes": 6944,
+    "tp_size": 2,
+    "ep_size": 2,
+    "published_nnodes": 2,
+    "restored_nnodes": 2
+  },
+  "nccl_p2p": {
+    "tensors": 12,
+    "transferred_bytes": 6944,
+    "probe": 3.0,
+    "all_ranks_equal": [
+      true,
+      true
+    ]
+  },
+  "mooncake_hip": {
+    "hostname": "10.235.27.177",
+    "initialize_rc": 0,
+    "rpc_port": 15179,
+    "register_rc": [
+      0,
+      0
+    ],
+    "probe_rc": 0,
+    "write_rc": -1,
+    "supported": false
+  },
+  "runtime": {
+    "python": "/opt/venv/bin/python",
+    "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+    "hip_version": "7.2.26015-fc0010cf6a",
+    "device_count": 2,
+    "devices": [
+      {
+        "index": 0,
+        "name": "AMD Instinct MI355X",
+        "capability": [
+          9,
+          5
+        ],
+        "total_mib": 294896
+      },
+      {
+        "index": 1,
+        "name": "AMD Instinct MI355X",
+        "capability": [
+          9,
+          5
+        ],
+        "total_mib": 294896
+      }
+    ],
+    "imports": {
+      "miles": "/job/miles/miles/__init__.py",
+      "sglang": "/sgl-workspace/sglang/python/sglang/__init__.py",
+      "torch": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+      "torch._C": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so",
+      "mooncake.engine": "/opt/venv/lib/python3.10/site-packages/mooncake/engine.cpython-310-x86_64-linux-gnu.so",
+      "transformer_engine": "/opt/venv/lib/python3.10/site-packages/transformer_engine/__init__.py",
+      "megatron.core": "/root/Megatron-LM/megatron/core/__init__.py",
+      "aiter": "/sgl-workspace/aiter/aiter/__init__.py"
+    },
+    "versions": {
+      "miles": "0.1.0",
+      "sglang": "0.5.17.dev2157+ga8e5c632f",
+      "torch": "2.9.1+rocm7.2.0.lw.git7e1940d4",
+      "transformer_engine": "2.17.0",
+      "megatron-core": "0.19.0+8c1e05747"
+    }
+  }
+}
+{
+  "rank": 1,
+  "status": "pass",
+  "issue": "radixark/miles#2856",
+  "timeout_seconds": 30,
+  "world_size": 2,
+  "process_groups": {
+    "default_backend": "nccl",
+    "gloo_backend": "gloo",
+    "nccl_backend": "nccl"
+  },
+  "cpu_replica": {
+    "constructed": true,
+    "model_class": "Qwen3MoeForCausalLM",
+    "parameter_count": 3472,
+    "state_dict_bytes": 6944,
+    "tp_size": 2,
+    "ep_size": 2,
+    "published_nnodes": 2,
+    "restored_nnodes": 2
+  },
+  "nccl_p2p": {
+    "tensors": 12,
+    "transferred_bytes": 0,
+    "probe": 3.0,
+    "all_ranks_equal": [
+      true,
+      true
+    ]
+  },
+  "mooncake_hip": {
+    "hostname": "10.235.27.177",
+    "initialize_rc": 0,
+    "rpc_port": 16627,
+    "register_rc": [
+      0,
+      0
+    ],
+    "probe_rc": null,
+    "write_rc": -1,
+    "supported": false
+  },
+  "runtime": {
+    "python": "/opt/venv/bin/python",
+    "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+    "hip_version": "7.2.26015-fc0010cf6a",
+    "device_count": 2,
+    "devices": [
+      {
+        "index": 0,
+        "name": "AMD Instinct MI355X",
+        "capability": [
+          9,
+          5
+        ],
+        "total_mib": 294896
+      },
+      {
+        "index": 1,
+        "name": "AMD Instinct MI355X",
+        "capability": [
+          9,
+          5
+        ],
+        "total_mib": 294896
+      }
+    ],
+    "imports": {
+      "miles": "/job/miles/miles/__init__.py",
+      "sglang": "/sgl-workspace/sglang/python/sglang/__init__.py",
+      "torch": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+      "torch._C": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so",
+      "mooncake.engine": "/opt/venv/lib/python3.10/site-packages/mooncake/engine.cpython-310-x86_64-linux-gnu.so",
+      "transformer_engine": "/opt/venv/lib/python3.10/site-packages/transformer_engine/__init__.py",
+      "megatron.core": "/root/Megatron-LM/megatron/core/__init__.py",
+      "aiter": "/sgl-workspace/aiter/aiter/__init__.py"
+    },
+    "versions": {
+      "miles": "0.1.0",
+      "sglang": "0.5.17.dev2157+ga8e5c632f",
+      "torch": "2.9.1+rocm7.2.0.lw.git7e1940d4",
+      "transformer_engine": "2.17.0",
+      "megatron-core": "0.19.0+8c1e05747"
+    }
+  }
+}
