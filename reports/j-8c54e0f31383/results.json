@@ -1,0 +1,279 @@
+{
+  "all_cycles_bitwise_equal": true,
+  "allocator": {
+    "expandable_segments": "disabled",
+    "tms_cpu_backup_backend": "pinned",
+    "tms_hook_mode": "preload",
+    "tms_region_tag": "lora",
+    "tms_retain_cpu_backup": false
+  },
+  "case": {
+    "assigned_gpu_count": 1,
+    "batch": 64,
+    "cycles": 3,
+    "device_index": 0,
+    "distributed_case": "single_rank_no_process_group",
+    "kind": "synthetic_single_gpu_lora",
+    "process_group": null,
+    "public_model_downloads_bytes": 0,
+    "rank": 64,
+    "seed": 0,
+    "width": 16384
+  },
+  "cycles": [
+    {
+      "all_bitwise_equal": true,
+      "before_pause": {
+        "device_free_bytes": 306249203712,
+        "device_total_bytes": 309220868096,
+        "process_rss_bytes": 5432463360,
+        "torch_allocated_bytes": 708837888,
+        "torch_reserved_bytes": 742391808
+      },
+      "cycle": 1,
+      "gradient_comparisons": {
+        "adapter_a_grad": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        },
+        "adapter_b_grad": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        }
+      },
+      "observed_device_free_delta_bytes": 666894336,
+      "observed_process_rss_delta_bytes": 664797184,
+      "output_comparisons": {
+        "existing_output": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        },
+        "fresh_forward_output": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        }
+      },
+      "parameter_comparisons": {
+        "adapter_a": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        },
+        "adapter_b": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        },
+        "base_weight": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        }
+      },
+      "paused": {
+        "device_free_bytes": 306916098048,
+        "device_total_bytes": 309220868096,
+        "process_rss_bytes": 6097260544,
+        "torch_allocated_bytes": 708837888,
+        "torch_reserved_bytes": 742391808
+      },
+      "resumed": {
+        "device_free_bytes": 306249203712,
+        "device_total_bytes": 309220868096,
+        "process_rss_bytes": 5432463360,
+        "torch_allocated_bytes": 708837888,
+        "torch_reserved_bytes": 742391808
+      },
+      "torch_allocator_counters_unchanged_across_pause": true
+    },
+    {
+      "all_bitwise_equal": true,
+      "before_pause": {
+        "device_free_bytes": 306249203712,
+        "device_total_bytes": 309220868096,
+        "process_rss_bytes": 5418045440,
+        "torch_allocated_bytes": 708837888,
+        "torch_reserved_bytes": 742391808
+      },
+      "cycle": 2,
+      "gradient_comparisons": {
+        "adapter_a_grad": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        },
+        "adapter_b_grad": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        }
+      },
+      "observed_device_free_delta_bytes": 666894336,
+      "observed_process_rss_delta_bytes": 664797184,
+      "output_comparisons": {
+        "existing_output": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        },
+        "fresh_forward_output": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        }
+      },
+      "parameter_comparisons": {
+        "adapter_a": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        },
+        "adapter_b": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        },
+        "base_weight": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        }
+      },
+      "paused": {
+        "device_free_bytes": 306916098048,
+        "device_total_bytes": 309220868096,
+        "process_rss_bytes": 6082842624,
+        "torch_allocated_bytes": 708837888,
+        "torch_reserved_bytes": 742391808
+      },
+      "resumed": {
+        "device_free_bytes": 306249203712,
+        "device_total_bytes": 309220868096,
+        "process_rss_bytes": 5420994560,
+        "torch_allocated_bytes": 708837888,
+        "torch_reserved_bytes": 742391808
+      },
+      "torch_allocator_counters_unchanged_across_pause": true
+    },
+    {
+      "all_bitwise_equal": true,
+      "before_pause": {
+        "device_free_bytes": 306249203712,
+        "device_total_bytes": 309220868096,
+        "process_rss_bytes": 5422063616,
+        "torch_allocated_bytes": 708837888,
+        "torch_reserved_bytes": 742391808
+      },
+      "cycle": 3,
+      "gradient_comparisons": {
+        "adapter_a_grad": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        },
+        "adapter_b_grad": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        }
+      },
+      "observed_device_free_delta_bytes": 666894336,
+      "observed_process_rss_delta_bytes": 664797184,
+      "output_comparisons": {
+        "existing_output": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        },
+        "fresh_forward_output": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        }
+      },
+      "parameter_comparisons": {
+        "adapter_a": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        },
+        "adapter_b": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        },
+        "base_weight": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0
+        }
+      },
+      "paused": {
+        "device_free_bytes": 306916098048,
+        "device_total_bytes": 309220868096,
+        "process_rss_bytes": 6086860800,
+        "torch_allocated_bytes": 708837888,
+        "torch_reserved_bytes": 742391808
+      },
+      "resumed": {
+        "device_free_bytes": 306249203712,
+        "device_total_bytes": 309220868096,
+        "process_rss_bytes": 5422063616,
+        "torch_allocated_bytes": 708837888,
+        "torch_reserved_bytes": 742391808
+      },
+      "torch_allocator_counters_unchanged_across_pause": true
+    }
+  ],
+  "device": {
+    "capability": [
+      9,
+      5
+    ],
+    "gcn_arch_name": "gfx950:sramecc+:xnack-",
+    "multi_processor_count": 256,
+    "name": "AMD Instinct MI355X",
+    "total_memory_bytes": 309220868096
+  },
+  "elapsed_seconds": 8.176532,
+  "finished_at_utc": "2026-09-10T02:14:40.501041+00:00",
+  "imported_paths": {
+    "megatron_paths": [
+      "/opt/venv/lib/python3.10/site-packages/megatron",
+      "__editable__.megatron_core-0.19.0+8c1e05747.finder.__path_hook__"
+    ],
+    "miles": "/job/miles/miles/__init__.py",
+    "sgl_kernel": "/opt/venv/lib/python3.10/site-packages/sgl_kernel/__init__.py",
+    "sglang": "/sgl-workspace/sglang/python/sglang/__init__.py",
+    "torch": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+    "torch_memory_saver": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver/__init__.py"
+  },
+  "initial": {
+    "base_grad_is_none": true,
+    "loss": 1.8046875
+  },
+  "native_module_paths": {
+    "torch_c": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so",
+    "torch_memory_saver_preload": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver_hook_mode_preload.abi3.so",
+    "torch_memory_saver_torch": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver_hook_mode_torch.abi3.so"
+  },
+  "schema_version": 1,
+  "started_at_utc": "2026-09-10T02:14:39.345066+00:00",
+  "tensor_bytes": {
+    "adapter_a": 2097152,
+    "adapter_a_grad": 2097152,
+    "adapter_b": 2097152,
+    "adapter_b_grad": 2097152,
+    "base_weight": 536870912,
+    "inputs": 2097152,
+    "outputs": 2097152,
+    "tracked_tensors_total": 549453824
+  },
+  "unsupported_allocator_probes": {
+    "expandable_segments": {
+      "error": "TorchMemorySaver is disabled for the current process because expandable_segments is not supported yet.",
+      "error_type": "RuntimeError",
+      "probe": "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True",
+      "supported": false
+    },
+    "mmap": {
+      "error": "cpu_backup_backend='mmap' is not supported on ROCm",
+      "error_type": "ValueError",
+      "probe": "cpu_backup_backend=mmap",
+      "supported": false
+    }
+  },
+  "versions": {
+    "megatron_core": "0.19.0+8c1e05747",
+    "miles_source_commit": "e5125a97e1fd383f005f4de258a5985026e09425",
+    "sglang": "0.5.17.dev2157+ga8e5c632f",
+    "torch": "2.9.1+rocm7.2.0.git7e1940d4",
+    "torch_cuda_allocator_backend": "native",
+    "torch_hip": "7.2.26015-fc0010cf6a",
+    "torch_memory_saver": "0.0.10b1",
+    "torch_memory_saver_commit": "06caa534822c5b980b61733a5d79ac731f9a5f9c"
+  }
+}
