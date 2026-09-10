@@ -18,6 +18,7 @@ from miles.backends.training_utils.loss_hub.math_utils import (
     compute_opsm_mask,
     compute_policy_loss,
 )
+from miles.backends.training_utils.loss_hub.opd import compute_differentiable_topk_reverse_kl
 from miles.backends.training_utils.parallel import get_parallel_state
 from miles.utils.function_registry import load_function
 from miles.utils.types import RolloutBatch
@@ -193,6 +194,16 @@ def policy_loss_function(
     )
     local_loss_masks = torch.cat(local_loss_mask_list, dim=0).to(device=ppo_kl.device)
     active_tokens = local_loss_masks.bool()
+    differentiable_opd_loss = None
+    differentiable_opd_reverse_kl = None
+    if args.use_opd and getattr(args, "opd_differentiable_top_k_loss", False):
+        differentiable_opd_loss, differentiable_opd_reverse_kl = compute_differentiable_topk_reverse_kl(
+            args=args,
+            batch=batch,
+            logits=logits,
+            sum_of_sample_mean=sum_of_sample_mean,
+            local_loss_masks=local_loss_mask_list,
+        )
     ppo_kl = torch.where(
         active_tokens,
         torch.nan_to_num(ppo_kl, nan=0.0, posinf=0.0, neginf=0.0),
@@ -333,6 +344,9 @@ def policy_loss_function(
         if args.kl_loss_coef != 0:
             loss = loss + args.kl_loss_coef * kl_loss
 
+    if differentiable_opd_loss is not None:
+        loss = loss + differentiable_opd_loss
+
     # make sure the gradient could backprop correctly; fp32 sum avoids fp16 inf -> nan
     if log_probs.numel() == 0:
         loss += 0 * logits.sum(dtype=torch.float32)
@@ -392,6 +406,9 @@ def policy_loss_function(
     if batch.get("opd_reverse_kl") is not None:
         opd_reverse_kl = torch.cat(batch["opd_reverse_kl"], dim=0)
         reported_loss["opd_reverse_kl"] = sum_of_sample_mean(opd_reverse_kl).clone().detach()
+    if differentiable_opd_reverse_kl is not None:
+        reported_loss["opd_reverse_kl"] = sum_of_sample_mean(differentiable_opd_reverse_kl).clone().detach()
+        reported_loss["opd_differentiable_loss"] = differentiable_opd_loss.clone().detach()
 
     return loss, reported_loss
 

@@ -105,6 +105,10 @@ class Sample:
     remove_sample: bool = False
     teacher_log_probs: list[float] | None = None  # Log probabilities from teacher model for OPD
     opd_reverse_kl: list[float] | None = None  # Precomputed per-token OPD reverse-KL estimate
+    opd_topk_counts: list[int] | None = None  # Per-response selected token counts for differentiable OPD
+    opd_topk_token_ids: list[int] | None = None  # Flattened selected token IDs for differentiable OPD
+    opd_topk_teacher_log_probs: list[float] | None = None  # Flattened teacher log-probs for differentiable OPD
+    opd_topk_weights: list[float] | None = None  # Flattened fixed reward weights for differentiable OPD
 
     class Status(Enum):
         PENDING = "pending"
@@ -267,6 +271,17 @@ class Sample:
             assert (
                 len(self.opd_reverse_kl) == self.response_length
             ), f"opd_reverse_kl length ({len(self.opd_reverse_kl)}) != response_length ({self.response_length})"
+        if self.opd_topk_counts is not None:
+            assert (
+                len(self.opd_topk_counts) == self.response_length
+            ), f"opd_topk_counts length ({len(self.opd_topk_counts)}) != response_length ({self.response_length})"
+            selected_count = sum(self.opd_topk_counts)
+            for field_name in ("opd_topk_token_ids", "opd_topk_teacher_log_probs", "opd_topk_weights"):
+                value = getattr(self, field_name)
+                assert value is not None and len(value) == selected_count, (
+                    f"{field_name} length ({len(value) if value is not None else None}) "
+                    f"!= selected token count ({selected_count})"
+                )
         if self.rollout_routed_experts is not None:
             actual = len(self.rollout_routed_experts)
             expect = len(self.tokens) - 1
@@ -307,6 +322,12 @@ class Sample:
             self.teacher_log_probs = self.teacher_log_probs[:-n]
         if self.opd_reverse_kl is not None:
             self.opd_reverse_kl = self.opd_reverse_kl[:-n]
+        if self.opd_topk_counts is not None:
+            keep = sum(self.opd_topk_counts[:-n])
+            self.opd_topk_counts = self.opd_topk_counts[:-n]
+            self.opd_topk_token_ids = self.opd_topk_token_ids[:keep]
+            self.opd_topk_teacher_log_probs = self.opd_topk_teacher_log_probs[:keep]
+            self.opd_topk_weights = self.opd_topk_weights[:keep]
         if self.metadata and "opd_student_top_logprobs" in self.metadata:
             self.metadata["opd_student_top_logprobs"] = self.metadata["opd_student_top_logprobs"][:-n]
         if self.loss_mask is not None:

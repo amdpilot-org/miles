@@ -808,6 +808,10 @@ class TestSplitTrainDataRaw:
             "loss_masks": [[0, 1], [0, 1], [0, 1], [0, 1]],
             "rollout_indexer_topk": [torch.tensor([i]) for i in range(4)],
             "opd_reverse_kl": [[float(i)] for i in range(4)],
+            "opd_topk_counts": [[i] for i in range(4)],
+            "opd_topk_token_ids": [[i, i + 4] for i in range(4)],
+            "opd_topk_teacher_log_probs": [[float(i), float(i + 4)] for i in range(4)],
+            "opd_topk_weights": [[0.25, 0.75] for _ in range(4)],
         }
 
         args = MagicMock()
@@ -819,6 +823,10 @@ class TestSplitTrainDataRaw:
         for part in result:
             assert len(part["rollout_indexer_topk"]) == 2
             assert len(part["opd_reverse_kl"]) == 2
+            assert len(part["opd_topk_counts"]) == 2
+            assert len(part["opd_topk_token_ids"]) == 2
+            assert len(part["opd_topk_teacher_log_probs"]) == 2
+            assert len(part["opd_topk_weights"]) == 2
 
     def test_no_witness_ids_when_absent(self) -> None:
         tokens = [[1, 2], [3, 4]]

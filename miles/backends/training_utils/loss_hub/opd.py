@@ -1,7 +1,11 @@
 from argparse import Namespace
+from collections.abc import Callable
 
 import torch
 
+from miles.backends.training_utils.loss_hub.logit_processors import _iter_response_chunks
+from miles.backends.training_utils.loss_hub.math_utils import calculate_log_probs_and_entropy
+from miles.backends.training_utils.parallel import get_parallel_state
 from miles.utils.types import RolloutBatch
 
 
@@ -92,3 +96,104 @@ def apply_opd_kl_to_advantages(
 
     # Store reverse KL for logging.
     rollout_data["opd_reverse_kl"] = reverse_kls
+
+
+def compute_differentiable_topk_reverse_kl(
+    args: Namespace,
+    batch: RolloutBatch,
+    logits: torch.Tensor,
+    sum_of_sample_mean: Callable[[torch.Tensor], torch.Tensor],
+    local_loss_masks: list[torch.Tensor],
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Compute a differentiable top-k reverse-KL loss from stored teacher terms.
+
+    The rollout stores the controlled token set, fixed teacher log-probabilities,
+    and fixed reward weights.  This function re-scores those tokens with the
+    current policy logits, so the reverse-KL term is differentiable with respect
+    to the student while the teacher remains detached training data.
+    """
+
+    required_keys = (
+        "opd_topk_counts",
+        "opd_topk_token_ids",
+        "opd_topk_teacher_log_probs",
+        "opd_topk_weights",
+    )
+    missing_keys = [key for key in required_keys if batch.get(key) is None]
+    if missing_keys:
+        raise ValueError(f"differentiable top-k OPD requires {', '.join(missing_keys)}.")
+
+    for sample_index, response_length in enumerate(batch["response_lengths"]):
+        counts = batch["opd_topk_counts"][sample_index]
+        if len(counts) != response_length:
+            raise ValueError(
+                f"differentiable top-k OPD count mismatch at sample {sample_index}: "
+                f"counts={len(counts)}, response_length={response_length}."
+            )
+        selected_count = sum(int(count) for count in counts)
+        for key in ("opd_topk_token_ids", "opd_topk_teacher_log_probs", "opd_topk_weights"):
+            if len(batch[key][sample_index]) != selected_count:
+                raise ValueError(
+                    f"differentiable top-k OPD length mismatch at sample {sample_index}, {key}: "
+                    f"expected={selected_count}, got={len(batch[key][sample_index])}."
+                )
+
+    parallel_state = get_parallel_state()
+    reverse_kls: list[torch.Tensor] = []
+    response_chunks = _iter_response_chunks(
+        logits,
+        args=args,
+        unconcat_tokens=batch["unconcat_tokens"],
+        total_lengths=batch["total_lengths"],
+        response_lengths=batch["response_lengths"],
+        max_seq_lens=batch.get("max_seq_lens", None),
+        include_response_indices=True,
+    )
+
+    for sample_index, (logits_chunk, _, response_indices) in enumerate(response_chunks):
+        response_indices = list(response_indices)
+        counts = [int(batch["opd_topk_counts"][sample_index][index]) for index in response_indices]
+        offsets = [0]
+        for count in counts:
+            offsets.append(offsets[-1] + count)
+        start, end = offsets[0], offsets[-1]
+        token_ids = batch["opd_topk_token_ids"][sample_index][start:end]
+        teacher_log_probs = batch["opd_topk_teacher_log_probs"][sample_index][start:end]
+        weights = batch["opd_topk_weights"][sample_index][start:end]
+
+        if not token_ids:
+            empty_reverse_kl = logits_chunk.new_zeros(len(counts), dtype=torch.float32)
+            reverse_kls.append(empty_reverse_kl + logits_chunk.sum(dtype=torch.float32) * 0)
+            continue
+
+        position_ids = torch.repeat_interleave(
+            torch.arange(len(counts), device=logits_chunk.device),
+            torch.tensor(counts, device=logits_chunk.device),
+        )
+        selected_logits = logits_chunk.index_select(0, position_ids)
+        selected_token_ids = torch.tensor(token_ids, device=logits_chunk.device, dtype=torch.long)
+        current_log_probs, _ = calculate_log_probs_and_entropy(
+            selected_logits,
+            selected_token_ids,
+            parallel_state.tp.group,
+            true_on_policy=args.true_on_policy_mode,
+            vocab_size=getattr(args, "vocab_size", None),
+            temperature=1.0 if args.true_on_policy_mode else args.rollout_temperature,
+        )
+        current_log_probs = current_log_probs.squeeze(-1)
+        teacher = torch.tensor(teacher_log_probs, device=logits_chunk.device, dtype=torch.float32)
+        reward_weights = torch.tensor(weights, device=logits_chunk.device, dtype=torch.float32)
+        selected_reverse_kl = reward_weights * (current_log_probs - teacher)
+
+        sample_reverse_kl = logits_chunk.new_zeros(len(counts), dtype=torch.float32)
+        sample_reverse_kl.index_add_(0, position_ids, selected_reverse_kl.to(torch.float32))
+        reverse_kls.append(sample_reverse_kl)
+
+    reverse_kl = torch.cat(reverse_kls, dim=0)
+    local_loss_mask = torch.cat(local_loss_masks, dim=0).to(device=reverse_kl.device)
+    reverse_kl = torch.where(
+        local_loss_mask.bool(),
+        torch.nan_to_num(reverse_kl, nan=0.0, posinf=0.0, neginf=0.0),
+        reverse_kl.new_zeros(()),
+    )
+    return args.opd_kl_coef * sum_of_sample_mean(reverse_kl), reverse_kl

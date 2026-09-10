@@ -1,6 +1,7 @@
 import math
 from argparse import Namespace
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import Any
 
 import aiohttp
@@ -10,6 +11,15 @@ from miles.utils.types import Sample
 
 TopLogprobs = list[list[Any]]
 LogprobMaps = list[dict[int, float]]
+
+
+@dataclass(frozen=True)
+class TopKReverseKLTerms:
+    reverse_kls: list[float]
+    counts: list[int]
+    token_ids: list[int]
+    teacher_log_probs: list[float]
+    weights: list[float]
 
 TOP_K_STRATEGIES = {"only-student", "only-teacher", "intersection", "union", "xor"}
 REWARD_WEIGHT_MODES = {"student_p", "teacher_p", "none"}
@@ -278,14 +288,20 @@ def _reward_weights(
     return [v / denom for v in exp_vals]
 
 
-def _compute_topk_reverse_kl(
+def _compute_topk_reverse_kl_terms(
     args: Namespace,
     sample: Sample,
     reward_payload: dict[str, Any],
-) -> torch.Tensor:
+) -> TopKReverseKLTerms:
     response_length = sample.response_length
     if response_length == 0:
-        return torch.zeros((0,), dtype=torch.float32)
+        return TopKReverseKLTerms(
+            reverse_kls=[],
+            counts=[],
+            token_ids=[],
+            teacher_log_probs=[],
+            weights=[],
+        )
 
     strategy = _get_top_k_strategy(args)
     weight_mode = _get_reward_weight_mode(args)
@@ -314,10 +330,14 @@ def _compute_topk_reverse_kl(
     )
 
     reverse_kls = []
+    counts = []
+    token_ids = []
+    teacher_log_probs = []
+    reward_weights = []
     normalize_weights = strategy != "xor"
-    for i in range(response_length):
-        student_ids = list(student_top_maps[i].keys())
-        teacher_ids = list(teacher_top_maps[i].keys())
+    for response_index in range(response_length):
+        student_ids = list(student_top_maps[response_index].keys())
+        teacher_ids = list(teacher_top_maps[response_index].keys())
         selected_ids = _selected_token_ids(strategy, student_ids, teacher_ids)
 
         student_logps = []
@@ -326,27 +346,48 @@ def _compute_topk_reverse_kl(
             student_logps.append(
                 _lookup_logprob(
                     token_id,
-                    student_top_maps[i],
-                    student_on_teacher_maps[i],
+                    student_top_maps[response_index],
+                    student_on_teacher_maps[response_index],
                     source="student",
                 )
             )
             teacher_logps.append(
                 _lookup_logprob(
                     token_id,
-                    teacher_top_maps[i],
-                    teacher_on_student_maps[i],
+                    teacher_top_maps[response_index],
+                    teacher_on_student_maps[response_index],
                     source="teacher",
                 )
             )
 
         weights = _reward_weights(student_logps, teacher_logps, weight_mode, normalize=normalize_weights)
+        counts.append(len(selected_ids))
+        token_ids.extend(selected_ids)
+        teacher_log_probs.extend(teacher_logps)
+        reward_weights.extend(weights)
         reverse_kl = sum(
-            w * (s_logp - t_logp) for w, s_logp, t_logp in zip(weights, student_logps, teacher_logps, strict=True)
+            weight * (student_log_prob - teacher_log_prob)
+            for weight, student_log_prob, teacher_log_prob in zip(
+                weights, student_logps, teacher_logps, strict=True
+            )
         )
         reverse_kls.append(reverse_kl)
 
-    return torch.tensor(reverse_kls, dtype=torch.float32)
+    return TopKReverseKLTerms(
+        reverse_kls=reverse_kls,
+        counts=counts,
+        token_ids=token_ids,
+        teacher_log_probs=teacher_log_probs,
+        weights=reward_weights,
+    )
+
+
+def _compute_topk_reverse_kl(
+    args: Namespace,
+    sample: Sample,
+    reward_payload: dict[str, Any],
+) -> torch.Tensor:
+    return torch.tensor(_compute_topk_reverse_kl_terms(args, sample, reward_payload).reverse_kls, dtype=torch.float32)
 
 
 async def reward_func(args: Namespace, sample: Sample, **kwargs: Any) -> dict[str, Any]:
@@ -415,7 +456,13 @@ def post_process_rewards(args: Namespace, samples: list[Sample], **kwargs: Any) 
 
     if _get_opd_top_k(args) > 0:
         for sample, reward in zip(samples, raw_rewards, strict=True):
-            sample.opd_reverse_kl = _compute_topk_reverse_kl(args, sample, reward)
+            terms = _compute_topk_reverse_kl_terms(args, sample, reward)
+            sample.opd_reverse_kl = torch.tensor(terms.reverse_kls, dtype=torch.float32)
+            if getattr(args, "opd_differentiable_top_k_loss", False):
+                sample.opd_topk_counts = terms.counts
+                sample.opd_topk_token_ids = terms.token_ids
+                sample.opd_topk_teacher_log_probs = terms.teacher_log_probs
+                sample.opd_topk_weights = terms.weights
         scalar_rewards = [0.0] * len(samples)
         return scalar_rewards, scalar_rewards
 

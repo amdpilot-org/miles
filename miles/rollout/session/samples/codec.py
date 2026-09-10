@@ -236,6 +236,10 @@ def assert_input_sample_defaults(input_sample: Sample) -> None:
         "input sample must not carry teacher_log_probs/opd_reverse_kl; "
         "the legacy pipeline trimmed them per turn, the samples-wire overlay carries them verbatim"
     )
+    assert all(
+        getattr(input_sample, field) is None
+        for field in ("opd_topk_counts", "opd_topk_token_ids", "opd_topk_teacher_log_probs", "opd_topk_weights")
+    ), "input sample must not carry differentiable top-k OPD terms"
     assert _OPD_STUDENT_TOP_LOGPROBS_KEY not in (input_sample.metadata or {}), (
         f"input sample metadata must not carry {_OPD_STUDENT_TOP_LOGPROBS_KEY!r}; "
         "merge_samples gives it per-token semantics that only hold for per-turn values"
