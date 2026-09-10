@@ -1,0 +1,1554 @@
+WARNING:root:deep_ep is not installed, some functionalities may be limited.
+[aiter] WARNING: NUMA balancing is enabled, which may cause errors. It is recommended to disable NUMA balancing by running "sudo sh -c 'echo 0 > /proc/sys/kernel/numa_balancing'" for more details: https://rocm.docs.amd.com/en/latest/how-to/system-optimization/mi300x.html#disable-numa-auto-balancing
+[aiter] import [module_aiter_core] under /sgl-workspace/aiter/aiter/jit/module_aiter_core.so
+/opt/venv/lib/python3.10/site-packages/apex/transformer/functional/fused_rope.py:49: UserWarning: Aiter backend is selected for fused RoPE. This has lower precision. To disable aiter, export USE_ROCM_AITER_ROPE_BACKEND=0
+  warnings.warn("Aiter backend is selected for fused RoPE. This has lower precision. To disable aiter, export USE_ROCM_AITER_ROPE_BACKEND=0", UserWarning)
+WARNING:fla.utils._device:Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+[2026-09-10 04:29:07.202 session_server] sessions.py:63 - [session] Using message matcher selector='strict' callable=<function strict_message_matches at 0x7f51dfca9090>
+[2026-09-10 04:29:07.606 session_server] server.py:85 - [session-server] Starting on 127.0.0.1:31113, proxying to http://127.0.0.1:31111
+INFO:     Started server process [8369]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:31113 (Press CTRL+C to quit)
+[ERROR] `cache_position` is part of Qwen3ASRThinkerTextModel.forward's signature, but not documented. Make sure to add it to the docstring of the function in /opt/venv/lib/python3.10/site-packages/megatron/bridge/models/qwen3_asr/hf_qwen3_asr/modeling_qwen3_asr.py.
+[ERROR] `cache_position` is part of Qwen3ASRThinkerForConditionalGeneration.forward's signature, but not documented. Make sure to add it to the docstring of the function in /opt/venv/lib/python3.10/site-packages/megatron/bridge/models/qwen3_asr/hf_qwen3_asr/modeling_qwen3_asr.py.
+INFO:     127.0.0.1:58134 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:30:53.817 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/921e80a1a22941ffa783c9f3f3039ddd/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:30:55.281 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/cf79ecb2406043d09f4c0fda66ff5b70/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:30:55.292 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/e2b1b43497a64aed851608ce243b2ead/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:30:55.293 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:55.294 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:55.294 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:55.294 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:55.294 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:55.294 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/0dc949fa58c241fe8ed01c7fbe369ba2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/1f174e16c9bc40b1adbc26249a2ba3b3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/b99754cf92cd49f69a299d715bc286e9/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/daff98c99f274392917cdd401e0c4bc8/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/40da4041a4a949afbce17a8b38865473/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/b71b54fd204a4428a66fd3e02764a046/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:30:55.911 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/c23eec0191664c07bb0bd0a00ed953b7/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:30:55.912 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:55.913 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:55.913 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:55.913 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:55.913 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:55.914 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:55.914 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/0804250e2e0e45abac4ceaa359fc096e/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/dad407acbc60497c9d5d3629e397d40c/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/e36a3080cef94365bfc0e76c9d4c21db/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/4b68cca894134fb48acdc3f2d481f42a/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/0ab55ddbb2844bb08614d1bf192f98b2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/745778e8ae7c47d6948bee74bf45d1f3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/edff78d264dd4830b887de94b8275183/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:30:56.547 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/34a5ef97551a4892b5b88f3f6013fa16/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:30:56.553 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/a00a5ef035e041958c01ac01af8a2661/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:30:56.554 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:56.554 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:56.554 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:56.555 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:56.555 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:56.555 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/fa51cc80383249d7a80a53c88ceaf738/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/b65e3d9bc74f49b9ae2ec5914517c17a/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/851fee34e320460ba73071f1a3529577/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/5c887f77bf7444ec99b5479d9a04b6e8/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/8daa58192f104e78b86728831e07f706/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/ce5bf8e81ead4bf2b51ba8bbe35414bb/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:30:57.165 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/0b6cf3981d944a18bddd22a246fa3a8c/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:30:57.167 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:57.167 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:57.167 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:57.167 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:57.168 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:57.168 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:57.168 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/fe083202a2614a7990dfc40ff1b62ba1/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/a6c13597266c44c397d4d7a227f18864/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/e2843c173f504cae8d040d8104688005/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/79d0ee78a1a4492c933704da7d679ab5/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/5ab2f31ace774bb4b86465970d44c0d3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/37046d262df74cb9843d1e9b146c04ae/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/b9192169be5b44e6b69474f03a405fea/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:30:57.799 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/738d1de12a14456cb10f8ab126fefe53/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:30:57.805 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/f97f5ad41c1144cc8514867a1c2b72e1/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:30:57.806 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:57.806 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:57.806 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:57.806 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:57.807 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:57.807 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/01a67dbf362144a09a4e7648b8c88b32/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/5a5c7beab9a940e8850179c5fd98975f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/b142408c14824ebb8dcfde4bd0107cdf/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/9f9f7490070f44c89aef682d50f1585f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/6e3b60941ba64640a89cadd3a32e5385/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/9765df0cf59346b2b12863bf14a2deb2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:30:58.413 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/ff67e88657dd4d08a390fa33cc3c4202/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:30:58.414 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:58.414 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:58.415 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:58.415 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:58.415 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:58.415 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:58.416 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/7c2e004420c94cb387fdeab27f2650f2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/633cdd3c8adf4252b3e8841b7b3d410c/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/771b77fd72644cca9a70cdec967e2835/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/9d91a8b12c7a49bab19c6db393de94a2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/52345b6014ed492cb3d088210bf1b755/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/23eff322f06644b5be27349d0e0e8e85/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/f69ab77e0b0946fbb9bcdcb0410e1a90/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:30:59.049 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/1a00f431335e44068f48763cabfa1593/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:30:59.056 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/5dd4f98a2ae14ceb98bdabfefc24cc2f/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:30:59.057 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:59.057 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:59.057 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:59.057 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:59.057 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:59.058 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/1c439788ab774c8f8af7fbe251dbe8c3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/1f59c5a0f05f4171bbcbd63009441494/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/55aa7c529b15433fa5990827e834383d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/5b2286d0b7b94410ab67a0e7a6c7fb9c/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/49659d19cab241449ed836f78236a508/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/19ed5b69855d4986a6830b23f385b5bb/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:30:59.674 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/152c218af69d4b4296a2a8bd10976dc1/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:30:59.675 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:59.676 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:59.676 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:59.676 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:59.676 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:59.677 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:30:59.677 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/4bb33a3f406c40c6823871ab91135674/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/5f3179fa094f4f8aa509f4ba02e73bc3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/09e530e9fbd243009699a7e780514440/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/1f4048916ec346e1a0a5f21102988ab5/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/344335e5dcd0476cadd4afe4cbd3e5a2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/6f9099269d884db7b9eb35dff4821a2b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/04c6a6f8c20f43a089dd4116cdd5e535/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:00.308 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/df43e45c21614f36827627acf7393d3c/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:00.315 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/737623607d3c4233b83e44e26507e4e9/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:00.315 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:00.316 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:00.316 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:00.316 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:00.316 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:00.316 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43408 - "POST /sessions/022e8458d8f94afa9a19e12b9301928f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/12fbd0ccd97c469c851b24c0cb9bad18/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/40dc122809024f94aa8d7e17ca59077e/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/cac05c45fcc3477e9d998a14d62c47fa/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/7513fe70df0b4f619c55e2992855b053/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/0d684084ff064eef9b0a59be3cdeccb3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:00.931 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/8c117955ba7f446e91f768cf681f9fcf/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:00.932 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:00.932 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:00.932 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:00.933 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:00.933 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:00.933 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:00.933 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/4aa61d1f777a4fb5aaee008dfbe76e38/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/b2ef9bd4cc4a4e0e8558994787e6e531/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/844a4d19dfac4d608b8aaffae042217c/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/b8e75b3aa2384684a1a41716aa90a8d2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/1cf40078b9684858bcf193065e5a3141/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/9099445745ab42eb8baeced0fa808fdd/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/eefdf4e86f414f45b0abe82c2ef65798/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:01.570 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/331f16bf177c4d738c7d7e220fefda09/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:01.576 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/1e2accccf7ff42bc956eebc0d22892d6/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:01.577 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:01.577 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:01.577 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:01.578 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:01.578 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:01.578 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/21d1f9ab6e6e4b2da2fc126bb4849c09/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/9a7ce157002743668ea3cb88d93c4dc4/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/ea4b016e4c0c47d48cd1daa323da9285/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/0a24c827e56c4a1a968412bd9cdcc1d0/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/1a0654842e1b4556a943fb4a08352489/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/ef8fdaf9be62423bb9d6ad6214e7ac76/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:02.194 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/9bf38ed82b3749bab27e2516944ea81f/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:02.195 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:02.195 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:02.196 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:02.196 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:02.196 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:02.196 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:02.197 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/63b6d03e1a8e48baaeb71b911801d27f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/a8f5ccfff4d94ee690e7e13715a33f0b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/5e13ff9b7b4244c3b93ef37bda955cf4/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/4cda0fac68f54fd091c01faf2b05fc13/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/1e27f16c1b094495a69e50086d7f6705/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/bcb9633f89004b39b21392309f5691f0/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/b5f5a5b37604467fbaa02338df52e803/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:02.833 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/19cc97e4332240bba1854118c99ae5ce/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:02.839 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43408 - "POST /sessions/be314355262d4e03b8826b4c2ef2a246/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:02.840 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:02.840 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:02.840 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:02.840 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:02.840 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:02.841 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/17d4a3a97c834467885ae5c71514f370/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/12429e99736944cd9442a91af3a1caa0/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/3058738945e7481eb8e499ef00d6a9f3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/e3f4b1308af649ab8675eac7db7bd4ed/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/1d0ee4db910b47a8af1ab0976dce8572/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/a820df5966114aba8e315a549d7819c7/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:03.455 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/17db27b2ac21470cb72595afae299e7f/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:03.456 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:03.457 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:03.457 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:03.457 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:03.457 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:03.458 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:03.458 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/224fb98e79b146448b8d792ebe3c7a4f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/c207777fa95441b7995db0f30b421514/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/406ba93d9d404fd8b1c4c10b71031b83/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/44e7ab24691a40c281b743f65ec7619b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/0c2b55ca5458464fad9f7febd391727d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/d1c3a4079e9246cc8896422192828ca1/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/f43ef8a62c4e43039b7432069e73ee78/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:04.086 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/07c1d3cd510c40d6aa5523f99beec7f0/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:04.092 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43408 - "POST /sessions/1f75de253b744916833be0012bba4c4c/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:04.092 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:04.093 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:04.093 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:04.093 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:04.093 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:04.093 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43422 - "POST /sessions/4e35e79ba87a4ff5b8a5d8f45e716912/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/677df37040f4493ca1e3f435b54e30a5/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/743b7efe27884277bf76eb020df347a9/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/a84040110f8946e29288b19ac9a53db5/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/a020b9ff09f34c37994e4e82c5fab648/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/480c4bfcddc8451a93448120777edc93/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:04.706 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/c9b6f203e6444d7fb08dd83b399769d3/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:04.707 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:04.707 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:04.707 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:04.708 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:04.708 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:04.708 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:04.708 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/4f4db4ce8a5d4b5693f81799106c834b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/49e5c041d4434ef1baa6a3ab0a0474d0/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/acaed4468b34404c84b2f2e82e835a29/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/384b9d4c860a49f7bfca525f5e09e71e/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/c8828a35ba3a4ebababaa5122af2c2ff/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/4deb4137d01843f09791c46515cf6cf8/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/e6be203d3129418faafd975f65c81e45/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:05.339 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/8692188e9ce74c7b81a59f62c8a50bb6/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:05.345 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/32957e692d154b16b52bb075701de704/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:05.346 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:05.346 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:05.346 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:05.346 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:05.346 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:05.347 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/a739c8e024124fb8970042b224011be1/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/8b3ac5d5139146cd9cbff20733c6d5ff/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/b8bd34ad6c1d4a4580b1f86362458227/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/9893749e5caf421e99864884df6ac18a/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/34fc84f156954868ba4ae37f9e6ece75/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/5154cf02cb50471ab9c6f02baa08b380/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:05.956 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/6a46a89326fd40dfba86c8784aeb27aa/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:05.958 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:05.958 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:05.958 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:05.958 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:05.959 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:05.959 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:05.959 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/8aca22b77208402a8a30a846e20987c3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/e63032aed259473ba8430d3ad510a9d2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/e31ed892e96c4b37ad480ed01c8fd13b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/e914f723f9d64f8faf530489d4bb6321/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/aa04a6bcb9bc47b191baf4dbfc0a91a7/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/9ed30c0320714994a02569b5fe599a10/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/829b749eae9d43c8bace316d517b0449/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:06.590 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/0283ad4b68634faf9761a4c39ada2873/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:06.596 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43408 - "POST /sessions/556ad32f2680414f98f574dbba4200aa/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:06.597 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:06.597 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:06.597 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:06.598 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:06.598 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:06.598 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43422 - "POST /sessions/85c56d0b3e654e8b94755f43682c9ce5/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/072f14e64184449db634b2f29a24fd6f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/c4e3cbc8202b46778acfd86f3e19adf2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/4ee9fa08482a4e45b8188869749160e7/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/3ab91812a5c24c91a5656cb3df13909c/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/8d4c57d879c54ed2bf33ef6c46a1f670/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:07.210 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/89707811806b45358a928650f4e439bf/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:07.211 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:07.212 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:07.212 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:07.212 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:07.213 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:07.213 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:07.213 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/be7e86a4e58f45af8adf103efd5f6e71/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/77daeeb9e7ba40d995584fe708b57b48/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/f0d7832df23d4da8a33616cdaaa07cfb/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/d58a198ad80f4628bd0ba6bfaa89c390/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/f4b4acd12fcd4216af0e98869bd32274/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/bcbc2d5220b240f58ece9927422bc180/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/33c388297fe943d8afdddb30566f8786/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:07.833 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/32a73abc1b7f4cc1a13e9e7dae6f0543/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:07.839 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/76cbaaf6cdc14d7383099c8c20f020a1/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:07.840 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:07.840 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:07.840 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:07.841 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:07.841 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:07.841 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/1b453b1988424efcb48dedbcd6870022/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/0b88734c5e614f18a05fa799aaf0bede/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/69ad58bd6ca74c01bd104f9c79154969/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/e12452e437474b8d8bdeac2076139a7b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/50bbbb94ff8642d78218a67611513ada/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/b94a1662f7ef4ae7b8cea3558e357c0e/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:08.440 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/611a07e6e0bc41de820a938835f13389/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:08.441 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:08.442 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:08.442 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:08.442 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:08.442 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:08.443 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:08.443 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/1283b53f479c4f47a1c57e5ff566d066/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/a2d2cbacfdd744f2beb023a56e664966/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/1f28b21171bd48179f51ec143362dabc/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/f44d91601fc74118a9f4d0b65d343a9b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/0314b6b16c4547848597d1d119f82223/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/57a338dc36c845febc64ca72d7aef5fd/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/6bd9f9586ab24216838580355bda6f1c/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:09.064 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/607b749577424ff9be024b5c36e88541/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:09.069 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/49bb3a18313040bda478ae5bf13f6e43/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:09.070 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:09.070 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:09.070 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:09.071 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:09.071 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:09.071 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43408 - "POST /sessions/d34355c6ddca46e6b51aa72be4b92873/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/1e591817452e4382b197e818c5bec6ec/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/476e8ba235b94df49a6b08e9ff507e94/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/c99681e1a45644c9a7f208ae7a3dc6cf/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/57d2035869a3416cbe15c8b6684c6198/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/63a9c406b4334b02a6f1a9796c0c536d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:09.672 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/a8cf052e03334a2695283487713e6b7d/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:09.674 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:09.674 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:09.674 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:09.674 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:09.675 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:09.675 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:09.675 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/4590871832e64ef8b638991b44a9291d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/bf0da18c2b27488eae97ed31b2f58388/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/526b42490bdb4335bb3bf0bffbe07f51/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/c16e71d73e5649d6b42b419f4d343d3c/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/d8fbaf0d10f8448e920789cf572b9bb6/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/b65972e358f1424d890f29b7291f62bc/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/e0c3da73a96c49fd98f27bd082662673/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:10.294 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/7f20bc02e9594ddcb28f164360014d8f/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:10.299 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/7000d16dd2a74984b493403f09219744/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:10.300 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:10.300 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:10.300 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:10.301 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:10.301 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:10.301 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43408 - "POST /sessions/8a0f520a760c4b8fb799cad7e2b24472/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/d1f9d0ac88564efbbc19f00585590eaa/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/28246a92adcb422ea13c977e4d5ffcec/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/266d2e5994134f05a0c29b2a6b2cd597/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/fd00e1ce9a194149bff93f7421118029/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/45c5585b55604262a579b7e4d2f69f5a/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:10.901 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/7a33083cf18c4f4299b72dbf84892b15/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:10.902 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:10.902 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:10.903 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:10.903 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:10.903 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:10.903 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:10.905 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/6dbb46d47ecc4f04856feb253f658c58/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/1817eb29178149e284cc4b041750c3ce/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/635b61796ee348f7a5bfb5d5381fc466/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/0bd93b3dda7245459494d2fae9c6f655/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/b2be5956639d470c9da31d8e7bacbf22/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/b93a76a764794901b224b30fade57f30/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/e9a9b5034c4144a5b2e0781f0e0def59/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:11.526 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/17ffebfad7374ee79edf69224c245107/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:11.532 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/77d6023d70e346dc88c103c5444e5cfa/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:11.533 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:11.533 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:11.533 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:11.533 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:11.534 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:11.534 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43408 - "POST /sessions/2fbc752b14094ed09f1f5d392c6ccce9/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/e87f33ecaa77423fa7f6d2fc47c9589f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/95093752c17b40939e80efd35f00bccf/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/1e0b4f110567482ebf0f903284311145/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/a5c0348463b1463ebbe418c3e21a8962/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/1d9f9b3bc14349bf8b425b4628343012/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:12.144 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/c775dc8fa87e4360957765cf2c27912f/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:12.145 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:12.146 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:12.146 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:12.146 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:12.146 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:12.147 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:12.147 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/4193fc22eabf4aacbbb8ffd41ef0aa68/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/da1d2d84d7664916be263805700a100d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/fd509c0fed09467aac81b9e04ca02243/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/1ab48d276d1843caa74377a63054f4d4/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/77ccce89ed7d4642b6985b14284e7051/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/bdf928636f9f469597a2d45da41dadbf/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/f0e82defffc642f2a1d98fc39a497174/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:12.781 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/45938298c45045779559434a3ac72da6/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:12.787 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/83c50240022a4cdc81ffc89c0a1a2cb1/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:12.787 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:12.788 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:12.788 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:12.788 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:12.788 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:12.788 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/a53f7334325b4abaad7e5f92ce4bc5dd/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/99c3ed6dfa5f4ee58514bb5e67eb7b58/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/2d52ae4b46264af28543190b125cec50/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/82fd2d39f3e14746a23296f04f377285/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/22a4106f76084fca81a00154f91e5e36/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/9fc3c65a2abd4f29bc66a02e3bcea977/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:13.398 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/67759f15e3854ff8aeabf4080a245d9e/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:13.400 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:13.400 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:13.400 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:13.400 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:13.401 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:13.401 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:13.401 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/6f0290f0519847c6826cae1b476fe2cf/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/a6f6ca344b2e469faa90b7ff32df6486/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/2dbdd3babc8c40178a4235a926445b72/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/6018cb40bd31481c9be5e329d410dd46/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/a04c7da6022645a79a691193903bd845/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/9ade1504116b4c7db8a62dd68caeea25/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/0e69d9b80e0d4e0eb18a11fdaacb769b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:14.034 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/181a235796054442b3f9f5f4d6f0a307/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:14.041 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/0e3d1fb2102446a6b9749e239fffd994/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:14.041 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:14.041 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:14.042 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:14.042 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:14.042 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:14.042 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/a91e45cb76be473dac4bc894410e5801/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/c0b6e7ad4ef64f7da8f5ddffdcd13682/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/303ce142f8cd4eb99517ba15bcd25a08/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/5e4b8c0d0f164f84820d9d4d21d3d63e/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/794b9a79720a474991900c672f82d987/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/e1983abae4db4f61833c1d323c4e2fd9/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:14.658 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/8c0aec0ec64c4252979fcdc17e5ebb4a/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:14.659 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:14.659 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:14.659 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:14.660 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:14.660 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:14.661 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:14.661 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/93340c2f8ab84d73ae58362d3d4b22ee/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/47f7901e7e7f45caaec1a065c9410628/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/873a4a0ffe2640048b6caa22e9f5bf03/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/08e168a4bdf4408bab4b0483ac32e538/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/959bd947b1d54dc0b6c47ea3694e3484/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/c490c9787108446d94ac56c9a4a377c4/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/6b99d6c2368645f3bea7156e96a53db7/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:15.289 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/bbbd5dd6da7f4855840d766cc6fa90f7/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:15.295 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/76039f3011c14d8996d1007ef96101aa/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:15.296 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:15.296 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:15.296 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:15.296 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:15.297 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:15.297 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/9ed565080be84f0bb5e9f0c654361116/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/127761f70d0b464fab24f00a273b724d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/3ac2b3f18eca410d9595febd15499bee/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/aaf34d13cf65456f82334787ff4b5a56/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/6dd7dd3b4b5e40c8b7b6118b180ce021/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/71f6960157eb4cec8dbc37584685b801/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:15.898 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/53eec6bc06bd42c78858ec4e9924d661/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:15.899 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:15.900 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:15.900 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:15.900 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:15.900 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:15.901 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:15.901 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/2ee1b216125a441abe37951e08e97f33/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/566abea407694855892551d08107f3d4/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/08750167eb154c809a9c486d50b0614f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/93af8e8c541d4205981723d41a2edb70/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/3360444a89ff4d62a8a2bcf440f0fb26/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/c5756b7f18694e3f8aa5d8a61ed7bb18/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/4b305ac804db41979156e99a3c008d9f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:16.527 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/bf5461abd2084944a29f5d4838ce8a5b/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:16.533 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43406 - "POST /sessions/1f4e81caf87b4778b843f9c80b6f7fb7/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:16.533 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:16.534 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:16.534 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:16.534 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:16.534 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:16.534 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/f64e9e5332b849dcadfca80118e6e2b2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/968b1cd296314a74b6ebf5847f14ab6a/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/8fcd439da76f44399b47dd8d8744c59b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/9d5022d857664e2cb2aabe78527fb969/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/5f6fbfee4e4a4e81a5fa64a5f091e231/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/298f1c6e80a946108aef24ad021f381e/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:17.139 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/01ab44f53c3d45b483a58c71ebd91259/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:17.140 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:17.140 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:17.141 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:17.141 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:17.141 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:17.141 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:17.142 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/9d90f08c8b304fcdb5fbdbacde2a9e71/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/d3be2bd7b2234367bb433d0bb7e192d8/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/4227303462454f3790470c42b2235bbe/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/5ab402e518c247199d0b63a01a4ae949/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/50c74c8b66954cdc8eb7d85bf1f69680/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/9c2b78de48aa43e886c759b823a4dd24/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/a79c646714344332a51a45a5057fb5f5/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:17.775 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/98fde4610d26435e9da0f2f5a80081f0/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:17.781 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43406 - "POST /sessions/40d251e38cca472fbe29ddd78fdf9e1c/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:17.782 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:17.782 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:17.783 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:17.783 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:17.783 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:17.783 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/d24148a3eb1048a09499efb67ad363b8/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/9f3bc3c0227b4244a238de044ad2540c/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/a3f3bcd7500445ac9f3751ebdf7111f9/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/cef45c53dd55438eac834fc36440ef88/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/2d6c2f7dd3c346ef9d078a86ce4aec08/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/8ffbfbbb072e408e84ff22bf3e85d6d7/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:18.387 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/2b628cfc63494de38e77ff3cbefd389c/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:18.388 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:18.388 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:18.389 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:18.389 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:18.389 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:18.389 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:18.389 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/3cbcceada60e4dfab2500e47a58013f8/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/b0f2949477bc456d9f7fec4d1466882a/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/16d280c68f76424fadf20b57c7be5b6d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/a88883f1ad794ddb8863393260472bfd/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/fd21f5fda9554870a4a9291f0428c732/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/a29252fa52024425a2071a4842407e23/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/1676a4899e224c1fb22f6fe239b193ef/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:19.012 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/ea5add345576427fb7aad94f8979a708/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:19.018 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/60a9319cafe544c392ff2621afce83a2/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:19.019 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:19.019 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:19.020 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:19.020 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:19.020 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:19.020 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/1e7c3ab4e16040e6a0d381818cbd32c7/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/2e7b8c3b274e49a483ef2f5318542fed/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/ac6cbaf27ea948028224f3ad343212b0/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/3a2874126858409189292510b0b62ddc/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/a9b0345882204f7c9bfb6bc63098f07b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/16941cf8ee934607b11bc785d35deb21/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:19.617 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/b05535943bf24214998c4171d4435de0/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:19.618 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:19.619 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:19.619 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:19.619 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:19.619 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:19.620 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:19.620 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/4ce1cf7d7d6f4707b475329d5b6c8f78/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/48b5648116fc4d8399e0580933f396e5/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/dbfbb89724c44307919a7c332cad3588/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/d51ed7a84b5f42bfbc07ca0ca70222b0/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/dd21819ba4ee4b7f97578611fe4b58d2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/b390d478ed6f46f3bda5e32c22de98ec/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/8c5b67f4e5884ea1b29590c2bdf3c973/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:20.237 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/40bcc10b36df43dba1b5c617526ca99c/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:20.243 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/abf8e0fd4bd9489f880a19188ae5fd3d/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:20.243 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:20.244 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:20.244 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:20.244 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:20.244 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:20.245 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/bb5f9364caec4cdf81321635d0def51b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/b857785f5988457da5e440ef70e29d21/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/a1a59f47aad748c9841418283ea3d27e/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/0dec1066aa7041e1a9c3bb0e8f8895e6/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/75822e28220648b4ba8ccf9e118317cd/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/a9fbc38663104886af316fdd1fb5a30a/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:20.844 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/f08bcfc6f6b544c3b45163217ad602d1/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:20.845 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:20.845 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:20.846 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:20.846 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:20.846 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:20.847 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:20.847 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/76866a620ed647e79bd4a7ae33ec5f86/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/7491e8d5cdb842a3a8471ce0b7875ea6/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/89ac8adf6681423eb9f7231931ffac4e/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/f7b47d16fae342eca71d5b5237b1e8b8/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/e796fd84f4404aec8d3e326fe9e97889/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/3ffa692f8b3547a998c09379f4a7797f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/1ae4dbf180e643cf966ea4bed0c45414/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:21.467 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/fe39576a74a9489f94aa71220d6b10cb/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:21.473 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43408 - "POST /sessions/9e9b25775de34690a2906a2ff9b9cd18/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:21.474 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:21.474 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:21.474 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:21.475 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:21.475 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:21.475 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/3c99c26760564a7d8a4318e7a5e96c85/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/5354d41c030b447980a1bee248fe6f93/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/675aa7ce511b4d87898b181711a1e13d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/f353ca10a34b46da9e34b0899e8f9ebd/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/708618faea124af08dac30eb1be9d702/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/ca580abe5e9a4b008b8a3b51841af855/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:22.075 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/b26218e48cfe4a5c9c14e2dc7f984530/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:22.076 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:22.077 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:22.077 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:22.077 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:22.077 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:22.078 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:22.078 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/fbc327ac755d44849520e049998edf68/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/e2a879c2d6b74f1ca727e09614278e4a/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/0d7144b955c842eaafaaedd88744795d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/8f901e9322a44da7bda4e4753054e8be/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/5efec2a539e74b27bbf3ce3fa880c5f6/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/68dc4c0cb0b54e2ca9d22e589d8bc95f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/f69cb588d0284d17ac8c268dba4b6aac/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:22.695 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/12f389515b63495496a0e61b4e55bcfa/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:22.702 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/bfb3068a9e594ba79156ab52ed6f5342/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:22.703 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:22.703 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:22.703 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:22.703 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:22.703 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:22.704 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43408 - "POST /sessions/6a2d985c23fe49df815eb73d81d2d54f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/40f25f1e6c1d42a3bdaa53a914a22489/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/4baf66e2bc67412bbede525840fdabb7/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/b4dd9ad3f5f84aff8a07a1c44b0bd3a9/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/80cff88a43f145b787c12fbeacb50168/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/46f8a9f1b22e4ad58d372849104299f6/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:23.306 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/7efd55f6019e4d1a8fd756a53dae20be/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:23.308 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:23.308 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:23.308 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:23.308 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:23.309 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:23.309 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:23.309 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/278717dbfcd34647b52204b48675b815/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/9ed299ca8207491081838953901ac467/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/39e5885664f34498b526c9a29e11c120/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/e50c46462a9b428bafb47988f1b517ef/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/d16c6822ca1c4e89acde4049bcb395a1/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/1d32d3667ce048b088f718c1827d8a43/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/ce0a08f24f784a90a98c8ab9f245bec7/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:23.926 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/9c711c9bd6734617a9d6f7fc4c3eb91a/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:23.932 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43408 - "POST /sessions/2af2fefc1f7a4895984cc4e50cde92bb/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:23.933 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:23.933 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:23.933 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:23.934 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:23.934 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:23.934 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/ef076f3a3e44485f82bcd3393a87318a/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/595dc0d5999e401ea2398121930c5601/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/364e62b5f01b4464bd20c34e23e3500f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/a607911f94644e98a88a2734710db1c5/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/6c041bf0563d4cccbd4122b1de4a7a2a/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/c70ba77fa42f4a198f98d570c1971084/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:24.534 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/70330f5de52a434bbc6c5345f3dd9067/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:24.536 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:24.536 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:24.536 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:24.536 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:24.537 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:24.537 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:24.537 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/1d0c186cb76e4f2ab03819880fb5dbde/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/61b8f2f690294143be8e1d358ce71766/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/700901c9e4904ffc99baeea91de67e15/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/48209fc29196499a95a679dcc0da3727/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/aa1c638ddc26464c8e3c64eceefe8899/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/9fa3d1810a0b402e8bc5737317d37699/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/4a97a4d486f24c18b20f7569b64a41cc/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:25.154 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/27b7e76fe3c5449199591ccad26290dc/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:25.159 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/d58a89fa32ba43ff8a382c968caed528/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:25.160 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:25.160 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:25.161 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:25.161 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:25.161 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:25.161 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/596540bd8c0e4b3b837f32cc272eb1a3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/bfe4157757ce4e3795ef8befa21b5560/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/09339077607b4330b505fd7183159566/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/2c10046edb6f45c595e4d275cfc95f6c/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/9ebd4fda95a14257a69b1ac4d9bcd1f7/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/ef8a1fb621fc4a7e918889105efd1675/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:25.760 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/29169b50cc8e4eb6815185ffc410f4e8/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:25.761 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:25.761 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:25.762 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:25.762 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:25.762 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:25.762 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:25.763 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/0a84f6e73b8145a69ce75fd5910d7aec/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/1e94227f3a074e53a3240067a920bc86/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/7d37cbefc0be44e9bfbcddcc81133ba3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/cb3373c20df3452191c9357cfbc3c74b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/3f4c3c716bfb4789b01c30f08864e0d6/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/d93301eb5d244d8cb347fd6f990e35fd/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/15bbff53f0c3414baf51af8ad7b464e4/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:26.383 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/5c463bf508e0485f8540c047eb4eb073/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:26.389 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/956135fedc60449dbffaab69d6336026/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:26.390 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:26.390 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:26.390 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:26.390 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:26.391 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:26.391 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/638ca859573b4ecebe5de8176d368a95/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/0fdd16b956ea4631965686ab476bec85/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/d1ca21fe53044d13aee92dd621db7303/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/095157dc720a4867969e5eb9a16cf32d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/553a08cbcc994cf5a082f71613fd5684/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/2835ae610fcb41c09a4d18ab946ae5fb/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:26.989 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/32d0cfef0d484c7ca03ef7e947846b7b/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:26.990 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:26.990 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:26.990 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:26.991 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:26.991 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:26.991 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:26.992 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/89311c9426a14eda89da904302ab83b6/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/97cc0a76312d4194af8ab23dd4aecd90/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/0ba37a6ca6fc46e6b5128e19a7459a1d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/25fd6005c9f34041b078360e4c16f8bd/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/8654a3f6ecb243b69f3e65dc062cbc42/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/5599238ca40b45efbee4dcc3a6db973f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/6697ab5a42054a1b8dc01d3451285522/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:27.613 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/63a19644bb0a4038a9755d126fc27cae/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:27.618 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43406 - "POST /sessions/5b0de8331f98462abf27c19c3af90f0d/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:27.619 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:27.619 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:27.620 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:27.620 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:27.620 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:27.620 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/c175dc7c0831479395dccdb1ebf5ddb9/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/c58d33552b5542df9ef9e238323e9a77/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/7f737b80d66344c1aa6ae8458c828682/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/c12e3707d5564451ac24df4e3e1566c6/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/b43afa9deed74c968696a1470d8b882b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/99f1f15184054059b730af75f6a98a69/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:28.215 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/a7ad39f403eb41d7b7cbe6ce5fc8ea15/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:28.216 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:28.217 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:28.217 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:28.217 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:28.217 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:28.218 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:28.218 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/0881559532d8409cb3a6f4679eff1d68/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/1ca839e170f84fe1b7f4ddcf44f43c77/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/34d109aa15cf416ca4f7bed428c00a5b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/5137cceddb3c4b14b7195820b0c6f0f6/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/d922c154a2ea43f388d49a028446bbb7/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/5dbb599cf96e48a782c037a9a00334ab/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/8cbd664f3ace4769b9473fbd95d88d04/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:28.841 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/8c861d83ab91451c8e4c068924ce19d0/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:28.847 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43408 - "POST /sessions/c9d3ebbfd1174873afca2c807cf9c4a9/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:28.847 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:28.847 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:28.848 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:28.848 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:28.848 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:28.848 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/c58609b371af4610a23384a8e312fbc6/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/08f9d8d1b490487e87d62105c0de871f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/cbfcffbd19ee44f1a94bd42b551a6a53/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/330847013f374ed18dd064f826dfecef/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/65fab5fe8f8e4e27b956bc898528c157/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/73d7f2910c564e938277f154cabf21b3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:29.446 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/12ba073caa694d0ebb0399fe2df1d9db/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:29.447 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:29.448 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:29.448 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:29.448 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:29.448 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:29.449 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:29.449 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/5b90f144fc0d4ff08f52b36ea99e2de2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/10d4d6d397cd4a89a53985cb0d73c3be/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/26ede1cf37e84484949e9903689bb78f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/d857cb9d84394d809d2ac9c7badc52fe/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/7314a2fa3dc94b8bb255ef9db1a8d33d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/803e3b048ad64f97b04fd4152a158fb9/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/d548ea42920f458c8691b4f23684ba1c/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:30.067 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/0249b072292c4a3a8b9fd1fcaebc2637/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:30.073 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/33744a982036443b84d4378efedcd11e/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:30.073 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:30.074 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:30.074 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:30.074 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:30.074 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:30.074 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/3ae7786ea6b94270af41decf5acd8617/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/e35da552585a415e8fab3b2618504a46/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/36ef6f43227440ada5ae61eb9043a646/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/199561d43eda46dd851e8c74e33221e3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/3f3788d673c64287b130dec47644e27c/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/0f90232d32e04c8f88952245cdfc100d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:30.674 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/3173f2d7a5aa461b8f9b26d5f6891cef/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:30.675 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:30.676 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:30.676 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:30.676 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:30.676 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:30.677 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:30.677 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/bb34b70b0bb643aa8e1d91ecb96c3574/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/95950742e41e49588b74b5c26a8e89bc/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/de80855670df4d2d95399df5ec7b7570/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/5b168ee14702401ebbbe0064a6f32c68/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/69fc7cb0a04f40038f1d639e049a8165/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/fb0904422985423881d1006e7657a6a2/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/19395f6ca66c4e60879c57a5b042b38c/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:31.300 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/1d1ec5854cab4458a5895ead05053758/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:31.306 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43406 - "POST /sessions/78b6d679537046668974c2d2a3cf5513/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:31.307 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:31.307 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:31.307 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:31.307 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:31.308 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:31.308 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/0a74ea32b102436bb80ce6b738fabd9f/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/1108137de94a4e4ca5b6615b7c615745/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/452a21be36a042e8ba6961dce8681278/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/adba4006babe46a78796845cae3cc3e8/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/06c58462d4d6477b9626839538a0469b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/618ad79e5c954c558eb16600f8ff3bad/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:31.914 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/e16f3fa96c2d44f193db33d46222669f/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:31.915 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:31.915 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:31.916 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:31.916 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:31.916 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:31.916 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:31.917 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/51f7928e45634c48b96cdeef712c5d01/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/40e008a421fb4118bd5ec63aa25fc390/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/38225b0a6648406b9ad0a38efc77bbab/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/3fe9f15eea854dafbe145584a70412c7/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/59c1021cfc1043e19b4fbcb1f32efc05/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/7e6e3b9b241b4f1b95dc38fc3383d95b/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/1e6a0d32febb43ef80db50ba18ccae46/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:32.544 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/0692296774d0450cbd60b407253ebacf/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:32.550 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/28ad13205e6d42dea1a4d3a4358b3a05/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:32.551 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:32.551 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:32.551 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:32.552 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:32.552 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:32.552 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/2d0750beedcc42b2869ceef652bcd36a/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/8d81e51b43634027b93530680cd900da/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/1d000a66245a4a58b035f4e92e0b308d/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/6b0aaf721052494c8123df2349f1b1ec/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/24903c64a66b40c98567dcb8807e7d75/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/810f9b5341ab4a81b7e4b74e0a4cf957/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:33.159 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43432 - "POST /sessions/ebb56e2ea2674f89bcdb5df35c033adb/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:33.160 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:33.160 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:33.161 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:33.161 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:33.161 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:33.161 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:33.161 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/a8ce90027f2d4049933d156a4da4db81/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/1b21ca3d44b84884a3f6b02f7311bc58/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/de6dfa7331fb4f6094bc87058e1054a3/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/202d76152f5549e2958f4c5f96a4b734/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/0291c719edbe48ceb04bccc89544a10a/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/72b317bd14074c468a06204dbf8f8528/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/25b078b13b554276b675787eee9b63e6/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:33.788 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43384 - "POST /sessions/d35b0df6a32340848ccb5bc6633eb2f3/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:33.794 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43406 - "POST /sessions/c0acb4c93b90456e96b6dc948d2cb723/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:33.795 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:33.795 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:33.796 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:33.796 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:33.796 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:33.796 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43442 - "POST /sessions/5af7e882fffb43cca52b6f0ed0b28eae/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/e236be03dbdf435bbf6e11ce49125457/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43424 - "POST /sessions/7600eac7011f4cb38c7d6e3c6ac5eb17/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/0fcd8903af0f4b5cb7ba8e9450a81ebb/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/6c4d8bb4a34f46a7af1d74637c78958e/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions/ff8f194740234937aaeefa229458c441/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43394 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions HTTP/1.1" 200 OK
+[2026-09-10 04:31:34.404 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43424 - "POST /sessions/2b0f8064f28a4c069351f710a5905c54/v1/chat/completions HTTP/1.1" 200 OK
+[2026-09-10 04:31:34.405 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:34.406 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:34.406 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:34.406 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:34.406 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:34.407 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+[2026-09-10 04:31:34.407 session_server] _client.py:1740 - HTTP Request: POST http://127.0.0.1:31111/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:43394 - "POST /sessions/a6749b5485da470ca6ced44fd473f955/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43442 - "POST /sessions/54be0bd8726444d0bffb837fbaf90b73/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43408 - "POST /sessions/d2ddf9f5cc0a4afda3c1dbe14e849683/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43422 - "POST /sessions/b038b2eda659459ca43b3cdaee272942/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43432 - "POST /sessions/13644d15b35f441b9cf1c3cb19c064c4/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43384 - "POST /sessions/a1c345310dba4f15b08d71a3029044d4/v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "POST /sessions/9571f029d1924672bf7a351a02b34636/v1/chat/completions HTTP/1.1" 200 OK
