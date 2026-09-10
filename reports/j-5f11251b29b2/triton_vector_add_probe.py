@@ -61,7 +61,7 @@ def _make_nonzero_tensors(length: int, seed: int) -> tuple[torch.Tensor, torch.T
     torch.manual_seed(seed)
     indices = torch.arange(length, dtype=torch.float32, device="cpu")
     x = 1.0 + (seed % 997) * 0.01 + indices * 0.125
-    y = 2.0 - (seed % 883) * 0.005 - indices * 0.0625
+    y = 2.0 + (seed % 883) * 0.005 + indices * 0.0625
     if not bool(torch.all(x != 0)) or not bool(torch.all(y != 0)):
         raise AssertionError("Generated tensor unexpectedly contains zero values")
     return x, y
