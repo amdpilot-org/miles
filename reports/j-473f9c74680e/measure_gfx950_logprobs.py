@@ -72,6 +72,11 @@ def software_identity(model_path):
         )
     }
     modules["torch_native"] = module_identity("torch._C")
+    modules["native_modules"] = {
+        "aiter": module_identity("aiter.jit.module_aiter_core"),
+        "flash_attention": module_identity("flash_attn_2_cuda"),
+        "torch": module_identity("torch._C"),
+    }
     git_commit = subprocess.check_output(
         ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"], text=True
     ).strip()
