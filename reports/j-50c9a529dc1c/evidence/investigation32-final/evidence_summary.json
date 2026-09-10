@@ -1,0 +1,365 @@
+{
+  "baseline": {
+    "all_engine_tensors_checked_cycles": 2,
+    "checksum_mismatch_cycles": 0,
+    "completed_requests": 7,
+    "cycles": 1,
+    "expected_engine_checksum_match_cycles": 2,
+    "failed_requests": 0,
+    "output_equal_cycles": 1,
+    "real_weight_update_events": 2,
+    "release_positive_cycles": 1,
+    "router_admission_cycles": 1,
+    "successful_updates": 2,
+    "unique_train_losses": 1,
+    "version_consistent_cycles": 1
+  },
+  "checks": {
+    "all_engine_tensors_checked": true,
+    "all_requests_completed": true,
+    "at_least_32_cycles": true,
+    "downloads_under_8gb": true,
+    "expected_engine_checksum_match": true,
+    "failed_update_recorded": true,
+    "failed_wake_recorded": true,
+    "gfx950_capability": true,
+    "next_update_not_failed": true,
+    "next_wake_not_failed": true,
+    "no_checksum_mismatch": true,
+    "no_mixed_weight_version_requests": true,
+    "no_request_failures": true,
+    "no_timeout_causes": true,
+    "one_injected_update_failure": true,
+    "output_tokens_equal_both_engines": true,
+    "real_weight_update_events": true,
+    "release_positive_every_cycle": true,
+    "router_admission_every_cycle": true,
+    "single_bounded_wake_restart": true,
+    "two_assigned_mi350x_gpus": true,
+    "unique_actor_checksums": true,
+    "unique_engine_a_checksums": true,
+    "unique_engine_b_checksums": true,
+    "unique_training_losses": true,
+    "update_recovery_successful": true,
+    "version_consistent_every_cycle": true,
+    "wake_recovery_bounded": true,
+    "wake_recovery_successful": true
+  },
+  "environment": {
+    "downloaded_bytes": 29909617,
+    "gpus": [
+      {
+        "capability": [
+          9,
+          5
+        ],
+        "index": 0,
+        "name": "AMD Instinct MI350X"
+      },
+      {
+        "capability": [
+          9,
+          5
+        ],
+        "index": 1,
+        "name": "AMD Instinct MI350X"
+      }
+    ],
+    "hip_version": "7.2.26015-fc0010cf6a",
+    "miles_commit": "df0e677f6dd51fa551d48d37860812ece904cd8f",
+    "miles_source": "/job/miles/miles",
+    "model_bytes_on_disk": 29909617,
+    "model_path": "/job/miles/reports/j-50c9a529dc1c/model",
+    "output_dir": "/job/artifacts/j-50c9a529dc1c/investigation32-final",
+    "python": "/opt/venv/bin/python",
+    "runtime_image": "amdpilotv2/miles-job:gbt350-d957-20260909",
+    "sglang_commit": "a8e5c632fe40555f720d4f2c69771ea8cf24f3c4",
+    "sglang_source": "/sgl-workspace/sglang/python/sglang",
+    "sglang_version": "0.5.17.dev2157+ga8e5c632f",
+    "torch_memory_saver_preload": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver_hook_mode_preload.abi3.so",
+    "torch_memory_saver_version": "0.0.10b1",
+    "torch_source": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+    "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+    "transformers_source": "/opt/venv/lib/python3.10/site-packages/transformers/__init__.py",
+    "transformers_version": "5.12.1",
+    "wake_recovery": {
+      "health_timeout_seconds": 300.0,
+      "restart_count": 1,
+      "restart_limit": 1
+    }
+  },
+  "gpu_phase_timings": {
+    "control_forward_seconds": {
+      "count": 32,
+      "max_seconds": 0.10088423919677734,
+      "mean_seconds": 0.009716952413320542,
+      "min_seconds": 0.006328120231628418
+    },
+    "release_seconds": {
+      "count": 32,
+      "max_seconds": 0.11893709003925323,
+      "mean_seconds": 0.04082943283719942,
+      "min_seconds": 0.01557850930839777
+    },
+    "train_backward_ms": {
+      "count": 32,
+      "max_seconds": 2973.05908203125,
+      "mean_seconds": 126.31815192103386,
+      "min_seconds": 12.497316360473633
+    },
+    "train_forward_ms": {
+      "count": 32,
+      "max_seconds": 3132.222900390625,
+      "mean_seconds": 103.04951603710651,
+      "min_seconds": 3.1196000576019287
+    },
+    "train_optimizer_ms": {
+      "count": 32,
+      "max_seconds": 64.13378143310547,
+      "mean_seconds": 2.6433537993580103,
+      "min_seconds": 0.5705270171165466
+    },
+    "transfer_bytes_per_update": [
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776,
+      26347776
+    ],
+    "update_phase_seconds": {
+      "a": {
+        "begin_seconds": {
+          "count": 32,
+          "max_seconds": 0.00233549065887928,
+          "mean_seconds": 0.0017958937678486109,
+          "min_seconds": 0.0014782734215259552
+        },
+        "broadcast_seconds": {
+          "count": 32,
+          "max_seconds": 5.474190359003842,
+          "mean_seconds": 0.3666704684437718,
+          "min_seconds": 0.003935946151614189
+        },
+        "end_seconds": {
+          "count": 32,
+          "max_seconds": 0.0037908758968114853,
+          "mean_seconds": 0.002225953619927168,
+          "min_seconds": 0.001731625758111477
+        },
+        "pause_seconds": {
+          "count": 32,
+          "max_seconds": 0.0024640923365950584,
+          "mean_seconds": 0.001815816794987768,
+          "min_seconds": 0.0013819122686982155
+        },
+        "resume_seconds": {
+          "count": 32,
+          "max_seconds": 0.0017378060147166252,
+          "mean_seconds": 0.0012026035401504487,
+          "min_seconds": 0.001076619140803814
+        },
+        "total_seconds": {
+          "count": 32,
+          "max_seconds": 5.485358749516308,
+          "mean_seconds": 0.3751393113343511,
+          "min_seconds": 0.010913927108049393
+        },
+        "version_seconds": {
+          "count": 32,
+          "max_seconds": 0.002312680706381798,
+          "mean_seconds": 0.001425494672730565,
+          "min_seconds": 0.0012274915352463722
+        }
+      },
+      "b": {
+        "begin_seconds": {
+          "count": 32,
+          "max_seconds": 0.020547812804579735,
+          "mean_seconds": 0.002936108212452382,
+          "min_seconds": 0.0020419685170054436
+        },
+        "broadcast_seconds": {
+          "count": 32,
+          "max_seconds": 2.9684578888118267,
+          "mean_seconds": 0.09995849974802695,
+          "min_seconds": 0.004830523394048214
+        },
+        "end_seconds": {
+          "count": 32,
+          "max_seconds": 0.003706924617290497,
+          "mean_seconds": 0.00219221250154078,
+          "min_seconds": 0.0019103968515992165
+        },
+        "pause_seconds": {
+          "count": 32,
+          "max_seconds": 0.005178095772862434,
+          "mean_seconds": 0.004118766635656357,
+          "min_seconds": 0.0028804372996091843
+        },
+        "resume_seconds": {
+          "count": 32,
+          "max_seconds": 0.001595054753124714,
+          "mean_seconds": 0.0012263540411368012,
+          "min_seconds": 0.0010684998705983162
+        },
+        "total_seconds": {
+          "count": 32,
+          "max_seconds": 2.9832737976685166,
+          "mean_seconds": 0.11193191554048099,
+          "min_seconds": 0.015266485512256622
+        },
+        "version_seconds": {
+          "count": 32,
+          "max_seconds": 0.0034891413524746895,
+          "mean_seconds": 0.001496697514085099,
+          "min_seconds": 0.0012744115665555
+        }
+      }
+    },
+    "wake_seconds": {
+      "count": 32,
+      "max_seconds": 45.433585526421666,
+      "mean_seconds": 2.3771897703700233,
+      "min_seconds": 0.007685709744691849
+    }
+  },
+  "investigation": {
+    "all_engine_tensors_checked_cycles": 64,
+    "checksum_mismatch_cycles": 0,
+    "completed_requests": 224,
+    "cycle_seconds": {
+      "count": 32,
+      "max": 48.324642485007644,
+      "mean": 3.339487021556124,
+      "min": 0.24535261932760477
+    },
+    "cycles": 32,
+    "expected_engine_checksum_match_cycles": 64,
+    "failed_requests": 0,
+    "failed_update_cycle": 24,
+    "failed_wake_cycle": 16,
+    "mixed_weight_version_requests": 0,
+    "output_equal_cycles": 64,
+    "output_max_abs_log_prob_difference": {
+      "count": 64,
+      "max": 0.030352115631103516,
+      "mean": 0.0059042274951934814,
+      "min": 6.29425048828125e-05
+    },
+    "real_weight_update_events": 64,
+    "release_bytes": {
+      "count": 32,
+      "max": 54775513088,
+      "mean": 53630402560,
+      "min": 53089402880
+    },
+    "release_positive_cycles": 32,
+    "router_admission_cycles": 32,
+    "successful_updates": 63,
+    "timeout_causes": [],
+    "unique_train_losses": 32,
+    "update_recovery_successful": true,
+    "version_consistent_cycles": 32,
+    "wake_recovery_successful": true
+  },
+  "recovery": {
+    "failed_update": {
+      "cycle": 24,
+      "engine_b_failed": true,
+      "failure_message": "Client error '400 Bad Request' for url 'http://127.0.0.1:34075/end_weight_update'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
+      "failure_type": "HTTPStatusError"
+    },
+    "failed_wake": {
+      "cycle": 16,
+      "failure_message": "Server disconnected without sending a response.",
+      "failure_type": "RemoteProtocolError",
+      "recovery_action": "single_bounded_engine_restart",
+      "recovery_attempts": 298,
+      "recovery_seconds": 40.219982971437275,
+      "recovery_successful": true,
+      "update_group_reconnect_seconds": 0.008312154561281204
+    },
+    "launcher_bounds": {
+      "health_timeout_seconds": 300.0,
+      "restart_count": 1,
+      "restart_limit": 1
+    },
+    "update_recovery_cycle": {
+      "cycle": 25,
+      "engine_b_update_failed": false,
+      "version_consistent": true
+    },
+    "wake_next_cycle": {
+      "cycle": 17,
+      "router_admission": true,
+      "version_consistent": true,
+      "wake_failed": false
+    }
+  },
+  "requirements_pass": true,
+  "scope": {
+    "elastic_scheduler_claimed": false,
+    "mi355x_performance_equivalence_claimed": false,
+    "node_wide_scheduling_changed": false,
+    "selective_lifecycle_operations_supported": true
+  }
+}
