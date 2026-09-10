@@ -182,6 +182,12 @@ def load_training_model(model_path, attention_implementation):
     return model
 
 
+def enable_training_batch_invariant_ops():
+    from sglang.srt.batch_invariant_ops import enable_batch_invariant_mode
+
+    enable_batch_invariant_mode(enable_bmm=False)
+
+
 def training_logprobs_for_logits(logits, token_sequence, vocab_size):
     from miles.backends.training_utils.loss_hub.math_utils import calculate_log_probs_and_entropy
 
@@ -360,6 +366,7 @@ def main():
             "rollout_radix_cache": False,
             "sglang_use_aiter": os.environ.get("SGLANG_USE_AITER"),
             "use_rocm_aiter_rope_backend": os.environ.get("USE_ROCM_AITER_ROPE_BACKEND"),
+            "training_batch_invariant_ops": True,
             "training_logprob_path": "miles.backends.training_utils.loss_hub.math_utils.calculate_log_probs_and_entropy",
             "timeout_seconds": args.timeout_seconds,
         },
@@ -389,6 +396,7 @@ def main():
     finally:
         engine.shutdown()
 
+    enable_training_batch_invariant_ops()
     output["training"] = {}
     for mode in ("flash_unpacked", "flash_packed", "triton_unpacked"):
         output["training"][mode] = collect_training_mode(
