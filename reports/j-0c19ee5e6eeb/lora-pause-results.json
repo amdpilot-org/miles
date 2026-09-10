@@ -1,0 +1,103 @@
+{
+  "all_cycles_correct": true,
+  "allocator_observations": {
+    "empty_cache_released_inactive_segment_bytes": [
+      20971520,
+      20971520,
+      20971520
+    ],
+    "torch_allocated_bytes_unchanged_while_paused": true,
+    "torch_reserved_bytes_unchanged_while_paused": true
+  },
+  "correctness": {
+    "adapter_parameters_trainable": true,
+    "base_parameters_frozen": true,
+    "forward_output_preserved": true,
+    "gradients_preserved": true,
+    "parameters_preserved": true
+  },
+  "cycle_count": 3,
+  "cycles": [
+    {
+      "cycle": 0,
+      "default_release_bytes": 69206016,
+      "empty_cache_release_bytes": 20971520,
+      "grad_buffer_release_bytes": 127926272,
+      "gradients_preserved": true,
+      "output_preserved": true,
+      "parameters_preserved": true,
+      "resume_cost_bytes": -178257920,
+      "rss_increase_bytes": 326733824,
+      "torch_allocated_bytes_unchanged_while_paused": true,
+      "torch_reserved_bytes_unchanged_while_paused": true
+    },
+    {
+      "cycle": 1,
+      "default_release_bytes": 69206016,
+      "empty_cache_release_bytes": 20971520,
+      "grad_buffer_release_bytes": 127926272,
+      "gradients_preserved": true,
+      "output_preserved": true,
+      "parameters_preserved": true,
+      "resume_cost_bytes": -178257920,
+      "rss_increase_bytes": 343269376,
+      "torch_allocated_bytes_unchanged_while_paused": true,
+      "torch_reserved_bytes_unchanged_while_paused": true
+    },
+    {
+      "cycle": 2,
+      "default_release_bytes": 69206016,
+      "empty_cache_release_bytes": 20971520,
+      "grad_buffer_release_bytes": 127926272,
+      "gradients_preserved": true,
+      "output_preserved": true,
+      "parameters_preserved": true,
+      "resume_cost_bytes": -178257920,
+      "rss_increase_bytes": 343265280,
+      "torch_allocated_bytes_unchanged_while_paused": true,
+      "torch_reserved_bytes_unchanged_while_paused": true
+    }
+  ],
+  "gpu": {
+    "capability": [
+      9,
+      5
+    ],
+    "count": 1,
+    "name": "AMD Instinct MI350X",
+    "total_bytes": 270566162432
+  },
+  "memory": {
+    "baseline": {
+      "free_bytes": 268026511360,
+      "rss_bytes": 4245553152,
+      "torch_allocated_bytes": 232800256,
+      "torch_reserved_bytes": 276824064,
+      "total_bytes": 270566162432
+    },
+    "gradient_bytes": 1572864,
+    "parameter_bytes": 68698112
+  },
+  "process_group": {
+    "timeout_seconds": null,
+    "used": false
+  },
+  "software": {
+    "active_preload_hook": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver_hook_mode_preload.abi3.so",
+    "hip": "7.2.26015-fc0010cf6a",
+    "megatron_module": "/opt/venv/lib/python3.10/site-packages/megatron",
+    "miles_module": "/job/miles/miles/__init__.py",
+    "native_preload_hook": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver_hook_mode_preload.abi3.so",
+    "native_torch_hook": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver_hook_mode_torch.abi3.so",
+    "python": "3.10.12",
+    "sglang_module": "/sgl-workspace/sglang/python/sglang/__init__.py",
+    "torch": "2.9.1+rocm7.2.0.git7e1940d4",
+    "torch_memory_saver": "0.0.10b1",
+    "torch_memory_saver_module": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver/__init__.py",
+    "torch_module": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py"
+  },
+  "unsupported": {
+    "cpu_backup_backend_mmap_supported": false,
+    "error": "cpu_backup_backend='mmap' is not supported on ROCm"
+  }
+}
