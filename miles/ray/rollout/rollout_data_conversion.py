@@ -83,13 +83,8 @@ def _nested_sample_count(group) -> int:
 
 
 def _compute_dynamic_global_batch_size(args, train_parallel_config, num_samples: int) -> int:
-    """Calculate dynamic global_batch_size to ensure only one training step.
-
-    Strategy: global_batch_size = num_samples rounded down to a multiple of dp_size
-    This ensures num_steps_per_rollout = num_samples // global_batch_size = 1
-    """
+    """Calculate dynamic global_batch_size for exactly one training step."""
     dp_size = train_parallel_config["dp_size"]
-    original_gbs = args.global_batch_size
 
     if is_multi_lora_enabled(args):
         # Batches take groups in multiples of each adapter's
@@ -102,22 +97,13 @@ def _compute_dynamic_global_batch_size(args, train_parallel_config, num_samples:
             )
         return num_samples
 
-    # Round down to a multiple of dp_size to ensure only one training step
-    dynamic_gbs = (num_samples // dp_size) * dp_size
+    if num_samples < dp_size:
+        raise ValueError(f"num_samples={num_samples} < dp_size={dp_size}; cannot assign one sample per rank")
 
-    if dynamic_gbs == 0:
-        # Too few samples, use at least dp_size
-        dynamic_gbs = dp_size
-        logger.warning(f"num_samples={num_samples} < dp_size={dp_size}, using dp_size as global_batch_size")
-
-    # Calculate how many samples will be discarded
-    wasted = num_samples - dynamic_gbs
-
-    if dynamic_gbs != original_gbs or wasted > 0:
+    if num_samples != args.global_batch_size:
         logger.info(
-            f"Dynamic global_batch_size: {original_gbs} -> {dynamic_gbs} "
-            f"(num_samples={num_samples}, dp_size={dp_size}, "
-            f"num_steps=1, wasted={wasted})"
+            f"Dynamic global_batch_size: {args.global_batch_size} -> {num_samples} "
+            f"(num_samples={num_samples}, dp_size={dp_size}, num_steps=1)"
         )
 
-    return dynamic_gbs
+    return num_samples

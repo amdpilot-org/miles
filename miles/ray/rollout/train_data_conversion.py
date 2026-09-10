@@ -354,7 +354,7 @@ def split_train_data_by_dp_raw(args, data: dict[str, Any], *, dp_size: int) -> l
     data["total_lengths"] = total_lengths
 
     if args.balance_data:
-        partitions = get_seqlen_balanced_partitions(total_lengths, dp_size, equal_size=True)
+        partitions = get_seqlen_balanced_partitions(total_lengths, dp_size, equal_size=False)
     else:
         partitions = [range(i, len(total_lengths), dp_size) for i in range(dp_size)]
 

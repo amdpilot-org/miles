@@ -718,6 +718,17 @@ class TestSplitTrainDataByDp:
         sizes = [len(p["tokens"]) for p in parts]
         assert max(sizes) - min(sizes) <= 1
 
+    def test_balanced_partition_preserves_non_divisible_sample_count(self):
+        """Token balancing must not require one sample count per DP rank."""
+        args = make_args(balance_data=True)
+        lengths = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        data = _make_split_data(11, lengths=lengths)
+
+        parts = split_train_data_by_dp_raw(args, data, dp_size=2)
+
+        assert sorted(i for part in parts for i in part["partition"]) == list(range(11))
+        assert [len(part["partition"]) for part in parts] == [6, 5]
+
     def test_optional_keys_propagated_when_present(self):
         args = make_args(balance_data=False)
         data = {
