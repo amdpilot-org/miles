@@ -220,6 +220,46 @@ def test_fully_async_rejects_abort_pause_mode():
     _resolve_rollout_functions(args)
 
 
+def _parse_fully_async_args(*extra_args: str) -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    get_miles_extra_args_provider()(parser)
+    return parser.parse_args(["--fully-async", "--num-rollout", "1", *extra_args] + REQUIRED_ARGS)
+
+
+def test_fully_async_multi_step_with_staleness_warns(caplog):
+    args = _parse_fully_async_args(
+        "--num-steps-per-rollout",
+        "2",
+        "--max-weight-staleness",
+        "2",
+    )
+
+    with caplog.at_level(logging.WARNING):
+        miles_validate_args(args)
+
+    assert "Fully async training with --max-weight-staleness" in caplog.text
+    assert "compounds off-policyness" in caplog.text
+
+
+def test_fully_async_dynamic_global_batch_size_is_reported_redundant(caplog):
+    args = _parse_fully_async_args(
+        "--num-steps-per-rollout",
+        "2",
+        "--max-weight-staleness",
+        "2",
+        "--use-dynamic-global-batch-size",
+        "--use-dynamic-batch-size",
+        "--max-tokens-per-gpu",
+        "1024",
+    )
+
+    with caplog.at_level(logging.INFO):
+        miles_validate_args(args)
+
+    assert "--use-dynamic-global-batch-size is redundant in fully async mode" in caplog.text
+    assert "compounds off-policyness" not in caplog.text
+
+
 def test_recompute_logprobs_via_prefill_flag_is_parsed():
     parser = argparse.ArgumentParser()
     get_miles_extra_args_provider()(parser)

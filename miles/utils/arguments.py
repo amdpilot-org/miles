@@ -3542,6 +3542,25 @@ def miles_validate_args(args):
             )
         args.global_batch_size = global_batch_size
 
+    if args.fully_async and args.use_dynamic_global_batch_size:
+        logger.info(
+            "--use-dynamic-global-batch-size is redundant in fully async mode: each drain has a fixed "
+            "sample count, and dynamic resizing will force one optimizer step per drain."
+        )
+
+    if args.fully_async and args.max_weight_staleness is not None and not args.use_dynamic_global_batch_size:
+        samples_per_rollout = args.rollout_batch_size * args.n_samples_per_prompt
+        requested_steps = args.num_steps_per_rollout
+        if requested_steps is None and args.global_batch_size is not None:
+            requested_steps = samples_per_rollout // args.global_batch_size
+        if requested_steps is not None and requested_steps > 1:
+            logger.warning(
+                "Fully async training with --max-weight-staleness and more than one optimizer step per "
+                "rollout compounds off-policyness: inter-batch staleness already separates generation "
+                "from training, and later optimizer steps also consume samples generated before their "
+                "immediate weight update."
+            )
+
     # Multi-LoRA adapters carry their own n_samples_per_prompt; the per-group
     # normalization path already skips std for singleton groups.
     if args.n_samples_per_prompt == 1 and not args.multi_lora:
