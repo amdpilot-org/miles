@@ -65,6 +65,7 @@ ENV CMAKE_PREFIX_PATH=/opt/rocm:/opt/rocm/hip:/usr/local:/usr
 # TODO: remove these patches once the changes are merged into the main codebase.
 COPY docker/amd_patch/latest/tile_kernels.patch /tmp/amd_patch/tile_kernels.patch
 COPY docker/amd_patch/latest/tilelang_hip_fp8.patch /tmp/amd_patch/tilelang_hip_fp8.patch
+COPY docker/amd_patch/latest/sglang_swa_memory_saver.patch /tmp/amd_patch/sglang_swa_memory_saver.patch
 COPY requirements.txt /tmp/requirements.txt
 
 # ======================================== Apt dependencies =====================================
@@ -138,6 +139,7 @@ RUN cd /sgl-workspace/sglang && \
     else \
       git checkout FETCH_HEAD; \
     fi && \
+    patch -p1 < /tmp/amd_patch/sglang_swa_memory_saver.patch && \
     pip install -e "python[all_hip]" --no-deps
 
 # SGLang is installed without dependencies, but its Inkling multimodal processor imports numba.
