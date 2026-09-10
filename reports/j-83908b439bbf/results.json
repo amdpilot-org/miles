@@ -1,0 +1,1133 @@
+{
+  "checkpoint_load_comparisons": {
+    "fsdp_parameters": {
+      "max_abs": 0.0,
+      "metrics": {
+        "bias": {
+          "left_dtype": "torch.float32",
+          "left_shape": [
+            8
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.float32",
+          "right_shape": [
+            8
+          ]
+        },
+        "weight": {
+          "left_dtype": "torch.float32",
+          "left_shape": [
+            8,
+            16
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.float32",
+          "right_shape": [
+            8,
+            16
+          ]
+        }
+      },
+      "status": "match",
+      "tolerance": 1e-06
+    },
+    "megatron_master_parameters": {
+      "max_abs": 0.0,
+      "metrics": {
+        "bias": {
+          "left_dtype": "torch.float32",
+          "left_shape": [
+            8
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.float32",
+          "right_shape": [
+            8
+          ]
+        },
+        "weight": {
+          "left_dtype": "torch.float32",
+          "left_shape": [
+            8,
+            16
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.float32",
+          "right_shape": [
+            8,
+            16
+          ]
+        }
+      },
+      "status": "match",
+      "tolerance": 1e-06
+    },
+    "megatron_model_parameters": {
+      "max_abs": 0.0,
+      "metrics": {
+        "bias": {
+          "left_dtype": "torch.bfloat16",
+          "left_shape": [
+            8
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.bfloat16",
+          "right_shape": [
+            8
+          ]
+        },
+        "weight": {
+          "left_dtype": "torch.bfloat16",
+          "left_shape": [
+            8,
+            16
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.bfloat16",
+          "right_shape": [
+            8,
+            16
+          ]
+        }
+      },
+      "status": "match",
+      "tolerance": 1e-06
+    },
+    "megatron_optimizer_group_metadata": {
+      "original": [
+        {
+          "child_index": 0,
+          "group_index": 0,
+          "keys": [
+            "betas",
+            "bias_correction",
+            "default_config",
+            "eps",
+            "is_decoupled_lr",
+            "is_expert_parallel",
+            "lr",
+            "lr_mult",
+            "max_lr",
+            "min_lr",
+            "params",
+            "step",
+            "wd_mult",
+            "weight_decay"
+          ],
+          "step": 2
+        },
+        {
+          "child_index": 0,
+          "group_index": 1,
+          "keys": [
+            "betas",
+            "bias_correction",
+            "default_config",
+            "eps",
+            "is_decoupled_lr",
+            "is_expert_parallel",
+            "lr",
+            "lr_mult",
+            "max_lr",
+            "min_lr",
+            "params",
+            "step",
+            "wd_mult",
+            "weight_decay"
+          ],
+          "step": 2
+        }
+      ],
+      "reloaded": [
+        {
+          "child_index": 0,
+          "group_index": 0,
+          "keys": [
+            "betas",
+            "bias_correction",
+            "default_config",
+            "eps",
+            "is_decoupled_lr",
+            "is_expert_parallel",
+            "lr",
+            "lr_mult",
+            "max_lr",
+            "min_lr",
+            "params",
+            "step",
+            "wd_mult",
+            "weight_decay"
+          ],
+          "step": 2
+        },
+        {
+          "child_index": 0,
+          "group_index": 1,
+          "keys": [
+            "betas",
+            "bias_correction",
+            "default_config",
+            "eps",
+            "is_decoupled_lr",
+            "is_expert_parallel",
+            "lr",
+            "lr_mult",
+            "max_lr",
+            "min_lr",
+            "params",
+            "step",
+            "wd_mult",
+            "weight_decay"
+          ],
+          "step": 2
+        }
+      ]
+    },
+    "megatron_optimizer_state": {
+      "max_abs": 0.0,
+      "metrics": {
+        "child_0_group_0_step": {
+          "left_dtype": "torch.int64",
+          "left_shape": [
+            1
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.int64",
+          "right_shape": [
+            1
+          ]
+        },
+        "child_0_group_1_step": {
+          "left_dtype": "torch.int64",
+          "left_shape": [
+            1
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.int64",
+          "right_shape": [
+            1
+          ]
+        },
+        "child_0_param_0_exp_avg": {
+          "left_dtype": "torch.float32",
+          "left_shape": [
+            8,
+            16
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.float32",
+          "right_shape": [
+            8,
+            16
+          ]
+        },
+        "child_0_param_0_exp_avg_sq": {
+          "left_dtype": "torch.float32",
+          "left_shape": [
+            8,
+            16
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.float32",
+          "right_shape": [
+            8,
+            16
+          ]
+        },
+        "child_0_param_1_exp_avg": {
+          "left_dtype": "torch.float32",
+          "left_shape": [
+            8
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.float32",
+          "right_shape": [
+            8
+          ]
+        },
+        "child_0_param_1_exp_avg_sq": {
+          "left_dtype": "torch.float32",
+          "left_shape": [
+            8
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.float32",
+          "right_shape": [
+            8
+          ]
+        }
+      },
+      "status": "match"
+    }
+  },
+  "checkpoint_reload_comparisons": {
+    "fsdp": {
+      "consumed_samples": {
+        "reloaded": 48,
+        "uninterrupted": 48
+      },
+      "gradients": {
+        "max_abs": 0.0,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "match",
+        "tolerance": 1e-06
+      },
+      "loss": {
+        "max_abs": 0.0,
+        "metrics": [
+          {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              1
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              1
+            ]
+          }
+        ],
+        "status": "match",
+        "tolerance": 1e-06
+      },
+      "parameters": {
+        "max_abs": 0.0,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "match",
+        "tolerance": 1e-06
+      }
+    },
+    "megatron": {
+      "consumed_samples": {
+        "reloaded": 48,
+        "uninterrupted": 48
+      },
+      "gradients": {
+        "max_abs": 0.0,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "match",
+        "tolerance": 1e-06
+      },
+      "loss": {
+        "max_abs": 0.0,
+        "metrics": [
+          {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              1
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              1
+            ]
+          }
+        ],
+        "status": "match",
+        "tolerance": 1e-06
+      },
+      "parameters": {
+        "max_abs": 0.0,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "match",
+        "tolerance": 1e-06
+      }
+    }
+  },
+  "configuration": {
+    "checkpoint_root": "/job/.cache/j-83908b439bbf/checkpoints-final",
+    "compute_dtype": "torch.bfloat16",
+    "global_batch_size": 16,
+    "local_batch_size": 8,
+    "loss": "mean squared error over the full local batch",
+    "master_dtype": "torch.float32",
+    "model": "nn.Linear(16, 8, bias=True)",
+    "optimizer": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "decoupled_weight_decay": false,
+      "eps": 1e-08,
+      "fsdp": "torch.optim.Adam",
+      "lr": 0.01,
+      "megatron": "Megatron Float16Optimizer with Transformer Engine FusedAdam",
+      "weight_decay": 0.01
+    },
+    "parameter_count": 136,
+    "process_group_timeout_seconds": 180,
+    "reduce_dtype": "torch.float32",
+    "reload_step": 3,
+    "steps_compared": 2,
+    "world_size": 2
+  },
+  "environment": {
+    "cuda_available": true,
+    "device_count": 2,
+    "devices": [
+      {
+        "capability": [
+          9,
+          5
+        ],
+        "index": 0,
+        "name": "AMD Instinct MI355X"
+      },
+      {
+        "capability": [
+          9,
+          5
+        ],
+        "index": 1,
+        "name": "AMD Instinct MI355X"
+      }
+    ],
+    "megatron_source_commit": "8c1e05747eb612b382df2632783df5c83a853646",
+    "miles_commit": "e5125a97e1fd383f005f4de258a5985026e09425",
+    "modules": {
+      "megatron.core": {
+        "file": "/root/Megatron-LM/megatron/core/__init__.py",
+        "path": [
+          "/root/Megatron-LM/megatron/core"
+        ],
+        "version": "0.19.0+8c1e05747"
+      },
+      "miles": {
+        "file": "/root/miles/miles/__init__.py",
+        "path": [
+          "/root/miles/miles"
+        ],
+        "version": null
+      },
+      "sglang": {
+        "file": "/sgl-workspace/sglang/python/sglang/__init__.py",
+        "path": [
+          "/sgl-workspace/sglang/python/sglang"
+        ],
+        "version": "0.5.17.dev2157+ga8e5c632f"
+      }
+    },
+    "native_modules": {
+      "torch": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+      "torch._C": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so",
+      "torch.cuda": "/opt/venv/lib/python3.10/site-packages/torch/cuda/__init__.py"
+    },
+    "platform": "Linux-6.8.0-38-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12 (main, Jan  8 2026, 06:52:19) [GCC 11.4.0]",
+    "sglang_source_commit": "a8e5c632fe40555f720d4f2c69771ea8cf24f3c4",
+    "torch_version": "2.9.1+rocm7.2.0.git7e1940d4"
+  },
+  "initial_parameter_comparison": {
+    "max_abs": 0.0,
+    "metrics": {
+      "bias": {
+        "left_dtype": "torch.float32",
+        "left_shape": [
+          8
+        ],
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "mean_abs": 0.0,
+        "right_dtype": "torch.float32",
+        "right_shape": [
+          8
+        ]
+      },
+      "weight": {
+        "left_dtype": "torch.float32",
+        "left_shape": [
+          8,
+          16
+        ],
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "mean_abs": 0.0,
+        "right_dtype": "torch.float32",
+        "right_shape": [
+          8,
+          16
+        ]
+      }
+    },
+    "status": "match",
+    "tolerance": 0.0
+  },
+  "initial_visible_parameter_comparison": {
+    "max_abs": 0.0,
+    "metrics": {
+      "bias": {
+        "left_dtype": "torch.bfloat16",
+        "left_shape": [
+          8
+        ],
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "mean_abs": 0.0,
+        "right_dtype": "torch.bfloat16",
+        "right_shape": [
+          8
+        ]
+      },
+      "weight": {
+        "left_dtype": "torch.bfloat16",
+        "left_shape": [
+          8,
+          16
+        ],
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "mean_abs": 0.0,
+        "right_dtype": "torch.bfloat16",
+        "right_shape": [
+          8,
+          16
+        ]
+      }
+    },
+    "status": "match",
+    "tolerance": 0.0
+  },
+  "optimizer_update_isolation": {
+    "fsdp_step_1": {
+      "max_abs": 3.725290298461914e-09,
+      "metrics": {
+        "bias": {
+          "left_dtype": "torch.float32",
+          "left_shape": [
+            8
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.float32",
+          "right_shape": [
+            8
+          ]
+        },
+        "weight": {
+          "left_dtype": "torch.float32",
+          "left_shape": [
+            8,
+            16
+          ],
+          "max_abs": 3.725290298461914e-09,
+          "max_rel": 1.1380362963109292e-07,
+          "mean_abs": 5.820766091346741e-11,
+          "right_dtype": "torch.float32",
+          "right_shape": [
+            8,
+            16
+          ]
+        }
+      },
+      "status": "match",
+      "tolerance": 1e-06
+    },
+    "megatron_step_1": {
+      "max_abs": 3.725290298461914e-09,
+      "metrics": {
+        "bias": {
+          "left_dtype": "torch.float32",
+          "left_shape": [
+            8
+          ],
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "mean_abs": 0.0,
+          "right_dtype": "torch.float32",
+          "right_shape": [
+            8
+          ]
+        },
+        "weight": {
+          "left_dtype": "torch.float32",
+          "left_shape": [
+            8,
+            16
+          ],
+          "max_abs": 3.725290298461914e-09,
+          "max_rel": 2.2760725926218583e-07,
+          "mean_abs": 7.275957614183426e-11,
+          "right_dtype": "torch.float32",
+          "right_shape": [
+            8,
+            16
+          ]
+        }
+      },
+      "status": "match",
+      "tolerance": 1e-06
+    }
+  },
+  "scope": {
+    "does_not_prove": [
+      "Tensor, pipeline, context, expert, or sequence parallelism.",
+      "Megatron distributed optimizer or Megatron FSDP.",
+      "Transformer Engine fused kernels beyond the installed FusedAdam path.",
+      "Real language-model numerics, tokenizer behavior, rollout integration, or multi-LoRA behavior.",
+      "Performance, scaling, or production checkpoint compatibility."
+    ],
+    "proves": [
+      "Two-rank parameter, gradient, loss, consumed-sample, and reload behavior for the synthetic linear fixture.",
+      "bf16 compute with fp32 reduction/master parameters under the installed Torch and Megatron stack.",
+      "Native distributed checkpoint save/load round trips for both reduced backends."
+    ],
+    "unsupported_combinations": [
+      "FSDP2 fixture with tensor/pipeline/context/expert parallelism.",
+      "Megatron DDP fixture with distributed optimizer or nontrivial parallelism.",
+      "Cross-backend checkpoint interchange; each backend is reloaded into its own backend.",
+      "CPU or Gloo execution; this probe requires NCCL on two gfx950 devices."
+    ]
+  },
+  "step_comparisons": {
+    "step_1": {
+      "consumed_samples": {
+        "fsdp": 16,
+        "megatron": 16,
+        "status": "match"
+      },
+      "gradients": {
+        "max_abs": 0.0,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "match",
+        "tolerance": 2e-05
+      },
+      "loss": {
+        "max_abs": 0.0,
+        "metrics": [
+          {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              1
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              1
+            ]
+          }
+        ],
+        "status": "match",
+        "tolerance": 1e-05
+      },
+      "megatron_model_parameters": {
+        "max_abs": 0.013437509536743164,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 0.013437509536743164,
+            "max_rel": 0.11336240917444229,
+            "mean_abs": 0.007476805709302425,
+            "right_dtype": "torch.bfloat16",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 0.013437509536743164,
+            "max_rel": 1.584185004234314,
+            "mean_abs": 0.006879052612930536,
+            "right_dtype": "torch.bfloat16",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "mismatch",
+        "tolerance": 2e-05
+      },
+      "parameter_deltas": {
+        "max_abs": 3.725290298461914e-09,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 3.725290298461914e-09,
+            "max_rel": 3.725291151113197e-07,
+            "mean_abs": 7.275957614183426e-11,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "match",
+        "tolerance": 2e-05
+      },
+      "parameters": {
+        "max_abs": 3.725290298461914e-09,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 3.725290298461914e-09,
+            "max_rel": 1.1380360120938349e-07,
+            "mean_abs": 7.275957614183426e-11,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "match",
+        "tolerance": 2e-05
+      },
+      "visible_parameters": {
+        "max_abs": 0.015625,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.bfloat16",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 0.015625,
+            "max_rel": 0.11353711783885956,
+            "mean_abs": 0.00799560546875,
+            "right_dtype": "torch.bfloat16",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.bfloat16",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 0.015625,
+            "max_rel": 1.5891473293304443,
+            "mean_abs": 0.007028698921203613,
+            "right_dtype": "torch.bfloat16",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "match",
+        "tolerance": 0.02
+      }
+    },
+    "step_2": {
+      "consumed_samples": {
+        "fsdp": 32,
+        "megatron": 32,
+        "status": "match"
+      },
+      "gradients": {
+        "max_abs": 0.0,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "match",
+        "tolerance": 2e-05
+      },
+      "loss": {
+        "max_abs": 0.0,
+        "metrics": [
+          {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              1
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              1
+            ]
+          }
+        ],
+        "status": "match",
+        "tolerance": 1e-05
+      },
+      "megatron_model_parameters": {
+        "max_abs": 0.004385471343994141,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 0.0034542083740234375,
+            "max_rel": 0.002925188047811389,
+            "mean_abs": 0.0014516361989080906,
+            "right_dtype": "torch.bfloat16",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 0.004385471343994141,
+            "max_rel": 0.0037074268329888582,
+            "mean_abs": 0.0013087899424135685,
+            "right_dtype": "torch.bfloat16",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "mismatch",
+        "tolerance": 2e-05
+      },
+      "parameter_deltas": {
+        "max_abs": 1.4901161193847656e-08,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 1.4901161193847656e-08,
+            "max_rel": 1.01976922906033e-06,
+            "mean_abs": 1.862645149230957e-09,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 7.450580596923828e-09,
+            "max_rel": 5.549004526983481e-07,
+            "mean_abs": 1.5279510989785194e-10,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "match",
+        "tolerance": 2e-05
+      },
+      "parameters": {
+        "max_abs": 1.4901161193847656e-08,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 1.4901161193847656e-08,
+            "max_rel": 1.0896253854753013e-07,
+            "mean_abs": 1.862645149230957e-09,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.float32",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 7.450580596923828e-09,
+            "max_rel": 4.395367909637571e-07,
+            "mean_abs": 1.418811734765768e-10,
+            "right_dtype": "torch.float32",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "match",
+        "tolerance": 2e-05
+      },
+      "visible_parameters": {
+        "max_abs": 0.0,
+        "metrics": {
+          "bias": {
+            "left_dtype": "torch.bfloat16",
+            "left_shape": [
+              8
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.bfloat16",
+            "right_shape": [
+              8
+            ]
+          },
+          "weight": {
+            "left_dtype": "torch.bfloat16",
+            "left_shape": [
+              8,
+              16
+            ],
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "mean_abs": 0.0,
+            "right_dtype": "torch.bfloat16",
+            "right_shape": [
+              8,
+              16
+            ]
+          }
+        },
+        "status": "match",
+        "tolerance": 0.02
+      }
+    }
+  },
+  "task": "bounded FSDP2 vs Megatron-Core DDP parity probe"
+}
