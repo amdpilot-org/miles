@@ -1,0 +1,487 @@
+{
+  "all_sweep_observations": {
+    "packed_vs_unpacked": {
+      "absolute_max": 0.0,
+      "absolute_mean": 0.0,
+      "bitwise_equal_count": 116,
+      "count": 116,
+      "rmse": 0.0,
+      "signed_mean": 0.0
+    },
+    "rollout_batch_invariance": {
+      "absolute_max": 0.0,
+      "absolute_mean": 0.0,
+      "bitwise_equal_count": 116,
+      "count": 116,
+      "rmse": 0.0,
+      "signed_mean": 0.0
+    },
+    "training_vs_rollout": {
+      "flash_packed": {
+        "absolute_max": 0.16647815704345703,
+        "absolute_mean": 0.03192222754246202,
+        "bitwise_equal_count": 0,
+        "count": 116,
+        "rmse": 0.045194162467146054,
+        "signed_mean": -0.005495036663166408
+      },
+      "flash_unpacked": {
+        "absolute_max": 0.16647815704345703,
+        "absolute_mean": 0.03192222754246202,
+        "bitwise_equal_count": 0,
+        "count": 116,
+        "rmse": 0.045194162467146054,
+        "signed_mean": -0.005495036663166408
+      },
+      "triton_unpacked": {
+        "absolute_max": 0.1981663703918457,
+        "absolute_mean": 0.05212950520217419,
+        "bitwise_equal_count": 0,
+        "count": 116,
+        "rmse": 0.07032947714250601,
+        "signed_mean": 0.011628481655799109
+      }
+    },
+    "triton_vs_flash_unpacked": {
+      "absolute_max": 0.25,
+      "absolute_mean": 0.05416554418103448,
+      "bitwise_equal_count": 17,
+      "count": 116,
+      "rmse": 0.07656861924395558,
+      "signed_mean": 0.017123518318965518
+    }
+  },
+  "hardware": {
+    "device_count": 1,
+    "gcn_arch": "gfx950:sramecc+:xnack-",
+    "major": 9,
+    "minor": 5,
+    "multi_processor_count": 256,
+    "name": "AMD Instinct MI350X",
+    "total_memory_bytes": 270566162432,
+    "uuid": "63646365-3134-6334-6564-393765333530"
+  },
+  "model": {
+    "architecture": [
+      "Qwen3ForCausalLM"
+    ],
+    "dtype": "bfloat16",
+    "path": "/job/cache/models/Qwen3-0.6B",
+    "safetensors_sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+    "vocab_size": 151936
+  },
+  "per_batch": {
+    "1": {
+      "packed_vs_unpacked": {
+        "absolute_max": 0.0,
+        "absolute_mean": 0.0,
+        "bitwise_equal_count": 9,
+        "count": 9,
+        "rmse": 0.0,
+        "signed_mean": 0.0
+      },
+      "rollout_batch_invariance": {
+        "absolute_max": 0.0,
+        "absolute_mean": 0.0,
+        "bitwise_equal_count": 9,
+        "count": 9,
+        "rmse": 0.0,
+        "signed_mean": 0.0
+      },
+      "training": {
+        "flash_packed": {
+          "batch_invariance": {
+            "absolute_max": 0.0,
+            "absolute_mean": 0.0,
+            "bitwise_equal_count": 9,
+            "count": 9,
+            "rmse": 0.0,
+            "signed_mean": 0.0
+          },
+          "rollout_difference": {
+            "absolute_max": 0.05438607931137085,
+            "absolute_mean": 0.0100681914223565,
+            "bitwise_equal_count": 0,
+            "count": 9,
+            "rmse": 0.018897205925255664,
+            "signed_mean": -0.00770715872446696
+          }
+        },
+        "flash_unpacked": {
+          "batch_invariance": {
+            "absolute_max": 0.0,
+            "absolute_mean": 0.0,
+            "bitwise_equal_count": 9,
+            "count": 9,
+            "rmse": 0.0,
+            "signed_mean": 0.0
+          },
+          "rollout_difference": {
+            "absolute_max": 0.05438607931137085,
+            "absolute_mean": 0.0100681914223565,
+            "bitwise_equal_count": 0,
+            "count": 9,
+            "rmse": 0.018897205925255664,
+            "signed_mean": -0.00770715872446696
+          }
+        },
+        "triton_unpacked": {
+          "batch_invariance": {
+            "absolute_max": 0.0,
+            "absolute_mean": 0.0,
+            "bitwise_equal_count": 9,
+            "count": 9,
+            "rmse": 0.0,
+            "signed_mean": 0.0
+          },
+          "rollout_difference": {
+            "absolute_max": 0.17157357931137085,
+            "absolute_mean": 0.04517225424448649,
+            "bitwise_equal_count": 0,
+            "count": 9,
+            "rmse": 0.06946463710004205,
+            "signed_mean": 0.006249547004699707
+          }
+        }
+      },
+      "triton_vs_flash_unpacked": {
+        "absolute_max": 0.1171875,
+        "absolute_mean": 0.042168511284722224,
+        "bitwise_equal_count": 0,
+        "count": 9,
+        "rmse": 0.05884026838732971,
+        "signed_mean": 0.013956705729166666
+      }
+    },
+    "2": {
+      "packed_vs_unpacked": {
+        "absolute_max": 0.0,
+        "absolute_mean": 0.0,
+        "bitwise_equal_count": 16,
+        "count": 16,
+        "rmse": 0.0,
+        "signed_mean": 0.0
+      },
+      "rollout_batch_invariance": {
+        "absolute_max": 0.0,
+        "absolute_mean": 0.0,
+        "bitwise_equal_count": 16,
+        "count": 16,
+        "rmse": 0.0,
+        "signed_mean": 0.0
+      },
+      "training": {
+        "flash_packed": {
+          "batch_invariance": {
+            "absolute_max": 0.0,
+            "absolute_mean": 0.0,
+            "bitwise_equal_count": 16,
+            "count": 16,
+            "rmse": 0.0,
+            "signed_mean": 0.0
+          },
+          "rollout_difference": {
+            "absolute_max": 0.09381675720214844,
+            "absolute_mean": 0.026350341737270355,
+            "bitwise_equal_count": 0,
+            "count": 16,
+            "rmse": 0.03953633683777537,
+            "signed_mean": -0.017434529960155487
+          }
+        },
+        "flash_unpacked": {
+          "batch_invariance": {
+            "absolute_max": 0.0,
+            "absolute_mean": 0.0,
+            "bitwise_equal_count": 16,
+            "count": 16,
+            "rmse": 0.0,
+            "signed_mean": 0.0
+          },
+          "rollout_difference": {
+            "absolute_max": 0.09381675720214844,
+            "absolute_mean": 0.026350341737270355,
+            "bitwise_equal_count": 0,
+            "count": 16,
+            "rmse": 0.03953633683777537,
+            "signed_mean": -0.017434529960155487
+          }
+        },
+        "triton_unpacked": {
+          "batch_invariance": {
+            "absolute_max": 0.0,
+            "absolute_mean": 0.0,
+            "bitwise_equal_count": 16,
+            "count": 16,
+            "rmse": 0.0,
+            "signed_mean": 0.0
+          },
+          "rollout_difference": {
+            "absolute_max": 0.1981663703918457,
+            "absolute_mean": 0.058562152087688446,
+            "bitwise_equal_count": 0,
+            "count": 16,
+            "rmse": 0.08156840448723936,
+            "signed_mean": 0.013853617012500763
+          }
+        }
+      },
+      "triton_vs_flash_unpacked": {
+        "absolute_max": 0.25,
+        "absolute_mean": 0.06278228759765625,
+        "bitwise_equal_count": 1,
+        "count": 16,
+        "rmse": 0.08835637875071503,
+        "signed_mean": 0.03128814697265625
+      }
+    },
+    "4": {
+      "packed_vs_unpacked": {
+        "absolute_max": 0.0,
+        "absolute_mean": 0.0,
+        "bitwise_equal_count": 31,
+        "count": 31,
+        "rmse": 0.0,
+        "signed_mean": 0.0
+      },
+      "rollout_batch_invariance": {
+        "absolute_max": 0.0,
+        "absolute_mean": 0.0,
+        "bitwise_equal_count": 31,
+        "count": 31,
+        "rmse": 0.0,
+        "signed_mean": 0.0
+      },
+      "training": {
+        "flash_packed": {
+          "batch_invariance": {
+            "absolute_max": 0.0,
+            "absolute_mean": 0.0,
+            "bitwise_equal_count": 31,
+            "count": 31,
+            "rmse": 0.0,
+            "signed_mean": 0.0
+          },
+          "rollout_difference": {
+            "absolute_max": 0.11653614044189453,
+            "absolute_mean": 0.029503816918980692,
+            "bitwise_equal_count": 0,
+            "count": 31,
+            "rmse": 0.04199317793460328,
+            "signed_mean": -0.002732425327262571
+          }
+        },
+        "flash_unpacked": {
+          "batch_invariance": {
+            "absolute_max": 0.0,
+            "absolute_mean": 0.0,
+            "bitwise_equal_count": 31,
+            "count": 31,
+            "rmse": 0.0,
+            "signed_mean": 0.0
+          },
+          "rollout_difference": {
+            "absolute_max": 0.11653614044189453,
+            "absolute_mean": 0.029503816918980692,
+            "bitwise_equal_count": 0,
+            "count": 31,
+            "rmse": 0.04199317793460328,
+            "signed_mean": -0.002732425327262571
+          }
+        },
+        "triton_unpacked": {
+          "batch_invariance": {
+            "absolute_max": 0.0,
+            "absolute_mean": 0.0,
+            "bitwise_equal_count": 31,
+            "count": 31,
+            "rmse": 0.0,
+            "signed_mean": 0.0
+          },
+          "rollout_difference": {
+            "absolute_max": 0.1981663703918457,
+            "absolute_mean": 0.055373801699569146,
+            "bitwise_equal_count": 0,
+            "count": 31,
+            "rmse": 0.07381118149838306,
+            "signed_mean": 0.01951981131588259
+          }
+        }
+      },
+      "triton_vs_flash_unpacked": {
+        "absolute_max": 0.25,
+        "absolute_mean": 0.05463630922379032,
+        "bitwise_equal_count": 6,
+        "count": 31,
+        "rmse": 0.0773470165996017,
+        "signed_mean": 0.02225223664314516
+      }
+    },
+    "8": {
+      "packed_vs_unpacked": {
+        "absolute_max": 0.0,
+        "absolute_mean": 0.0,
+        "bitwise_equal_count": 60,
+        "count": 60,
+        "rmse": 0.0,
+        "signed_mean": 0.0
+      },
+      "rollout_batch_invariance": {
+        "absolute_max": 0.0,
+        "absolute_mean": 0.0,
+        "bitwise_equal_count": 60,
+        "count": 60,
+        "rmse": 0.0,
+        "signed_mean": 0.0
+      },
+      "training": {
+        "flash_packed": {
+          "batch_invariance": {
+            "absolute_max": 0.0,
+            "absolute_mean": 0.0,
+            "bitwise_equal_count": 60,
+            "count": 60,
+            "rmse": 0.0,
+            "signed_mean": 0.0
+          },
+          "rollout_difference": {
+            "absolute_max": 0.16647815704345703,
+            "absolute_mean": 0.03793568133066098,
+            "bitwise_equal_count": 0,
+            "count": 60,
+            "rmse": 0.05066907374475561,
+            "signed_mean": -0.00340670266499122
+          }
+        },
+        "flash_unpacked": {
+          "batch_invariance": {
+            "absolute_max": 0.0,
+            "absolute_mean": 0.0,
+            "bitwise_equal_count": 60,
+            "count": 60,
+            "rmse": 0.0,
+            "signed_mean": 0.0
+          },
+          "rollout_difference": {
+            "absolute_max": 0.16647815704345703,
+            "absolute_mean": 0.03793568133066098,
+            "bitwise_equal_count": 0,
+            "count": 60,
+            "rmse": 0.05066907374475561,
+            "signed_mean": -0.00340670266499122
+          }
+        },
+        "triton_unpacked": {
+          "batch_invariance": {
+            "absolute_max": 0.0,
+            "absolute_mean": 0.0,
+            "bitwise_equal_count": 60,
+            "count": 60,
+            "rmse": 0.0,
+            "signed_mean": 0.0
+          },
+          "rollout_difference": {
+            "absolute_max": 0.1981663703918457,
+            "absolute_mean": 0.04978150048603614,
+            "bitwise_equal_count": 0,
+            "count": 60,
+            "rmse": 0.06519074566477569,
+            "signed_mean": 0.007764765433967114
+          }
+        }
+      },
+      "triton_vs_flash_unpacked": {
+        "absolute_max": 0.25,
+        "absolute_mean": 0.053424072265625,
+        "bitwise_equal_count": 10,
+        "count": 60,
+        "rmse": 0.07511666714148658,
+        "signed_mean": 0.011171468098958333
+      }
+    }
+  },
+  "schema_version": 1,
+  "settings": {
+    "batch_sizes": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "rollout_attention_backend": "triton",
+    "rollout_cuda_graph": false,
+    "rollout_deterministic": true,
+    "rollout_radix_cache": false,
+    "rollout_sampling_temperature": 0.0,
+    "sglang_use_aiter": "0",
+    "temperature": 1.0,
+    "timeout_seconds": 300,
+    "training_batch_invariant_ops": true,
+    "training_logprob_path": "miles.backends.training_utils.loss_hub.math_utils.calculate_log_probs_and_entropy",
+    "use_rocm_aiter_rope_backend": null
+  },
+  "software": {
+    "miles_git_commit": "3a666ee4f7d25098796d80730afeb289cd8925f1",
+    "modules": {
+      "aiter": {
+        "path": "/sgl-workspace/aiter/aiter/__init__.py",
+        "version": null
+      },
+      "flash_attn": {
+        "path": "/opt/venv/lib/python3.10/site-packages/flash_attn/__init__.py",
+        "version": "2.8.3"
+      },
+      "megatron.core": {
+        "path": "/root/Megatron-LM/megatron/core/__init__.py",
+        "version": "0.19.0+8c1e05747"
+      },
+      "miles": {
+        "path": "/job/miles/miles/__init__.py",
+        "version": null
+      },
+      "native_modules": {
+        "aiter": {
+          "path": "/sgl-workspace/aiter/aiter/jit/module_aiter_core.so",
+          "version": null
+        },
+        "flash_attention": {
+          "path": "/opt/venv/lib/python3.10/site-packages/flash_attn_2_cuda.cpython-310-x86_64-linux-gnu.so",
+          "version": null
+        },
+        "torch": {
+          "path": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so",
+          "version": null
+        }
+      },
+      "sglang": {
+        "path": "/sgl-workspace/sglang/python/sglang/__init__.py",
+        "version": "0.5.17.dev2157+ga8e5c632f"
+      },
+      "torch": {
+        "path": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+        "version": "2.9.1+rocm7.2.0.git7e1940d4"
+      },
+      "torch_native": {
+        "path": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so",
+        "version": null
+      },
+      "transformer_engine": {
+        "path": "/opt/venv/lib/python3.10/site-packages/transformer_engine/__init__.py",
+        "version": "2.17.0"
+      },
+      "transformers": {
+        "path": "/opt/venv/lib/python3.10/site-packages/transformers/__init__.py",
+        "version": "5.12.1"
+      },
+      "triton": {
+        "path": "/sgl-workspace/triton-custom/python/triton/__init__.py",
+        "version": "3.6.0"
+      }
+    },
+    "platform": "Linux-4.18.0-513.1.1.el8_9.g12b5.x86_64-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "torch_cuda_version": null,
+    "torch_hip_version": "7.2.26015-fc0010cf6a"
+  },
+  "source_results": "/job/miles/reports/j-473f9c74680e/results_batch_invariant.json"
+}
