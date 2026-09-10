@@ -1,0 +1,172 @@
+{
+  "advantages": [
+    0.4166666865348816,
+    0.4166666865348816,
+    0.4166666865348816,
+    0.4166666865348816,
+    -0.08333331346511841,
+    -0.08333331346511841,
+    -0.3333333134651184,
+    -0.3333333134651184
+  ],
+  "expectation": "current",
+  "gpu": {
+    "capability": [
+      9,
+      5
+    ],
+    "count": 1,
+    "device": "cuda:0",
+    "name": "AMD Instinct MI350X"
+  },
+  "imports": {
+    "megatron": {
+      "file": null,
+      "name": "megatron",
+      "paths": [
+        "/opt/venv/lib/python3.10/site-packages/megatron",
+        "__editable__.megatron_core-0.19.0+8c1e05747.finder.__path_hook__"
+      ]
+    },
+    "megatron_core": {
+      "file": "/root/Megatron-LM/megatron/core/__init__.py",
+      "name": "megatron.core",
+      "paths": [
+        "/root/Megatron-LM/megatron/core"
+      ]
+    },
+    "miles": {
+      "file": "/job/miles/miles/__init__.py",
+      "name": "miles",
+      "paths": [
+        "/job/miles/miles"
+      ]
+    },
+    "miles_loss_path": {
+      "file": "/job/miles/miles/backends/training_utils/loss.py",
+      "name": "miles.backends.training_utils.loss",
+      "paths": []
+    },
+    "miles_policy_loss_path": {
+      "file": "/job/miles/miles/backends/training_utils/loss_hub/losses.py",
+      "name": "miles.backends.training_utils.loss_hub.losses",
+      "paths": []
+    },
+    "miles_reward_path": {
+      "file": "/job/miles/miles/ray/rollout/train_data_conversion.py",
+      "name": "miles.ray.rollout.train_data_conversion",
+      "paths": []
+    },
+    "sglang": {
+      "file": "/sgl-workspace/sglang/python/sglang/__init__.py",
+      "name": "sglang",
+      "paths": [
+        "/sgl-workspace/sglang/python/sglang"
+      ]
+    },
+    "torch": {
+      "file": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+      "name": "torch",
+      "paths": [
+        "/opt/venv/lib/python3.10/site-packages/torch"
+      ]
+    },
+    "torch_native": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so"
+  },
+  "logical_rollouts": {
+    "ids": [
+      10,
+      11,
+      12
+    ],
+    "rewards": [
+      1.0,
+      0.5,
+      0.25
+    ],
+    "sibling_counts": [
+      2,
+      1,
+      1
+    ]
+  },
+  "loss": -5.960464477539063e-08,
+  "normalized_rewards": [
+    0.4166666865348816,
+    0.4166666865348816,
+    -0.08333331346511841,
+    -0.3333333134651184
+  ],
+  "per_token_loss_weights": [
+    0.25,
+    0.25,
+    0.25,
+    0.25,
+    0.5,
+    0.5,
+    0.5,
+    0.5
+  ],
+  "raw_rewards": [
+    1.0,
+    1.0,
+    0.5,
+    0.25
+  ],
+  "response_logits_gradient": [
+    [
+      -0.0520833358168602,
+      0.0520833358168602
+    ],
+    [
+      -0.0520833358168602,
+      0.0520833358168602
+    ],
+    [
+      -0.0520833358168602,
+      0.0520833358168602
+    ],
+    [
+      -0.0520833358168602,
+      0.0520833358168602
+    ],
+    [
+      0.020833328366279602,
+      -0.020833328366279602
+    ],
+    [
+      0.020833328366279602,
+      -0.020833328366279602
+    ],
+    [
+      0.0833333283662796,
+      -0.0833333283662796
+    ],
+    [
+      0.0833333283662796,
+      -0.0833333283662796
+    ]
+  ],
+  "rollout_ids": [
+    10,
+    10,
+    11,
+    12
+  ],
+  "rollout_mask_sums": [
+    4,
+    4,
+    2,
+    2
+  ],
+  "sample_loss_weights": [
+    0.5,
+    0.5,
+    1.0,
+    1.0
+  ],
+  "torch": {
+    "hip": "7.2.26015-fc0010cf6a",
+    "version": "2.9.1+rocm7.2.0.git7e1940d4"
+  }
+}
