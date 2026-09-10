@@ -1,0 +1,1502 @@
+{
+  "cycles": 32,
+  "device": {
+    "name": "AMD Instinct MI350X",
+    "capability": [
+      9,
+      5
+    ],
+    "count": 1
+  },
+  "versions": {
+    "torch": "2.9.1+rocm7.2.0.git7e1940d4",
+    "hip": "7.2.26015-fc0010cf6a",
+    "sglang_commit": "a8e5c632fe40555f720d4f2c69771ea8cf24f3c4",
+    "miles_commit": "f21cd30c8d02e8c38c47bde1d3d7f855f47b8a04"
+  },
+  "paths": {
+    "sglang_swa_pool": "/sgl-workspace/sglang/python/sglang/srt/mem_cache/swa_memory_pool.py",
+    "torch_memory_saver_python": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver/__init__.py",
+    "torch_memory_saver_native": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver_hook_mode_preload.abi3.so"
+  },
+  "process_group": {
+    "backend": "nccl",
+    "world_size": 1,
+    "timeout_seconds": 60,
+    "rendezvous_file": "/tmp/miles-swa-tms-5721-1789014223740708550.store"
+  },
+  "records": [
+    {
+      "cycle": 0,
+      "allocate_seconds": 0.030067439191043377,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.13631709199398756,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008792774751782417,
+      "memory_before_pause": {
+        "free_gib": 249.287109375,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.2657742500305176,
+        "reserved_gib": 1.357421875
+      },
+      "memory_after_pause": {
+        "free_gib": 250.294921875,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.2657742500305176,
+        "reserved_gib": 1.357421875
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 1.137212673202157,
+      "collective_seconds": 1.5915120150893927,
+      "optimizer_update_seconds": 0.021191509440541267,
+      "loss": 8.388460159301758,
+      "local_gradient_norm": 0.4169081747531891,
+      "collective_gradient_norm": 0.4169081747531891,
+      "optimizer_update_norm": 5.5156051530502737e-05,
+      "resume_seconds": 0.00029503367841243744,
+      "memory_after_resume": {
+        "free_gib": 247.69140625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4025554656982422,
+        "reserved_gib": 1.869140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 1,
+      "allocate_seconds": 0.00027935300022363663,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002740919589996338,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008200183510780334,
+      "memory_before_pause": {
+        "free_gib": 247.681640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 1.869140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.689453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 1.869140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031875288113951683,
+      "collective_seconds": 0.0005098646506667137,
+      "optimizer_update_seconds": 0.00025765132158994675,
+      "loss": 8.392586708068848,
+      "local_gradient_norm": 0.417005717754364,
+      "collective_gradient_norm": 0.417005717754364,
+      "optimizer_update_norm": 5.515662269317545e-05,
+      "resume_seconds": 0.00030416250228881836,
+      "memory_after_resume": {
+        "free_gib": 247.556640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 1.994140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 2,
+      "allocate_seconds": 0.00024626217782497406,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00024863239377737045,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008369972929358482,
+      "memory_before_pause": {
+        "free_gib": 247.556640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 1.994140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.564453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 1.994140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003195628523826599,
+      "collective_seconds": 0.0004953546449542046,
+      "optimizer_update_seconds": 0.0002648923546075821,
+      "loss": 8.391960144042969,
+      "local_gradient_norm": 0.41702350974082947,
+      "collective_gradient_norm": 0.41702350974082947,
+      "optimizer_update_norm": 5.514014628715813e-05,
+      "resume_seconds": 0.00027431268244981766,
+      "memory_after_resume": {
+        "free_gib": 247.556640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 1.994140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 3,
+      "allocate_seconds": 0.00022584199905395508,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002503814175724983,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008642878383398056,
+      "memory_before_pause": {
+        "free_gib": 247.556640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 1.994140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.564453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 1.994140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003170507960021496,
+      "collective_seconds": 0.0004996852949261665,
+      "optimizer_update_seconds": 0.0002600420266389847,
+      "loss": 8.38023853302002,
+      "local_gradient_norm": 0.41710829734802246,
+      "collective_gradient_norm": 0.41710829734802246,
+      "optimizer_update_norm": 5.5145170335890725e-05,
+      "resume_seconds": 0.0002738526090979576,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 4,
+      "allocate_seconds": 0.00022880174219608307,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00025991350412368774,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008713677525520325,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0032227393239736557,
+      "collective_seconds": 0.0004925942048430443,
+      "optimizer_update_seconds": 0.0002674320712685585,
+      "loss": 8.39025592803955,
+      "local_gradient_norm": 0.4169278144836426,
+      "collective_gradient_norm": 0.4169278144836426,
+      "optimizer_update_norm": 5.511223935172893e-05,
+      "resume_seconds": 0.00029316265136003494,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 5,
+      "allocate_seconds": 0.00023817364126443863,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00025984179228544235,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008904682472348213,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031802188605070114,
+      "collective_seconds": 0.0004895748570561409,
+      "optimizer_update_seconds": 0.00025038234889507294,
+      "loss": 8.38860034942627,
+      "local_gradient_norm": 0.41677626967430115,
+      "collective_gradient_norm": 0.41677626967430115,
+      "optimizer_update_norm": 5.514630538527854e-05,
+      "resume_seconds": 0.0002678819000720978,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 6,
+      "allocate_seconds": 0.00022803153842687607,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002632131800055504,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.000910148024559021,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003180648200213909,
+      "collective_seconds": 0.0005032550543546677,
+      "optimizer_update_seconds": 0.0002551525831222534,
+      "loss": 8.39103889465332,
+      "local_gradient_norm": 0.41731610894203186,
+      "collective_gradient_norm": 0.41731610894203186,
+      "optimizer_update_norm": 5.510691335075535e-05,
+      "resume_seconds": 0.000276101753115654,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 7,
+      "allocate_seconds": 0.0002281414344906807,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002607712522149086,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008390480652451515,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.00319540873169899,
+      "collective_seconds": 0.0005114041268825531,
+      "optimizer_update_seconds": 0.0002587325870990753,
+      "loss": 8.390810012817383,
+      "local_gradient_norm": 0.41684937477111816,
+      "collective_gradient_norm": 0.41684937477111816,
+      "optimizer_update_norm": 5.51210978301242e-05,
+      "resume_seconds": 0.0002613430842757225,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 8,
+      "allocate_seconds": 0.00022411253303289413,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00025467202067375183,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008559077978134155,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003184909000992775,
+      "collective_seconds": 0.00050396379083395,
+      "optimizer_update_seconds": 0.00025809183716773987,
+      "loss": 8.38793659210205,
+      "local_gradient_norm": 0.41695407032966614,
+      "collective_gradient_norm": 0.41695407032966614,
+      "optimizer_update_norm": 5.520970080397092e-05,
+      "resume_seconds": 0.0002724733203649521,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 9,
+      "allocate_seconds": 0.00022859126329421997,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00026031211018562317,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008721780031919479,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031953882426023483,
+      "collective_seconds": 0.0005142148584127426,
+      "optimizer_update_seconds": 0.00025970302522182465,
+      "loss": 8.391875267028809,
+      "local_gradient_norm": 0.4169185757637024,
+      "collective_gradient_norm": 0.4169185757637024,
+      "optimizer_update_norm": 5.515214434126392e-05,
+      "resume_seconds": 0.0002817222848534584,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 10,
+      "allocate_seconds": 0.00023414194583892822,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00025136303156614304,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008391179144382477,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0032000187784433365,
+      "collective_seconds": 0.00047248415648937225,
+      "optimizer_update_seconds": 0.0002721427008509636,
+      "loss": 8.384692192077637,
+      "local_gradient_norm": 0.4167921543121338,
+      "collective_gradient_norm": 0.4167921543121338,
+      "optimizer_update_norm": 5.518276520888321e-05,
+      "resume_seconds": 0.0002743219956755638,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 11,
+      "allocate_seconds": 0.00022471323609352112,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002518119290471077,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008484069257974625,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003185178153216839,
+      "collective_seconds": 0.0004994040355086327,
+      "optimizer_update_seconds": 0.0002649221569299698,
+      "loss": 8.388368606567383,
+      "local_gradient_norm": 0.4171992838382721,
+      "collective_gradient_norm": 0.4171992838382721,
+      "optimizer_update_norm": 5.517600220628083e-05,
+      "resume_seconds": 0.0003035925328731537,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 12,
+      "allocate_seconds": 0.00024960190057754517,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002659531310200691,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008366275578737259,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003213249146938324,
+      "collective_seconds": 0.0005303248763084412,
+      "optimizer_update_seconds": 0.00026076193898916245,
+      "loss": 8.384038925170898,
+      "local_gradient_norm": 0.4170601963996887,
+      "collective_gradient_norm": 0.4170601963996887,
+      "optimizer_update_norm": 5.5082251492422074e-05,
+      "resume_seconds": 0.00028209295123815536,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 13,
+      "allocate_seconds": 0.00024192128330469131,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002528727054595947,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008294088765978813,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031922580674290657,
+      "collective_seconds": 0.0004755547270178795,
+      "optimizer_update_seconds": 0.00027064140886068344,
+      "loss": 8.387807846069336,
+      "local_gradient_norm": 0.4169166684150696,
+      "collective_gradient_norm": 0.4169166684150696,
+      "optimizer_update_norm": 5.516048622666858e-05,
+      "resume_seconds": 0.00027931202203035355,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 14,
+      "allocate_seconds": 0.0002358919009566307,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00025614257901906967,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008357977494597435,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003178599290549755,
+      "collective_seconds": 0.0004951842129230499,
+      "optimizer_update_seconds": 0.0002572024241089821,
+      "loss": 8.390578269958496,
+      "local_gradient_norm": 0.41687679290771484,
+      "collective_gradient_norm": 0.41687679290771484,
+      "optimizer_update_norm": 5.515184602700174e-05,
+      "resume_seconds": 0.0002585332840681076,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 15,
+      "allocate_seconds": 0.00022015254944562912,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00025703199207782745,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0007994873449206352,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003157888539135456,
+      "collective_seconds": 0.00047162454575300217,
+      "optimizer_update_seconds": 0.0002485523000359535,
+      "loss": 8.394346237182617,
+      "local_gradient_norm": 0.41719821095466614,
+      "collective_gradient_norm": 0.41719821095466614,
+      "optimizer_update_norm": 5.514348595170304e-05,
+      "resume_seconds": 0.0002602823078632355,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 16,
+      "allocate_seconds": 0.0002271914854645729,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002409517765045166,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.000827418640255928,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031563490629196167,
+      "collective_seconds": 0.00048429518938064575,
+      "optimizer_update_seconds": 0.0002514515072107315,
+      "loss": 8.386466979980469,
+      "local_gradient_norm": 0.416981965303421,
+      "collective_gradient_norm": 0.416981965303421,
+      "optimizer_update_norm": 5.519881233340129e-05,
+      "resume_seconds": 0.00025277212262153625,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 17,
+      "allocate_seconds": 0.00021559186279773712,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002495916560292244,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.000789727084338665,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003157597966492176,
+      "collective_seconds": 0.00047922413796186447,
+      "optimizer_update_seconds": 0.000276452861726284,
+      "loss": 8.38479232788086,
+      "local_gradient_norm": 0.41722774505615234,
+      "collective_gradient_norm": 0.41722774505615234,
+      "optimizer_update_norm": 5.514492659131065e-05,
+      "resume_seconds": 0.00025789346545934677,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 18,
+      "allocate_seconds": 0.00021874159574508667,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00024310313165187836,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008365372195839882,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031500374898314476,
+      "collective_seconds": 0.0004885038360953331,
+      "optimizer_update_seconds": 0.0002449117600917816,
+      "loss": 8.386191368103027,
+      "local_gradient_norm": 0.41723358631134033,
+      "collective_gradient_norm": 0.41723358631134033,
+      "optimizer_update_norm": 5.5107695516198874e-05,
+      "resume_seconds": 0.00024848151952028275,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 19,
+      "allocate_seconds": 0.00021784193813800812,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00024523213505744934,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008532078936696053,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003148447722196579,
+      "collective_seconds": 0.00045843422412872314,
+      "optimizer_update_seconds": 0.00024479255080223083,
+      "loss": 8.387144088745117,
+      "local_gradient_norm": 0.4165954887866974,
+      "collective_gradient_norm": 0.4165954887866974,
+      "optimizer_update_norm": 5.50910372112412e-05,
+      "resume_seconds": 0.000270661897957325,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 20,
+      "allocate_seconds": 0.00022146198898553848,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00023495126515626907,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008178679272532463,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031437380239367485,
+      "collective_seconds": 0.00045636389404535294,
+      "optimizer_update_seconds": 0.0002470817416906357,
+      "loss": 8.390531539916992,
+      "local_gradient_norm": 0.4169626832008362,
+      "collective_gradient_norm": 0.4169626832008362,
+      "optimizer_update_norm": 5.516156670637429e-05,
+      "resume_seconds": 0.0002606622874736786,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 21,
+      "allocate_seconds": 0.00021682213991880417,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00024727173149585724,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008268477395176888,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031175678595900536,
+      "collective_seconds": 0.00045846402645111084,
+      "optimizer_update_seconds": 0.00024890247732400894,
+      "loss": 8.383003234863281,
+      "local_gradient_norm": 0.4168097674846649,
+      "collective_gradient_norm": 0.4168097674846649,
+      "optimizer_update_norm": 5.513303040061146e-05,
+      "resume_seconds": 0.0002651223912835121,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 22,
+      "allocate_seconds": 0.00021970178931951523,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00024155154824256897,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008486369624733925,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003105977550148964,
+      "collective_seconds": 0.00046707410365343094,
+      "optimizer_update_seconds": 0.00024689268320798874,
+      "loss": 8.39090347290039,
+      "local_gradient_norm": 0.4170733392238617,
+      "collective_gradient_norm": 0.4170733392238617,
+      "optimizer_update_norm": 5.51484918105416e-05,
+      "resume_seconds": 0.00025336164981126785,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 23,
+      "allocate_seconds": 0.0002226419746875763,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00023784209042787552,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008635381236672401,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031406590715050697,
+      "collective_seconds": 0.0004792558029294014,
+      "optimizer_update_seconds": 0.0002613021060824394,
+      "loss": 8.38781452178955,
+      "local_gradient_norm": 0.4172481894493103,
+      "collective_gradient_norm": 0.4172481894493103,
+      "optimizer_update_norm": 5.514575605047867e-05,
+      "resume_seconds": 0.00026079360395669937,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 24,
+      "allocate_seconds": 0.00022355187684297562,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002388525754213333,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008213883265852928,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031791580840945244,
+      "collective_seconds": 0.0004767337813973427,
+      "optimizer_update_seconds": 0.00024970248341560364,
+      "loss": 8.383489608764648,
+      "local_gradient_norm": 0.4169047772884369,
+      "collective_gradient_norm": 0.4169047772884369,
+      "optimizer_update_norm": 5.5111147958086804e-05,
+      "resume_seconds": 0.00024282187223434448,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 25,
+      "allocate_seconds": 0.00021727103739976883,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002467529848217964,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008014487102627754,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003145798109471798,
+      "collective_seconds": 0.00046479422599077225,
+      "optimizer_update_seconds": 0.00026890169829130173,
+      "loss": 8.389045715332031,
+      "local_gradient_norm": 0.4172944128513336,
+      "collective_gradient_norm": 0.4172944128513336,
+      "optimizer_update_norm": 5.5127595260273665e-05,
+      "resume_seconds": 0.0002510529011487961,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 26,
+      "allocate_seconds": 0.0002187732607126236,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002552131190896034,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008094562217593193,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031544892117381096,
+      "collective_seconds": 0.0004562642425298691,
+      "optimizer_update_seconds": 0.00023624300956726074,
+      "loss": 8.395315170288086,
+      "local_gradient_norm": 0.41706955432891846,
+      "collective_gradient_norm": 0.41706955432891846,
+      "optimizer_update_norm": 5.5186250392580405e-05,
+      "resume_seconds": 0.0002617929130792618,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 27,
+      "allocate_seconds": 0.0002206321805715561,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.000245862640440464,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008266372606158257,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031560882925987244,
+      "collective_seconds": 0.00046298466622829437,
+      "optimizer_update_seconds": 0.00025795307010412216,
+      "loss": 8.388917922973633,
+      "local_gradient_norm": 0.41698551177978516,
+      "collective_gradient_norm": 0.41698551177978516,
+      "optimizer_update_norm": 5.514481381396763e-05,
+      "resume_seconds": 0.0002674618735909462,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 28,
+      "allocate_seconds": 0.00022034253925085068,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00023878179490566254,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0007912470027804375,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.0031673498451709747,
+      "collective_seconds": 0.000469844788312912,
+      "optimizer_update_seconds": 0.0002443920820951462,
+      "loss": 8.393549919128418,
+      "local_gradient_norm": 0.41714605689048767,
+      "collective_gradient_norm": 0.41714605689048767,
+      "optimizer_update_norm": 5.5128195526776835e-05,
+      "resume_seconds": 0.0002559218555688858,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 29,
+      "allocate_seconds": 0.00021712202578783035,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002463320270180702,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.0008257376030087471,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003179319202899933,
+      "collective_seconds": 0.00045683421194553375,
+      "optimizer_update_seconds": 0.00025517214089632034,
+      "loss": 8.387454986572266,
+      "local_gradient_norm": 0.4171120524406433,
+      "collective_gradient_norm": 0.4171120524406433,
+      "optimizer_update_norm": 5.513100404641591e-05,
+      "resume_seconds": 0.00025756191462278366,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 30,
+      "allocate_seconds": 0.00022001191973686218,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.00026884209364652634,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.000797497108578682,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003178708255290985,
+      "collective_seconds": 0.0004592733457684517,
+      "optimizer_update_seconds": 0.0002472829073667526,
+      "loss": 8.394268989562988,
+      "local_gradient_norm": 0.4170572757720947,
+      "collective_gradient_norm": 0.4170572757720947,
+      "optimizer_update_norm": 5.514835356734693e-05,
+      "resume_seconds": 0.0002596713602542877,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    },
+    {
+      "cycle": 31,
+      "allocate_seconds": 0.00021636206656694412,
+      "allocator_after_allocate": {
+        "available": 126976,
+        "full_available": 126976,
+        "swa_available": 126976
+      },
+      "release_allocator_seconds": 0.0002503916621208191,
+      "allocator_after_release": {
+        "available": 131072,
+        "full_available": 131072,
+        "swa_available": 131072
+      },
+      "pause_seconds": 0.000796876847743988,
+      "memory_before_pause": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "memory_after_pause": {
+        "free_gib": 248.439453125,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "released_gib": 1.0078125,
+      "training_parameter_mib": 64.015625,
+      "train_forward_backward_seconds": 0.003165598027408123,
+      "collective_seconds": 0.0004882644861936569,
+      "optimizer_update_seconds": 0.00025804340839385986,
+      "loss": 8.383678436279297,
+      "local_gradient_norm": 0.4173724353313446,
+      "collective_gradient_norm": 0.4173724353313446,
+      "optimizer_update_norm": 5.5121665354818106e-05,
+      "resume_seconds": 0.00026354193687438965,
+      "memory_after_resume": {
+        "free_gib": 247.431640625,
+        "total_gib": 251.984375,
+        "allocated_gib": 1.4650859832763672,
+        "reserved_gib": 2.119140625
+      },
+      "token_output_continuous": true,
+      "logit_output_continuous": true
+    }
+  ]
+}
