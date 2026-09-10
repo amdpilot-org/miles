@@ -1,0 +1,228 @@
+{
+  "distributed": {
+    "device_count": 2,
+    "gpu_name": "AMD Instinct MI355X",
+    "process_group_timeout_seconds": 120,
+    "tensor_parallel_size": 2,
+    "world_size": 2
+  },
+  "environment_overrides": {
+    "AITER_CONFIG_GEMM_BF16": "/sgl-workspace/aiter/aiter/configs/bf16_tuned_gemm.csv",
+    "USE_ROCM_AITER_ROPE_BACKEND": "0"
+  },
+  "fixture": "two-gpu controlled row-parallel linear",
+  "gradients": {
+    "det_input_grad": {
+      "bit_pattern": "0x40060000",
+      "dtype": "bfloat16",
+      "first_value": 2.09375,
+      "name": "det_input_grad",
+      "shape": [
+        64,
+        4864
+      ]
+    },
+    "det_weight_grad": {
+      "bit_pattern": "0x43060000",
+      "dtype": "bfloat16",
+      "first_value": 134.0,
+      "name": "det_weight_grad",
+      "shape": [
+        128,
+        4864
+      ]
+    },
+    "loss": "sum(output * output)",
+    "native_input_grad": {
+      "bit_pattern": "0x40060000",
+      "dtype": "bfloat16",
+      "first_value": 2.09375,
+      "name": "native_input_grad",
+      "shape": [
+        64,
+        4864
+      ]
+    },
+    "native_vs_det_input_grad_bitwise": true,
+    "native_vs_det_input_grad_difference": {
+      "absolute_max": 0.0,
+      "relative_max": 0.0
+    },
+    "native_vs_det_weight_grad_bitwise": true,
+    "native_vs_det_weight_grad_difference": {
+      "absolute_max": 0.0,
+      "relative_max": 0.0
+    },
+    "native_weight_grad": {
+      "bit_pattern": "0x43060000",
+      "dtype": "bfloat16",
+      "first_value": 134.0,
+      "name": "native_weight_grad",
+      "shape": [
+        128,
+        4864
+      ]
+    },
+    "sglang_autograd_available": false
+  },
+  "issue": "radixark/miles#1485",
+  "limitations": [
+    "Synthetic one-nonzero-per-block case isolates outer reduction order, not general GEMM numerics.",
+    "TP=2 makes cross-rank native and deterministic folds identical; it does not test non-power-of-two rank folds.",
+    "SGLang matmul_tp_inv is inference-only in this path and has no autograd implementation.",
+    "This fixture does not measure throughput and does not prove end-to-end Qwen3-4B parity."
+  ],
+  "modules": [
+    {
+      "name": "torch",
+      "path": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+      "version": "2.9.1+rocm7.2.0.git7e1940d4"
+    },
+    {
+      "name": "megatron.core",
+      "path": "/root/Megatron-LM/megatron/core/__init__.py",
+      "version": "0.19.0+8c1e05747"
+    },
+    {
+      "name": "sglang",
+      "path": "/sgl-workspace/sglang/python/sglang/__init__.py",
+      "version": "0.5.17.dev2157+ga8e5c632f"
+    },
+    {
+      "name": "miles",
+      "path": "/job/miles/miles/__init__.py",
+      "version": "unknown"
+    }
+  ],
+  "native_paths": {
+    "megatron_row_parallel": "/root/Megatron-LM/megatron/core/tensor_parallel/layers.py",
+    "miles_det_process_group": "/job/miles/miles/utils/test_utils/det_process_group.py",
+    "sglang_row_parameter": "/sgl-workspace/sglang/python/sglang/srt/layers/parameter.py",
+    "sglang_tp_invariant_ops": "/sgl-workspace/sglang/python/sglang/srt/tp_invariant_ops/tp_invariant_ops.py",
+    "torch_c": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so",
+    "torch_hip": "7.2.26015-fc0010cf6a"
+  },
+  "outputs": {
+    "megatron_det_global": {
+      "bit_pattern": "0x3f860000",
+      "dtype": "bfloat16",
+      "first_value": 1.046875,
+      "name": "megatron_det_global",
+      "shape": [
+        64,
+        128
+      ]
+    },
+    "megatron_global_vs_sglang_global": {
+      "absolute_max": 0.0546875,
+      "relative_max": 0.05223880708217621
+    },
+    "megatron_local_reference": {
+      "bit_pattern": "0x3f060000",
+      "dtype": "bfloat16",
+      "first_value": 0.5234375,
+      "name": "megatron_local_reference",
+      "shape": [
+        64,
+        128
+      ]
+    },
+    "megatron_local_reference_allreduce_bitwise": true,
+    "megatron_local_vs_sglang_local": {
+      "absolute_max": 0.02734375,
+      "relative_max": 0.05223880708217621
+    },
+    "megatron_native_global": {
+      "bit_pattern": "0x3f860000",
+      "dtype": "bfloat16",
+      "first_value": 1.046875,
+      "name": "megatron_native_global",
+      "shape": [
+        64,
+        128
+      ]
+    },
+    "megatron_native_vs_det_bitwise": true,
+    "megatron_native_vs_det_difference": {
+      "absolute_max": 0.0,
+      "relative_max": 0.0
+    },
+    "sglang_global": {
+      "bit_pattern": "0x3f7e0000",
+      "dtype": "bfloat16",
+      "first_value": 0.9921875,
+      "name": "sglang_global",
+      "shape": [
+        64,
+        128
+      ]
+    },
+    "sglang_local": {
+      "bit_pattern": "0x3efe0000",
+      "dtype": "bfloat16",
+      "first_value": 0.49609375,
+      "name": "sglang_local",
+      "shape": [
+        64,
+        128
+      ]
+    }
+  },
+  "precision": {
+    "block_k": 128,
+    "dtype": "bfloat16",
+    "first_level_block": 19,
+    "fp32_accum": false,
+    "level_k": 2,
+    "partial_count_per_rank": 38
+  },
+  "reduction_order": {
+    "padded_pairwise_tree": {
+      "bit_pattern": "0x3f0a0000",
+      "dtype": "bfloat16",
+      "first_value": 0.5390625,
+      "name": "padded_pairwise_tree",
+      "shape": []
+    },
+    "sequential": {
+      "bit_pattern": "0x3f080000",
+      "dtype": "bfloat16",
+      "first_value": 0.53125,
+      "name": "sequential",
+      "shape": []
+    },
+    "sglang_local_matches_two_level": true,
+    "sglang_local_vs_padded_pairwise_tree": {
+      "absolute_max": 0.04296875,
+      "relative_max": 0.07971014827489853
+    },
+    "sglang_local_vs_sequential": {
+      "absolute_max": 0.03515625,
+      "relative_max": 0.06617647409439087
+    },
+    "sglang_other_columns_zero": true,
+    "sglang_two_level": {
+      "bit_pattern": "0x3efe0000",
+      "dtype": "bfloat16",
+      "first_value": 0.49609375,
+      "name": "sglang_two_level",
+      "shape": []
+    }
+  },
+  "source_commit": "e5125a97e1fd383f005f4de258a5985026e09425",
+  "weight_conversion": {
+    "bitwise_equal": true,
+    "difference": {
+      "absolute_max": 0.0,
+      "relative_max": 0.0
+    },
+    "hf_name": "model.layers.0.mlp.down_proj.weight",
+    "megatron_name": "module.module.decoder.layers.0.mlp.linear_fc2.weight",
+    "sglang_loader_bitwise_equal": true,
+    "sglang_loader_difference": {
+      "absolute_max": 0.0,
+      "relative_max": 0.0
+    },
+    "sglang_policy_enabled": true
+  }
+}
