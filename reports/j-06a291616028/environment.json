@@ -1,0 +1,32 @@
+{
+  "runtime_image": "amdpilotv2/miles-job:gbt350-d957-20260909",
+  "python": "/opt/venv/bin/python",
+  "miles_commit": "e5125a97e1fd383f005f4de258a5985026e09425",
+  "miles_source_path": "/job/miles/miles",
+  "sglang_commit": "a8e5c632fe40555f720d4f2c69771ea8cf24f3c4",
+  "sglang_source_path": "/sgl-workspace/sglang/python/sglang",
+  "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+  "torch_source_path": "/opt/venv/lib/python3.10/site-packages/torch",
+  "hip_version": "7.2.26015-fc0010cf6a",
+  "rccl_version": "2.27.7",
+  "transformers_version": "5.12.1",
+  "transformers_source_path": "/opt/venv/lib/python3.10/site-packages/transformers",
+  "gpus": [
+    {
+      "index": 0,
+      "name": "AMD Instinct MI350X",
+      "capability": [9, 5],
+      "gfx": "gfx950"
+    },
+    {
+      "index": 1,
+      "name": "AMD Instinct MI350X",
+      "capability": [9, 5],
+      "gfx": "gfx950"
+    }
+  ],
+  "model": {
+    "path": "/job/cache/models/Qwen3-0.6B",
+    "download_size_bytes": 1503300328
+  }
+}
