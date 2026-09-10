@@ -1,0 +1,119 @@
+{
+  "overall_pass": true,
+  "guard_probe": {
+    "deterministic_thd_rejected": true
+  },
+  "steps": 64,
+  "forward_backward_calls": 640,
+  "layout": {
+    "sequence_length": 32,
+    "hidden_size": 64,
+    "megatron_bshd_batch": 2,
+    "miles_bshd_batch": 1,
+    "thd_boundaries": [
+      0,
+      13,
+      32
+    ],
+    "dtype": "bfloat16"
+  },
+  "megatron_gdn": {
+    "bshd_dense_metadata": {
+      "output_max_abs_diff": 0.0,
+      "input_grad_max_abs_diff": 0.0,
+      "param_grad_max_abs_diff": 0.0,
+      "output_max_relative_diff": 0.0,
+      "input_grad_max_relative_diff": 0.0,
+      "param_grad_max_relative_diff": 0.0,
+      "output_close": true,
+      "input_grad_close": true
+    },
+    "thd_packed": {
+      "output_max_abs_diff": 0.0,
+      "input_grad_max_abs_diff": 0.00244903564453125,
+      "param_grad_max_abs_diff": 0.059326171875,
+      "output_max_relative_diff": 0.0,
+      "input_grad_max_relative_diff": 4.378748416900635,
+      "param_grad_max_relative_diff": 4302.978515625,
+      "output_close": true,
+      "input_grad_close": true
+    },
+    "first_loss": 0.9795478582382202,
+    "last_loss": 0.2360016405582428,
+    "initial_parameter_norm": 193.07184970378876,
+    "final_parameter_norm": 228.9421055316925,
+    "forward_ms_total": 6570.280033349991,
+    "backward_ms_total": 2661.220181584358
+  },
+  "miles_qwen35_attention": {
+    "bshd_dense_metadata": {
+      "output_max_abs_diff": 0.0,
+      "input_grad_max_abs_diff": 0.0,
+      "param_grad_max_abs_diff": 0.0,
+      "output_max_relative_diff": 0.0,
+      "input_grad_max_relative_diff": 0.0,
+      "param_grad_max_relative_diff": 0.0,
+      "output_close": true,
+      "input_grad_close": true
+    },
+    "thd_packed": {
+      "output_max_abs_diff": 0.0,
+      "input_grad_max_abs_diff": 0.010711669921875,
+      "param_grad_max_abs_diff": 0.10986328125,
+      "output_max_relative_diff": 0.0,
+      "input_grad_max_relative_diff": 7.761141300201416,
+      "param_grad_max_relative_diff": 3875.732421875,
+      "output_close": true,
+      "input_grad_close": true
+    },
+    "first_loss": 1.0321874618530273,
+    "last_loss": 0.17531102895736694,
+    "initial_parameter_norm": 174.23547959327698,
+    "final_parameter_norm": 197.99971184134483,
+    "forward_ms_total": 612.5187209844589,
+    "backward_ms_total": 711.5424082279205,
+    "bshd_batch_limitation": "Miles wrapper requires batch size 1 when cu_seqlens is supplied."
+  },
+  "thresholds": {
+    "relative_diff": 0.02
+  },
+  "gpu": {
+    "name": "AMD Instinct MI350X",
+    "capability": "9.5",
+    "device_count": 1
+  },
+  "versions": {
+    "torch": "2.9.1+rocm7.2.0.git7e1940d4",
+    "hip": "7.2.26015-fc0010cf6a",
+    "megatron_core": "0.19.0+8c1e05747",
+    "transformer_engine": "2.17.0",
+    "fla": "0.5.2",
+    "triton": "3.6.0+git42270451"
+  },
+  "commits": {
+    "miles_workspace": "e5125a97e1fd383f005f4de258a5985026e09425",
+    "miles_installed_editable": "8d9826eacc8b5c279546f96711bb401b7f62c54c",
+    "megatron": "8c1e05747eb612b382df2632783df5c83a853646",
+    "transformer_engine": null
+  },
+  "source_paths": {
+    "megatron_gdn": "/root/Megatron-LM/megatron/core/ssm/gated_delta_net/gdn.py",
+    "megatron_packed_seq_params": "/root/Megatron-LM/megatron/core/packed_seq_params.py",
+    "miles_qwen35": "/job/miles/miles_plugins/models/qwen3_5.py",
+    "miles_hf_attention": "/job/miles/miles_plugins/models/hf_attention.py",
+    "fla_chunk": "/opt/venv/lib/python3.10/site-packages/fla/ops/gated_delta_rule/chunk.py",
+    "transformer_engine": "/opt/venv/lib/python3.10/site-packages/transformer_engine"
+  },
+  "native_paths": {
+    "torch": "/opt/venv/lib/python3.10/site-packages/torch",
+    "transformer_engine": "/opt/venv/lib/python3.10/site-packages/transformer_engine",
+    "fla": "/opt/venv/lib/python3.10/site-packages/fla",
+    "triton": "/opt/venv/lib/python3.10/site-packages/triton"
+  },
+  "rendezvous": {
+    "path": "/tmp/miles-gdn-3cb050044c454e6e98feef687848c8c2-rendezvous",
+    "timeout_minutes": 2,
+    "world_size": 1
+  },
+  "wall_time_seconds": 11.309842859394848
+}
