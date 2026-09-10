@@ -1,0 +1,124 @@
+{
+  "active_global_batch_size": 12,
+  "arrival_by_rank": [
+    [
+      0,
+      2,
+      4,
+      1,
+      3,
+      5,
+      8
+    ],
+    [
+      7,
+      6,
+      11,
+      9,
+      10,
+      12
+    ]
+  ],
+  "arrival_delay_seconds": 0.08051801100373268,
+  "consumed_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    9,
+    10,
+    11,
+    12
+  ],
+  "consumed_samples": 12,
+  "dropped_indices": [
+    8
+  ],
+  "dynamic_global_batch_size": 12,
+  "effective_gradient_weights": [
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602
+  ],
+  "gpu_name": "AMD Instinct MI350X",
+  "gpu_total_memory_bytes": 270566162432,
+  "gpu_uuid": "35393364-3436-6631-6462-623564636535",
+  "local_consumed_indices": [
+    0,
+    2,
+    4,
+    1,
+    3,
+    5
+  ],
+  "local_global_batch_size": 6,
+  "local_rank": 0,
+  "max_gradient_weight_error": 0.0,
+  "mode": "dynamic",
+  "module_paths": {
+    "megatron": [
+      "/opt/venv/lib/python3.10/site-packages/megatron",
+      "__editable__.megatron_core-0.19.0+8c1e05747.finder.__path_hook__"
+    ],
+    "megatron_spec_origin": null,
+    "miles": "/job/miles/miles/__init__.py",
+    "sglang": "/sgl-workspace/sglang/python/sglang/__init__.py",
+    "torch": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+    "torch_native": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so"
+  },
+  "num_microbatches": [
+    6
+  ],
+  "optimizer_steps": 1,
+  "per_step_gradient_weights": [
+    [
+      0.0833333358168602,
+      0.0833333358168602,
+      0.0833333358168602,
+      0.0833333358168602,
+      0.0833333358168602,
+      0.0833333358168602,
+      0.0833333358168602,
+      0.0833333358168602,
+      0.0,
+      0.0833333358168602,
+      0.0833333358168602,
+      0.0833333358168602,
+      0.0833333358168602
+    ]
+  ],
+  "rank": 0,
+  "reference_gradient_weights": [
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602,
+    0.0833333358168602
+  ],
+  "torch_hip_version": "7.2.26015-fc0010cf6a",
+  "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+  "total_arrived_samples": 13,
+  "world_size": 2
+}

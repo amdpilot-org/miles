@@ -98,6 +98,27 @@ different weight versions. The gap between a group's oldest weight version and t
 engines' current one is its **staleness**, and it is the reason a group that finished
 long ago may no longer be worth training on.
 
+### Batch accounting and off-policyness
+
+Each drain contains `--rollout-batch-size * --n-samples-per-prompt` samples. That fixed
+count then follows the ordinary training path:
+
+- Without `--use-dynamic-global-batch-size`, `--global-batch-size` divides the drained
+  samples into `num_steps_per_rollout` optimizer steps. With more than one step, the
+  second and later steps consume samples generated before their immediate weight
+  update. In fully async mode that per-batch off-policyness is in addition to the
+  inter-batch staleness already described above. Miles warns when fully async mode,
+  `--max-weight-staleness`, and an effective multi-step schedule are combined.
+- `--use-dynamic-global-batch-size` rounds the actual sample count down to a multiple of
+  the data-parallel size and uses that rounded count as the global batch, forcing one
+  optimizer step per drain. In fully async mode the drain count is already fixed, so the
+  flag is redundant; it is still a legitimate way to enforce the one-step invariant. A
+  custom filter that changes the count can still cause the rounding to discard a tail
+  sample.
+
+The warning is informational rather than an error: multi-step training can be valid when
+the off-policy correction and staleness budget are chosen deliberately.
+
 ### Arguments: Scheduling options
 
 Three flags control how much generation stays in flight:
