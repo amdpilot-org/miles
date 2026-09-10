@@ -13,6 +13,8 @@ from miles.utils.pydantic_utils import FrozenStrictBaseModel
 
 logger = logging.getLogger(__name__)
 
+WeightsBackupMode = Literal["cpu", "reload", "none"]
+
 
 # ---------------------------- raw config -----------------------------
 
@@ -52,6 +54,10 @@ class _RawModelConfig(FrozenStrictBaseModel):
                         automatically inferred in ``resolve()``: ``True`` if
                         model_path matches ``args.hf_checkpoint``, ``False``
                         otherwise.
+        weights_backup_mode: How a frozen model restores weights after a
+                             colocated release/resume.  ``reload`` reloads
+                             ``model_path``; ``cpu`` requires SGLang's real
+                             CPU-backup override; ``none`` fails closed.
     """
 
     name: str
@@ -62,6 +68,7 @@ class _RawModelConfig(FrozenStrictBaseModel):
         validation_alias=pydantic.AliasChoices("server_groups", "engine_groups"),
     )
     update_weights: bool | None = None
+    weights_backup_mode: WeightsBackupMode | None = None
 
     @property
     def total_num_gpus(self) -> int:
@@ -90,6 +97,7 @@ class _RawSglangConfig(FrozenStrictBaseModel):
           - name: ref
             model_path: /path/to/ref
             update_weights: false          # frozen, no weight updates
+            weights_backup_mode: reload    # reload after weight release/resume
             server_groups:
               - worker_type: regular
                 num_gpus: 4
@@ -148,6 +156,8 @@ class ServerGroupConfig(FrozenStrictBaseModel):
     engine_offset: int = pydantic.Field(ge=0)
     overrides: dict = pydantic.Field(default_factory=dict)
     needs_offload: bool
+    weights_backup_mode: WeightsBackupMode = "reload"
+    load_format: str | None = None
 
     @property
     def model_path(self) -> str:
@@ -160,6 +170,7 @@ class ServerGroupConfig(FrozenStrictBaseModel):
         args,
         default_gpus_per_engine: int,
         default_model_path: str,
+        weights_backup_mode: WeightsBackupMode,
         offset_cursor: "_OffsetCursor",
     ) -> "ServerGroupConfig":
         assert not ({"host", "port", "gated_launch_port"} & set(raw.overrides)), (
@@ -173,6 +184,11 @@ class ServerGroupConfig(FrozenStrictBaseModel):
         gpu_offset = offset_cursor.gpu
         group_abs_start = rollout_pg_offset + gpu_offset
         needs_offload = args.offload_rollout and group_abs_start < megatron_num_gpus
+        if weights_backup_mode == "cpu":
+            assert raw.overrides.get("enable_weights_cpu_backup") is True, (
+                f"Model group {raw.worker_type!r} requests weights_backup_mode=cpu but does not set "
+                "enable_weights_cpu_backup=true in its SGLang overrides."
+            )
 
         ans = cls(
             worker_type=raw.worker_type,
@@ -186,6 +202,8 @@ class ServerGroupConfig(FrozenStrictBaseModel):
                 **raw.overrides,
             },
             needs_offload=needs_offload,
+            weights_backup_mode=weights_backup_mode,
+            load_format=raw.overrides.get("load_format"),
         )
 
         offset_cursor.gpu += raw.num_gpus
@@ -204,32 +222,11 @@ class ModelConfig(FrozenStrictBaseModel):
         """Resolve per-group defaults from model-level then args-level values."""
         default_model_path = p if (p := raw.model_path) is not None else args.hf_checkpoint
         default_gpus_per_engine = n if (n := raw.num_gpus_per_engine) is not None else args.rollout_num_gpus_per_engine
-        server_groups = [
-            ServerGroupConfig.resolve(
-                g,
-                args,
-                default_gpus_per_engine=default_gpus_per_engine,
-                default_model_path=default_model_path,
-                offset_cursor=offset_cursor,
-            )
-            for g in raw.server_groups
-        ]
-
-        if server_groups:
-            model_paths = {g.overrides["model_path"] for g in server_groups}
-            assert len(model_paths) == 1, (
-                f"Model '{raw.name}' has server groups with different model_path values: "
-                f"{model_paths}. All server groups within a model must use the same model_path."
-            )
-            effective_model_path = model_paths.pop()
-        else:
-            effective_model_path = default_model_path
-
         update_weights = raw.update_weights
         if update_weights is None:
-            if effective_model_path != args.hf_checkpoint:
+            if default_model_path != args.hf_checkpoint:
                 logger.warning(
-                    f"Model '{raw.name}' uses model_path='{effective_model_path}' which differs "
+                    f"Model '{raw.name}' uses model_path='{default_model_path}' which differs "
                     f"from hf_checkpoint='{args.hf_checkpoint}'. Defaulting update_weights to False. "
                     f"Set update_weights explicitly in the config to suppress this warning."
                 )
@@ -237,12 +234,48 @@ class ModelConfig(FrozenStrictBaseModel):
             else:
                 update_weights = True
 
+        weights_backup_mode = cls._resolve_weights_backup_mode(
+            update_weights=update_weights,
+            requested=raw.weights_backup_mode,
+        )
+        server_groups = [
+            ServerGroupConfig.resolve(
+                g,
+                args,
+                default_gpus_per_engine=default_gpus_per_engine,
+                default_model_path=default_model_path,
+                weights_backup_mode=weights_backup_mode,
+                offset_cursor=offset_cursor,
+            )
+            for g in raw.server_groups
+        ]
+
+        if server_groups:
+            model_paths = {group.model_path for group in server_groups}
+            assert len(model_paths) == 1, (
+                f"Model '{raw.name}' has server groups with different model_path values: "
+                f"{model_paths}. All server groups within a model must use the same model_path."
+            )
+
         return cls(
             name=raw.name,
             model_path=raw.model_path,
             server_groups=server_groups,
             update_weights=update_weights,
         )
+
+    @staticmethod
+    def _resolve_weights_backup_mode(
+        *, update_weights: bool, requested: WeightsBackupMode | None
+    ) -> WeightsBackupMode:
+        if requested is not None:
+            if update_weights and requested != "none":
+                raise ValueError(
+                    "weights_backup_mode is only valid for frozen models; "
+                    "updatable models are restored by actor weight sync."
+                )
+            return requested
+        return "reload" if not update_weights else "none"
 
     @property
     def has_pd_disaggregation(self) -> bool:

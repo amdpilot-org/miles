@@ -49,6 +49,9 @@ class ServerCellMetadata(FrozenStrictBaseModel):
     worker_name: str
     needs_offload: bool
     update_weights: bool
+    model_path: str = ""
+    load_format: str | None = None
+    weights_backup_mode: Literal["cpu", "reload", "none"] = "reload"
     workers_hash: str
 
 
@@ -60,6 +63,7 @@ class ServerCell:
     global_health_checker_activeness: Callable[[], ActiveAndEpoch] = lambda: ActiveAndEpoch(active=True, epoch=0)
     _health_checker: BaseHealthChecker = dataclasses.field(init=False)
     _state: CellState = dataclasses.field(default_factory=StateUninitialized)
+    _weights_ready: bool = dataclasses.field(init=False, default=False)
 
     def __post_init__(self) -> None:
         self._health_checker = create_rollout_cell_health_checker(
@@ -132,6 +136,10 @@ class ServerCell:
         return isinstance(self._state, StateServing)
 
     @property
+    def weights_ready(self) -> bool:
+        return self._weights_ready
+
+    @property
     def is_initializing_past_deadline(self) -> bool:
         return self.is_initializing and time.monotonic() - self._state.start_time >= INITIALIZING_TIMEOUT_SECONDS
 
@@ -192,11 +200,13 @@ class ServerCell:
         self._change_state("mark_pending_weights", StateInitializing, StatePendingWeights(addr_info=addr_info))
 
         if serve_without_weight_update:
+            self._weights_ready = True
             self._mark_serving()
 
     async def mark_weights_ready(self) -> None:
         assert isinstance(self._state, StatePendingWeights), f"{self._state=}"
         await self._register_with_router(addr_info=self._state.addr_info)
+        self._weights_ready = True
         self._mark_serving()
 
     async def _register_with_router(self, addr_info: CellAddrInfo) -> None:
@@ -263,10 +273,31 @@ class ServerCell:
         logger.info(f"Cell {self.meta.cell_id} {debug_name} end new={self._state}")
 
     async def offload(self, tags: list[str] | None):
+        if tags is None or GPU_MEMORY_TYPE_WEIGHTS in tags:
+            self._weights_ready = False
         return await self.api_client.release_memory_occupation(tags=tags)
 
     async def onload(self, tags: list[str] | None):
-        return await self.api_client.resume_memory_occupation(tags=tags)
+        result = await self.api_client.resume_memory_occupation(tags=tags)
+        if (tags is None or GPU_MEMORY_TYPE_WEIGHTS in tags) and not self.meta.update_weights:
+            await self._restore_frozen_weights()
+        return result
+
+    async def _restore_frozen_weights(self) -> None:
+        if self.meta.weights_backup_mode == "cpu":
+            self._weights_ready = True
+            return
+        if self.meta.weights_backup_mode == "reload":
+            await self.api_client.update_weights_from_disk(
+                model_path=self.meta.model_path,
+                load_format=self.meta.load_format,
+            )
+            self._weights_ready = True
+            return
+        raise RuntimeError(
+            f"Rollout cell {self.meta.cell_id!r} has no frozen-weight restoration policy; "
+            "refusing to admit requests with potentially released weights."
+        )
 
     async def check_weights(self, action: str, allow_quant_error: bool, selector: str, skip_list: list[str] | None):
         return await self.api_client.check_weights(

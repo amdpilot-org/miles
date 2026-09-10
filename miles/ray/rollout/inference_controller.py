@@ -88,6 +88,16 @@ class InferenceController:
 
     @with_lock
     async def prepare_rollout(self, rollout_id):
+        not_ready = [
+            cell.meta.cell_id
+            for srv in self.servers.values()
+            for cell in srv._addressable_cells()
+            if not cell.weights_ready
+        ]
+        if not_ready:
+            raise RuntimeError(
+                f"Refusing to admit rollout requests because weights are not restored: {not_ready}"
+            )
         await self._health_monitoring_resume()
         await dashboard_hooks.register_engines(self.servers)
 
@@ -332,5 +342,8 @@ def _compute_server_cell_meta_from_info(info: CellInfo) -> ServerCellMetadata:
         worker_name=info.worker_names[0],
         needs_offload=info.meta["needs_offload"],
         update_weights=info.meta["update_weights"],
+        model_path=info.meta["model_path"],
+        load_format=info.meta["load_format"],
+        weights_backup_mode=info.meta["weights_backup_mode"],
         workers_hash=info.workers_hash,
     )
