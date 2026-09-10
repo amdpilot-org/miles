@@ -1,0 +1,111 @@
+{
+  "issue": "https://github.com/radixark/miles/issues/2254",
+  "tested_commit": "df0e677f6dd51fa551d48d37860812ece904cd8f",
+  "environment": {
+    "python": "/opt/venv/bin/python",
+    "torch": "2.9.1+rocm7.2.0.git7e1940d4",
+    "torch_source": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+    "torch_native": [
+      "/opt/venv/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so",
+      "/opt/venv/lib/python3.10/site-packages/torch/lib/libtorch_hip.so"
+    ],
+    "ray": "2.58.0",
+    "ray_source": "/opt/venv/lib/python3.10/site-packages/ray/__init__.py",
+    "sglang": "0.5.17.dev2157+ga8e5c632f",
+    "sglang_source": "/sgl-workspace/sglang/python/sglang/__init__.py",
+    "aiter_source": "/sgl-workspace/aiter/aiter/__init__.py",
+    "miles_source": "/job/miles/miles/__init__.py",
+    "gpu_count": 2,
+    "gpu_name": "AMD Instinct MI350X",
+    "gpu_architecture": "gfx950",
+    "gpu_vram_bytes": 270566162432,
+    "model_download_bytes": 0
+  },
+  "baseline": {
+    "ranks": 2,
+    "batches": 4,
+    "acknowledgements": "all ranks matched",
+    "status": "passed"
+  },
+  "control": {
+    "source_groups": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63],
+    "optimizer_steps": 64,
+    "final_checkpoint_sha256": "0b72323efcd90da18bed8f1b10a6a8837f88f09b85623c7a9007da377b2fa6cf"
+  },
+  "pre_admission_restore": {
+    "source_groups": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64],
+    "missing_source_groups": [32],
+    "extra_source_groups": [64],
+    "optimizer_steps": 64,
+    "final_checkpoint_sha256": "57a90cbc844b3a2bdd62ce4fb66386527a07436e2e1562a95a6141f100fc9add",
+    "maximum_absolute_weight_difference": 0.0030214302241802216,
+    "mean_absolute_weight_difference": 0.0019738031551241875,
+    "exact_equal": false
+  },
+  "post_admission_restore": {
+    "source_groups": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63],
+    "optimizer_steps": 64,
+    "final_checkpoint_sha256": "0b72323efcd90da18bed8f1b10a6a8837f88f09b85623c7a9007da377b2fa6cf",
+    "maximum_absolute_weight_difference": 0.0,
+    "mean_absolute_weight_difference": 0.0,
+    "exact_equal": true
+  },
+  "duplicate_late": {
+    "source_groups": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62],
+    "duplicate_source_groups": [32],
+    "missing_source_groups": [63],
+    "optimizer_steps": 64,
+    "final_checkpoint_sha256": "c3cd547d4aa71df5c50b6e7f0c0308e7753f109276812b7248396f186b93eb97",
+    "maximum_absolute_weight_difference": 0.0030624978244304657,
+    "mean_absolute_weight_difference": 0.0020041093230247498,
+    "exact_equal": false
+  },
+  "gpu_phase_timings_seconds": {
+    "control": {
+      "forward": {"median": 0.0002164323814213276, "mean": 0.012150283306255005, "max": 0.7617633864283562, "total": 0.7776181316003203},
+      "backward": {"median": 0.000301227904856205, "mean": 0.02598713879706338, "max": 1.6418627733364701, "total": 1.6631768830120564},
+      "optimizer": {"median": 0.00011370144784450531, "mean": 0.0007571998430648819, "max": 0.02370623219758272, "total": 0.04846078995615244},
+      "acknowledgement": {"median": 0.00009069126099348068, "mean": 0.00009728388977237046, "max": 0.0002994425594806671, "total": 0.006226168945431709}
+    },
+    "pre_admission": {
+      "forward": {"median": 0.00022297678515315056, "mean": 0.035695678438059986, "max": 1.133837440982461, "total": 1.1422617100179195},
+      "backward": {"median": 0.0003178478218615055, "mean": 0.06499601851101033, "max": 2.0662987381219864, "total": 2.0798725923523307},
+      "optimizer": {"median": 0.00011689169332385063, "mean": 0.001213512266986072, "max": 0.023505233228206635, "total": 0.038832392543554306},
+      "acknowledgement": {"median": 0.00011537130922079086, "mean": 0.00014974913210608065, "max": 0.0009948890656232834, "total": 0.004791972227394581}
+    },
+    "pre_admission_restore": {
+      "forward": {"median": 0.00021481188014149666, "mean": 0.03493873114348389, "max": 1.1100483853369951, "total": 1.1180393965914845},
+      "backward": {"median": 0.00034016789868474007, "mean": 0.06503968022298068, "max": 2.067639331333339, "total": 2.0812697671353817},
+      "optimizer": {"median": 0.00011866120621562004, "mean": 0.001179615850560367, "max": 0.033859516493976116, "total": 0.03774770721793175},
+      "acknowledgement": {"median": 0.0001035262830555439, "mean": 0.00014634497347287834, "max": 0.0010923100635409355, "total": 0.004683039151132107}
+    },
+    "post_admission": {
+      "forward": {"median": 0.00023309234529733658, "mean": 0.03526701741484982, "max": 1.154845210723579, "total": 1.163811574690044},
+      "backward": {"median": 0.00035032443702220917, "mean": 0.06381875400741895, "max": 2.0935182962566614, "total": 2.1060188822448254},
+      "optimizer": {"median": 0.0001284414902329445, "mean": 0.0011984299529682505, "max": 0.023811284452676773, "total": 0.03954818844795227},
+      "acknowledgement": {"median": 0.00008253101259469986, "mean": 0.00010735225496870099, "max": 0.00032067298889160156, "total": 0.0035426244139671326}
+    },
+    "post_admission_restore": {
+      "forward": {"median": 0.00022013206034898758, "mean": 0.026542457902143077, "max": 0.8151689656078815, "total": 0.8228161949664354},
+      "backward": {"median": 0.00035900436341762543, "mean": 0.05998800562754754, "max": 1.8479331023991108, "total": 1.8596281744539738},
+      "optimizer": {"median": 0.00011913105845451355, "mean": 0.0012484520313239867, "max": 0.034977586939930916, "total": 0.03870201297104359},
+      "acknowledgement": {"median": 0.00006941985338926315, "mean": 0.00009048910390946173, "max": 0.00026555173099040985, "total": 0.0028051622211933136}
+    },
+    "duplicate_late": {
+      "forward": {"median": 0.00023648235946893692, "mean": 0.03316200016847541, "max": 1.0196644365787506, "total": 1.0280220052227378},
+      "backward": {"median": 0.0003842739388346672, "mean": 0.06006418222621564, "max": 1.848020234145224, "total": 1.8619896490126848},
+      "optimizer": {"median": 0.00012756139039993286, "mean": 0.0012397320280151984, "max": 0.034426321275532246, "total": 0.038431692868471146},
+      "acknowledgement": {"median": 0.00007657147943973541, "mean": 0.00010211738727746471, "max": 0.00042949430644512177, "total": 0.003165639005601406}
+    }
+  },
+  "lifecycle_support": {
+    "reservation_api": false,
+    "lease_api": false,
+    "admission_receipt_api": false,
+    "settlement_api": false,
+    "duplicate_deduplication": false,
+    "buffer_checkpoint": false,
+    "trainer_acknowledgement_collective": true,
+    "source_cursor_checkpoint": true
+  }
+}
