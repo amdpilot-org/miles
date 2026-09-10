@@ -1,0 +1,244 @@
+{
+  "checkpoint_global_step_metadata": {
+    "all_observed_zero": true,
+    "expected_final": 256
+  },
+  "checksums": {
+    "all_engine_control_equal": true,
+    "first": "3750498b913315571c87845c18b5f01d0bc3a502e8abefe4f56cc288696a4a78",
+    "last": "ef5663b19bd95ed056e6451786320085bd3395dc06264fa29225aea6bfc061b9",
+    "unique_control": 64,
+    "unique_engine": 64
+  },
+  "cuda_event_timing_ms": {
+    "forward_backward": {
+      "count": 256,
+      "max": 4305.62646484375,
+      "mean": 30.619134571403265,
+      "median": 13.448539733886719,
+      "min": 11.585257530212402,
+      "p95": 17.068483352661133
+    },
+    "fresh_control_fixed_tokens": {
+      "count": 64,
+      "max": 2494.45947265625,
+      "mean": 48.68100689351559,
+      "median": 8.203877925872803,
+      "min": 7.296206951141357,
+      "p95": 16.40811538696289
+    },
+    "grad_clip": {
+      "count": 256,
+      "max": 85.00529479980469,
+      "mean": 2.040494660148397,
+      "median": 1.70814049243927,
+      "min": 0.7006480097770691,
+      "p95": 2.131066083908081
+    },
+    "optimizer": {
+      "count": 256,
+      "max": 108.43505859375,
+      "mean": 2.013794417027384,
+      "median": 1.5504984855651855,
+      "min": 1.2883360385894775,
+      "p95": 1.9935040473937988
+    },
+    "post_initial_update_weights": {
+      "count": 64,
+      "max": 38.67649841308594,
+      "mean": 21.43958416581154,
+      "median": 21.103771209716797,
+      "min": 19.050588607788086,
+      "p95": 22.788711547851562
+    },
+    "update_weights": {
+      "count": 65,
+      "max": 3665.76904296875,
+      "mean": 77.50619122431829,
+      "median": 21.16697120666504,
+      "min": 19.050588607788086,
+      "p95": 23.053836822509766
+    }
+  },
+  "cycles": 64,
+  "environment": {
+    "aiter_commit": "d9e5ef7ce08ee7045d583aed768cff41aa9210fe",
+    "aiter_path": "/sgl-workspace/aiter/aiter",
+    "devices": [
+      {
+        "compute_capability": [
+          9,
+          5
+        ],
+        "gcn_architecture": "gfx950:sramecc+:xnack-",
+        "index": 0,
+        "name": "AMD Instinct MI350X",
+        "total_bytes": 270566162432
+      },
+      {
+        "compute_capability": [
+          9,
+          5
+        ],
+        "gcn_architecture": "gfx950:sramecc+:xnack-",
+        "index": 1,
+        "name": "AMD Instinct MI350X",
+        "total_bytes": 270566162432
+      }
+    ],
+    "hip_version": "7.2.26015-fc0010cf6a",
+    "miles_commit": "251f28dcee384391fbcb97c6ba82cba4f58a7b49",
+    "miles_path": "/job/miles/miles",
+    "ray_path": "/opt/venv/lib/python3.10/site-packages/ray/__init__.py",
+    "ray_version": "2.58.0",
+    "sglang_commit": "a8e5c632fe40555f720d4f2c69771ea8cf24f3c4",
+    "sglang_path": "/sgl-workspace/sglang/python/sglang/__init__.py",
+    "sglang_version": "0.5.17.dev2157+ga8e5c632f",
+    "torch_native_path": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so",
+    "torch_path": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+    "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+    "transformers_path": "/opt/venv/lib/python3.10/site-packages/transformers/__init__.py",
+    "transformers_version": "5.12.1",
+    "triton_commit": "42270451990532c67e69d753fbd026f28fcc4840",
+    "triton_path": "/sgl-workspace/triton-custom/python/triton/__init__.py",
+    "triton_version": "3.6.0"
+  },
+  "event_counts": {
+    "forward_backward": 256,
+    "grad_clip": 256,
+    "memory": 256,
+    "optimizer": 256,
+    "update_weights": 65
+  },
+  "first_rollout_id": 0,
+  "fixed_token_outputs": {
+    "all_equal": true,
+    "max_abs_log_prob_difference": 0.0009784698486328125,
+    "mean_max_abs_log_prob_difference": 0.00042788684368133545
+  },
+  "gradient_norm": {
+    "all_nonzero": true,
+    "count": 256,
+    "max": 5.907623291015625,
+    "mean": 4.394811346195638,
+    "median": 4.3371803760528564,
+    "min": 3.6279335021972656,
+    "p95": 5.128567218780518
+  },
+  "last_rollout_id": 63,
+  "log_path": "/job/miles-artifacts/run/driver-full-292452586.log",
+  "memory_gib": {
+    "0": {
+      "first_gib": 5.662109375,
+      "last_gib": 5.681640625,
+      "max_gib": 5.681640625,
+      "min_gib": 5.662109375
+    },
+    "1": {
+      "first_gib": 59.078125,
+      "last_gib": 59.091796875,
+      "max_gib": 59.09375,
+      "min_gib": 59.078125
+    }
+  },
+  "metadata": {
+    "devices": [
+      "AMD Instinct MI350X",
+      "AMD Instinct MI350X"
+    ],
+    "hip_version": "7.2.26015-fc0010cf6a",
+    "miles_commit": "251f28dcee384391fbcb97c6ba82cba4f58a7b49",
+    "miles_path": "/job/miles/miles",
+    "num_rollout_per_epoch": null,
+    "ray_path": "/opt/venv/lib/python3.10/site-packages/ray/__init__.py",
+    "ray_tmpdir": "/tmp/ray-j8fa-28393",
+    "ray_version": "2.58.0",
+    "run_uuid": "00000000266d84e7",
+    "sglang_commit": "a8e5c632fe40555f720d4f2c69771ea8cf24f3c4",
+    "sglang_path": "/sgl-workspace/sglang/python/sglang/__init__.py",
+    "sglang_version": "0.5.17.dev2157+ga8e5c632f",
+    "torch_path": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+    "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+    "training_pg_timeout_seconds": 600,
+    "transformers_path": "/opt/venv/lib/python3.10/site-packages/transformers/__init__.py",
+    "transformers_version": "5.12.1",
+    "update_pg_default_timeout_seconds": 1800
+  },
+  "model": {
+    "architecture": "Qwen2ForCausalLM",
+    "hidden_size": 128,
+    "num_hidden_layers": 2,
+    "parameters": 13173888,
+    "path": "/job/miles-artifacts/model",
+    "vocab_size": 50304
+  },
+  "optimizer_steps": 256,
+  "output_dir": "/job/miles-artifacts/run/driver-full-292452586",
+  "run_id": "driver-full-292452586",
+  "status": "passed",
+  "successive_weight_updates": 64,
+  "timeouts": {
+    "nccl_heartbeat_seconds": 600,
+    "nccl_socket_milliseconds": 600000,
+    "sglang_distributed_seconds": 600,
+    "sglang_watchdog_seconds": 300,
+    "training_process_group_seconds": 600,
+    "update_process_group_default_seconds": 1800
+  },
+  "versions": {
+    "all_equal": true,
+    "engine_last": "65",
+    "first": 2,
+    "last": 65
+  },
+  "wall_seconds": {
+    "control_wall_seconds": {
+      "count": 64,
+      "max": 3.687922166660428,
+      "mean": 0.6473848034802359,
+      "median": 0.581238763872534,
+      "min": 0.46060845348984003,
+      "p95": 0.7873626910150051
+    },
+    "cycle_wall_seconds": {
+      "count": 64,
+      "max": 16.00691430643201,
+      "mean": 2.5442971265292726,
+      "median": 2.309630393050611,
+      "min": 2.150388451293111,
+      "p95": 2.5182830719277263
+    },
+    "rollout_wall_seconds": {
+      "count": 64,
+      "max": 0.6856873277574778,
+      "mean": 0.07670848864654545,
+      "median": 0.06687026750296354,
+      "min": 0.0633671460673213,
+      "p95": 0.0712120272219181
+    },
+    "save_wall_seconds": {
+      "count": 64,
+      "max": 0.37002013996243477,
+      "mean": 0.330023393209558,
+      "median": 0.3269054191187024,
+      "min": 0.3196002934128046,
+      "p95": 0.34814634174108505
+    },
+    "train_wall_seconds": {
+      "count": 64,
+      "max": 10.070013991557062,
+      "mean": 0.2701138299162267,
+      "median": 0.11405025608837605,
+      "min": 0.10255104210227728,
+      "p95": 0.12701246421784163
+    },
+    "update_wall_seconds": {
+      "count": 64,
+      "max": 0.6416678177192807,
+      "mean": 0.611592485642177,
+      "median": 0.6111774821765721,
+      "min": 0.5845724204555154,
+      "p95": 0.6333300620317459
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import random
@@ -529,18 +530,60 @@ class FSDPTrainRayActor(TrainRayActor):
                         get_position_ids=True,
                     )
 
+                    timing_enabled = getattr(self.args, "cuda_event_timing_path", None) is not None
+                    forward_backward_start = torch.cuda.Event(enable_timing=True) if timing_enabled else None
+                    if timing_enabled:
+                        forward_backward_start.record()
                     log_dict = self._train_step(
                         batch=batch,
                         step_id=step_id,
                         num_microbatches=num_microbatches[step_id],
                     )
+                    if timing_enabled:
+                        forward_backward_end = torch.cuda.Event(enable_timing=True)
+                        forward_backward_end.record()
+                        self._record_cuda_event(
+                            phase="forward_backward",
+                            rollout_id=rollout_id,
+                            step_id=step_id,
+                            start_event=forward_backward_start,
+                            end_event=forward_backward_end,
+                        )
                     losses_reduced.append(log_dict)
 
+                timing_enabled = getattr(self.args, "cuda_event_timing_path", None) is not None
+                grad_clip_start = torch.cuda.Event(enable_timing=True) if timing_enabled else None
+                if timing_enabled:
+                    grad_clip_start.record()
                 grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.args.clip_grad)
                 grad_norm = grad_norm.full_tensor().item()
+                if timing_enabled:
+                    grad_clip_end = torch.cuda.Event(enable_timing=True)
+                    grad_clip_end.record()
+                    self._record_cuda_event(
+                        phase="grad_clip",
+                        rollout_id=rollout_id,
+                        step_id=step_id,
+                        start_event=grad_clip_start,
+                        end_event=grad_clip_end,
+                    )
 
+                if timing_enabled:
+                    optimizer_start = torch.cuda.Event(enable_timing=True)
+                    optimizer_start.record()
                 self.optimizer.step()
                 self.lr_scheduler.step()
+                if timing_enabled:
+                    optimizer_end = torch.cuda.Event(enable_timing=True)
+                    optimizer_end.record()
+                    self._record_cuda_event(
+                        phase="optimizer",
+                        rollout_id=rollout_id,
+                        step_id=step_id,
+                        start_event=optimizer_start,
+                        end_event=optimizer_end,
+                    )
+                    self._record_memory(rollout_id=rollout_id, step_id=step_id)
 
                 if self.args.ci_test:
                     check_grad_norm(
@@ -606,7 +649,7 @@ class FSDPTrainRayActor(TrainRayActor):
         return log_dict
 
     @timer
-    def update_weights(self, info: "UpdatableEngines") -> int | None:  # type: ignore[override]
+    def update_weights(self, info: "UpdatableEngines", rollout_id: int | None = None) -> int | None:  # type: ignore[override]
         """Synchronize actor weights to rollout engines (colocated or distributed; wakes params in offload mode)."""
         if self.args.debug_train_only or self.args.debug_rollout_only:
             return None
@@ -627,7 +670,21 @@ class FSDPTrainRayActor(TrainRayActor):
             self.weight_updater.conn_status.mark_reconnected(snapshot_cell_id_to_hashes)
             dist.barrier(group=get_gloo_group())
 
+        timing_enabled = getattr(self.args, "cuda_event_timing_path", None) is not None
+        update_start = torch.cuda.Event(enable_timing=True) if timing_enabled else None
+        if timing_enabled:
+            update_start.record()
         self.weight_updater.update_weights()
+        if timing_enabled:
+            update_end = torch.cuda.Event(enable_timing=True)
+            update_end.record()
+            self._record_cuda_event(
+                phase="update_weights",
+                rollout_id=-1 if rollout_id is None else rollout_id,
+                step_id=0,
+                start_event=update_start,
+                end_event=update_end,
+            )
 
         if self.args.ci_test and len(rollout_engines) > 0:
             engine = random.choice(rollout_engines)
@@ -695,6 +752,50 @@ class FSDPTrainRayActor(TrainRayActor):
             model_args.update(batch["multimodal_train_inputs"])
 
         return model_args
+
+    def _record_cuda_event(
+        self,
+        *,
+        phase: str,
+        rollout_id: int,
+        step_id: int,
+        start_event: torch.cuda.Event,
+        end_event: torch.cuda.Event,
+    ) -> None:
+        timing_path = getattr(self.args, "cuda_event_timing_path", None)
+        if timing_path is None or dist.get_rank() != 0:
+            return
+
+        end_event.synchronize()
+        record = {
+            "phase": phase,
+            "rollout_id": rollout_id,
+            "step_id": step_id,
+            "device": torch.cuda.current_device(),
+            "elapsed_ms": start_event.elapsed_time(end_event),
+            "allocated_bytes": torch.cuda.memory_allocated(),
+            "reserved_bytes": torch.cuda.memory_reserved(),
+            "max_allocated_bytes": torch.cuda.max_memory_allocated(),
+        }
+        with open(timing_path, "a", encoding="utf-8") as timing_file:
+            timing_file.write(json.dumps(record) + "\n")
+
+    def _record_memory(self, *, rollout_id: int, step_id: int) -> None:
+        timing_path = getattr(self.args, "cuda_event_timing_path", None)
+        if timing_path is None or dist.get_rank() != 0:
+            return
+
+        record = {
+            "phase": "memory",
+            "rollout_id": rollout_id,
+            "step_id": step_id,
+            "device": torch.cuda.current_device(),
+            "allocated_bytes": torch.cuda.memory_allocated(),
+            "reserved_bytes": torch.cuda.memory_reserved(),
+            "max_allocated_bytes": torch.cuda.max_memory_allocated(),
+        }
+        with open(timing_path, "a", encoding="utf-8") as timing_file:
+            timing_file.write(json.dumps(record) + "\n")
 
 
 @torch.no_grad()
