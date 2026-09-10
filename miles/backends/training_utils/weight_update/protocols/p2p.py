@@ -14,6 +14,7 @@ from sglang.srt.layers.quantization.fp4_utils import initialize_fp4_gemm_config
 from sglang.srt.layers.quantization.fp8_utils import initialize_fp8_gemm_config
 from sglang.srt.model_loader import get_model
 from sglang.srt.model_loader.parameter_mapper import ParameterMapper
+from sglang.srt.runtime_context import get_context, get_parallel
 from sglang.srt.server_args import ServerArgs
 
 from miles.backends.sglang_utils.sglang_api_client import SGLangApiClient
@@ -222,7 +223,9 @@ class UpdateWeightP2P(WeightTransferProtocol):
         from sglang.srt.model_loader import loader as model_loader_module
 
         original_post_load_weights = model_loader_module.post_load_weights
+        original_nnodes = get_parallel().nnodes
         model_loader_module.post_load_weights = lambda *args, **kwargs: None
+        get_context().override("P2P CPU replica", nnodes=1)
         try:
             with ParallelismContext(parallelism_config):
                 model = get_model(
@@ -231,6 +234,7 @@ class UpdateWeightP2P(WeightTransferProtocol):
                     device_config=DeviceConfig(device="cpu"),
                 )
         finally:
+            get_context().override("P2P CPU replica", nnodes=original_nnodes)
             model_loader_module.post_load_weights = original_post_load_weights
 
         # Also patch the instance method for subsequent load_weights() calls

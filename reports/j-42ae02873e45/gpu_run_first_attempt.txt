@@ -1,0 +1,93 @@
+
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
+[Gloo] Rank [Gloo] Rank 1 is connected to 1 peer ranks. Expected number of connected peer ranks is : 1
+0 is connected to 1 peer ranks. Expected number of connected peer ranks is : 1
+[aiter] WARNING: NUMA balancing is enabled, which may cause errors. It is recommended to disable NUMA balancing by running "sudo sh -c 'echo 0 > /proc/sys/kernel/numa_balancing'" for more details: https://rocm.docs.amd.com/en/latest/how-to/system-optimization/mi300x.html#disable-numa-auto-balancing
+[aiter] import [module_aiter_core] under /sgl-workspace/aiter/aiter/jit/module_aiter_core.so
+WARNING:root:deep_ep is not installed, some functionalities may be limited.
+/opt/venv/lib/python3.10/site-packages/apex/transformer/functional/fused_rope.py:49: UserWarning: Aiter backend is selected for fused RoPE. This has lower precision. To disable aiter, export USE_ROCM_AITER_ROPE_BACKEND=0
+  warnings.warn("Aiter backend is selected for fused RoPE. This has lower precision. To disable aiter, export USE_ROCM_AITER_ROPE_BACKEND=0", UserWarning)
+WARNING:fla.utils._device:Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+[ERROR] `cache_position` is part of Qwen3ASRThinkerTextModel.forward's signature, but not documented. Make sure to add it to the docstring of the function in /opt/venv/lib/python3.10/site-packages/megatron/bridge/models/qwen3_asr/hf_qwen3_asr/modeling_qwen3_asr.py.
+[ERROR] `cache_position` is part of Qwen3ASRThinkerForConditionalGeneration.forward's signature, but not documented. Make sure to add it to the docstring of the function in /opt/venv/lib/python3.10/site-packages/megatron/bridge/models/qwen3_asr/hf_qwen3_asr/modeling_qwen3_asr.py.
+WARNING:sglang.srt.arg_groups.overrides:The current platform does not support Intel AMX, will fallback to torch_native backend.
+WARNING:sglang.srt.models.registry:Ignore import error when loading sglang.srt.models.inkling: No module named 'cutlass'
+WARNING:sglang.srt.layers.quantization.unquant:aiter CK fused-MoE does not support intermediate_size_per_partition=8; using triton MoE runner.
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/job/miles/reports/j-42ae02873e45/gpu_p2p_weight_sync_fixture.py", line 345, in <module>
+[rank0]:     main()
+[rank0]:   File "/job/miles/reports/j-42ae02873e45/gpu_p2p_weight_sync_fixture.py", line 268, in main
+[rank0]:     model, restored_nnodes = _construct_cpu_replica(model_path)
+[rank0]:   File "/job/miles/reports/j-42ae02873e45/gpu_p2p_weight_sync_fixture.py", line 98, in _construct_cpu_replica
+[rank0]:     model = protocol._create_cpu_replica(
+[rank0]:   File "/root/miles/miles/backends/training_utils/weight_update/protocols/p2p.py", line 228, in _create_cpu_replica
+[rank0]:     model = get_model(
+[rank0]:   File "/sgl-workspace/sglang/python/sglang/srt/model_loader/__init__.py", line 30, in get_model
+[rank0]:     return loader.load_model(
+[rank0]:   File "/sgl-workspace/sglang/python/sglang/srt/model_loader/loader.py", line 1635, in load_model
+[rank0]:     model = _initialize_model(
+[rank0]:   File "/sgl-workspace/sglang/python/sglang/srt/model_loader/loader.py", line 297, in _initialize_model
+[rank0]:     return model_class(**kwargs)
+[rank0]:   File "/sgl-workspace/sglang/python/sglang/srt/models/qwen3_moe.py", line 995, in __init__
+[rank0]:     self.logits_processor = LogitsProcessor(config)
+[rank0]:   File "/sgl-workspace/sglang/python/sglang/srt/layers/logits_processor.py", line 413, in __init__
+[rank0]:     self._logits_gatherer = triton_symm_mem_ag.MultimemAllGatherer(
+[rank0]:   File "/sgl-workspace/sglang/python/sglang/srt/distributed/device_communicators/triton_symm_mem_ag.py", line 488, in __init__
+[rank0]:     and not all(in_the_same_node_as(tp_group.cpu_group, source_rank=0))
+[rank0]:   File "/sgl-workspace/sglang/python/sglang/srt/distributed/parallel_state.py", line 3091, in in_the_same_node_as
+[rank0]:     torch.distributed.get_backend(pg) != torch.distributed.Backend.NCCL
+[rank0]:   File "/opt/venv/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1370, in get_backend
+[rank0]:     raise ValueError(
+[rank0]: ValueError: Process group <MagicMock name='mock.cpu_group' id='124589641925680'> is not initialized in the world group map. Please initialize the group first.
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/job/miles/reports/j-42ae02873e45/gpu_p2p_weight_sync_fixture.py", line 345, in <module>
+[rank1]:     main()
+[rank1]:   File "/job/miles/reports/j-42ae02873e45/gpu_p2p_weight_sync_fixture.py", line 285, in main
+[rank1]:     dist.broadcast_object_list(payload, src=0, group=gloo_group)
+[rank1]:   File "/opt/venv/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank1]:     return func(*args, **kwargs)
+[rank1]:   File "/opt/venv/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 3691, in broadcast_object_list
+[rank1]:     broadcast(object_sizes_tensor, group_src=group_src, group=group)
+[rank1]:   File "/opt/venv/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank1]:     return func(*args, **kwargs)
+[rank1]:   File "/opt/venv/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2841, in broadcast
+[rank1]:     work.wait()
+[rank1]: RuntimeError: [/pytorch/third_party/gloo/gloo/transport/tcp/pair.cc:547] Connection closed by peer [127.0.1.1]:48561
+[rank0]:[W910 02:51:15.685825367 ProcessGroupNCCL.cpp:1524] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+W0910 02:51:16.225000 4327 torch/distributed/elastic/multiprocessing/api.py:908] Sending process 4395 closing signal SIGTERM
+E0910 02:51:16.339000 4327 torch/distributed/elastic/multiprocessing/api.py:882] failed (exitcode: 1) local_rank: 1 (pid: 4396) of binary: /opt/venv/bin/python
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/opt/venv/lib/python3.10/site-packages/torch/distributed/run.py", line 940, in <module>
+    main()
+  File "/opt/venv/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+    return f(*args, **kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/torch/distributed/run.py", line 936, in main
+    run(args)
+  File "/opt/venv/lib/python3.10/site-packages/torch/distributed/run.py", line 927, in run
+    elastic_launch(
+  File "/opt/venv/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 156, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/opt/venv/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 293, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+reports/j-42ae02873e45/gpu_p2p_weight_sync_fixture.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-09-10_02:51:16
+  host      : smci355-ccs-aus-n08-13.cs-aus.dcgpu
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 4396)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

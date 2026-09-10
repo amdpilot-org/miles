@@ -1,0 +1,85 @@
+{
+  "status": "pass",
+  "issue": "radixark/miles#2856",
+  "timeout_seconds": 30,
+  "world_size": 2,
+  "process_groups": {
+    "default_backend": "nccl",
+    "gloo_backend": "gloo",
+    "nccl_backend": "nccl"
+  },
+  "cpu_replica": {
+    "constructed": true,
+    "model_class": "Qwen3MoeForCausalLM",
+    "parameter_count": 3472,
+    "state_dict_bytes": 6944,
+    "tp_size": 2,
+    "ep_size": 2,
+    "published_nnodes": 2,
+    "restored_nnodes": 2
+  },
+  "nccl_p2p": {
+    "tensors": 12,
+    "transferred_bytes": 6944,
+    "probe": 3.0,
+    "all_ranks_equal": [
+      true,
+      true
+    ]
+  },
+  "mooncake_hip": {
+    "hostname": "10.235.27.177",
+    "initialize_rc": 0,
+    "rpc_port": 15179,
+    "register_rc": [
+      0,
+      0
+    ],
+    "probe_rc": 0,
+    "write_rc": -1,
+    "supported": false
+  },
+  "runtime": {
+    "python": "/opt/venv/bin/python",
+    "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+    "hip_version": "7.2.26015-fc0010cf6a",
+    "device_count": 2,
+    "devices": [
+      {
+        "index": 0,
+        "name": "AMD Instinct MI355X",
+        "capability": [
+          9,
+          5
+        ],
+        "total_mib": 294896
+      },
+      {
+        "index": 1,
+        "name": "AMD Instinct MI355X",
+        "capability": [
+          9,
+          5
+        ],
+        "total_mib": 294896
+      }
+    ],
+    "imports": {
+      "miles": "/job/miles/miles/__init__.py",
+      "sglang": "/sgl-workspace/sglang/python/sglang/__init__.py",
+      "torch": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+      "torch._C": "/opt/venv/lib/python3.10/site-packages/torch/_C.cpython-310-x86_64-linux-gnu.so",
+      "mooncake.engine": "/opt/venv/lib/python3.10/site-packages/mooncake/engine.cpython-310-x86_64-linux-gnu.so",
+      "transformer_engine": "/opt/venv/lib/python3.10/site-packages/transformer_engine/__init__.py",
+      "megatron.core": "/root/Megatron-LM/megatron/core/__init__.py",
+      "aiter": "/sgl-workspace/aiter/aiter/__init__.py"
+    },
+    "versions": {
+      "miles": "0.1.0",
+      "sglang": "0.5.17.dev2157+ga8e5c632f",
+      "torch": "2.9.1+rocm7.2.0.lw.git7e1940d4",
+      "transformer_engine": "2.17.0",
+      "megatron-core": "0.19.0+8c1e05747"
+    }
+  }
+}
