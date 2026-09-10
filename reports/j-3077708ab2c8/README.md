@@ -29,6 +29,8 @@ consumer forward logits with a reference HF model on the first GPU.
 - GPU phase timing ranges: optimizer 17.24–5530.17 ms, conversion 7.73–10.42 ms,
   broadcast 5.98–41.91 ms, reference forward 6.08–617.77 ms,
   consumer forward 5.84–3006.10 ms, full cycle 38.45–8644.11 ms.
+- Focused selector test: `tests/fast/backends/megatron_utils/test_lora_hf_weight_iterator.py`,
+  4 passed.
 - First-cycle timings include warmup/compilation and are not performance claims.
 
 The complete numerical record is in `gpu_validation.json`.
