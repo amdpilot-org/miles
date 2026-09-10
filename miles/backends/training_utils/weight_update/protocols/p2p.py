@@ -21,6 +21,7 @@ from miles.backends.training_utils.parallel import ParallelState
 from miles.backends.training_utils.weight_update.hf_weight_iterator import WeightUpdatePlacement
 from miles.backends.training_utils.weight_update.protocol import WeightTransferProtocol
 from miles.utils.distributed_utils import get_gloo_group
+from miles.utils.ft_utils.process_group_utils import collective_bool_and
 
 from .p2p_transfer_utils import (
     P2PTransferManager,
@@ -32,6 +33,13 @@ from .p2p_transfer_utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+P2P_TRANSFER_FAILURE_MESSAGE = (
+    "P2P weight transfer failed on at least one trainer rank; rollout engines were not finalized or resumed."
+)
+P2P_TRAINER_RECREATE_MESSAGE = (
+    "P2P weight transfer state cannot be reused after a failure; the trainer actor must be recreated."
+)
 
 
 class UpdateWeightP2P(WeightTransferProtocol):
@@ -59,22 +67,52 @@ class UpdateWeightP2P(WeightTransferProtocol):
         )
 
     def after_base_weights(self) -> None:
-        """Wait for all background P2P writes to complete."""
+        """Settle writes and reach a common success decision before finalization."""
         if not self.is_sender:
+            self._agree_transfer_success()
             return
-        self.transfer_manager.wait_transfers()
-        assert len(self._tensor_update_pending) == 0 and len(self._staged_tensors) == 0, (
-            f"Some tensors were not transferred during P2P weight update. "
-            f"Pending: {self._tensor_update_pending}, Staged: {self._staged_tensors}"
+
+        if not self.transfer_manager.failed:
+            try:
+                self.transfer_manager.wait_transfers()
+            except Exception as error:
+                if not self.transfer_manager.failed:
+                    self.transfer_manager.record_failure("P2P transfer wait failed", error)
+        if not self.transfer_manager.failed and (self._tensor_update_pending or self._staged_tensors):
+            incomplete_transfer_error = RuntimeError(
+                "Some tensors were not transferred during P2P weight update. "
+                f"Pending: {self._tensor_update_pending}, Staged: {self._staged_tensors}"
+            )
+            self.transfer_manager.record_failure("P2P tensor staging did not complete", incomplete_transfer_error)
+
+        self._agree_transfer_success()
+
+    def _agree_transfer_success(self) -> None:
+        """Raise only after every trainer rank has observed the same outcome."""
+        transfer_succeeded = collective_bool_and(
+            value=not self.transfer_manager.failed,
+            group=get_gloo_group(),
         )
+        if transfer_succeeded:
+            return
+
+        failure_cause = self.transfer_manager.failure_cause
+        if not self.transfer_manager.failed:
+            self.transfer_manager.record_failure("P2P weight transfer failed on another trainer rank")
+        if failure_cause is not None:
+            raise RuntimeError(P2P_TRANSFER_FAILURE_MESSAGE) from failure_cause
+        raise RuntimeError(P2P_TRANSFER_FAILURE_MESSAGE)
 
     def begin_sync(
         self, weight_version: int, iter_buckets: Callable[..., Iterator[list[tuple[str, torch.Tensor]]]]
     ) -> bool:
         """Register shared CPU pinned memory with P2P on the first sync."""
         if self.is_sender and not self._model_registered:
-            self._weight_memory_registry = register_cpu_memory(self._shared_params_dict, self._transfer_engine)
-            self._model_registered = True
+            try:
+                self._weight_memory_registry = register_cpu_memory(self._shared_params_dict, self._transfer_engine)
+                self._model_registered = True
+            except Exception as error:
+                self.transfer_manager.record_failure("P2P memory registration failed", error)
         return True
 
     def send_bucket(self, converted_named_tensors: list[tuple[str, torch.Tensor]]) -> None:
@@ -85,40 +123,46 @@ class UpdateWeightP2P(WeightTransferProtocol):
         partial writes that would corrupt the shared buffer when different engine
         ranks have different EP expert-to-local mappings.
         """
-        if not self.is_sender or not converted_named_tensors:
+        if not self.is_sender or not converted_named_tensors or self.transfer_manager.failed:
+            converted_named_tensors.clear()
             return
-        # `ready_hf_tensors`` here are the complete tensors ready to be transferred.
-        transfer_ready_params, ready_hf_tensors = self._get_transfer_ready_params(converted_named_tensors)
+        try:
+            # `ready_hf_tensors`` here are the complete tensors ready to be transferred.
+            transfer_ready_params, ready_hf_tensors = self._get_transfer_ready_params(converted_named_tensors)
 
-        if transfer_ready_params and ready_hf_tensors:
-            last_idx = len(self._transfer_engine_meta_list) - 1
-            for i, (model_replica, remote_weight_infos) in enumerate(self._transfer_engine_meta_list):
-                model_replica.load_weights(ready_hf_tensors)
+            if transfer_ready_params and ready_hf_tensors:
+                last_idx = len(self._transfer_engine_meta_list) - 1
+                for i, (model_replica, remote_weight_infos) in enumerate(self._transfer_engine_meta_list):
+                    if self.transfer_manager.failed:
+                        break
+                    model_replica.load_weights(ready_hf_tensors)
 
-                is_last = i == last_idx
-                if is_last:
-                    # Last engine rank: fire-and-forget all sessions to background,
-                    # as the weight will no longer be overwritten
-                    for remote_session in remote_weight_infos:
-                        self.transfer_manager.submit(
-                            self._do_p2p_write_one_session,
-                            remote_session,
-                            transfer_ready_params,
-                        )
-                else:
-                    # Non-last engine rank needs to be fully written to target before next update can happen.
-                    futures = [
-                        self.transfer_manager.submit_returning_future(
-                            self._do_p2p_write_one_session,
-                            remote_session,
-                            transfer_ready_params,
-                        )
-                        for remote_session in remote_weight_infos
-                    ]
-                    for f in futures:
-                        f.result()
-
-        converted_named_tensors.clear()
+                    is_last = i == last_idx
+                    if is_last:
+                        # Last engine rank: fire-and-forget all sessions to background,
+                        # as the weight will no longer be overwritten
+                        for remote_session in remote_weight_infos:
+                            self.transfer_manager.submit(
+                                self._do_p2p_write_one_session,
+                                remote_session,
+                                transfer_ready_params,
+                            )
+                    else:
+                        # Non-last engine rank needs to be fully written to target before next update can happen.
+                        futures = [
+                            self.transfer_manager.submit_returning_future(
+                                self._do_p2p_write_one_session,
+                                remote_session,
+                                transfer_ready_params,
+                            )
+                            for remote_session in remote_weight_infos
+                        ]
+                        self.transfer_manager.wait_transfer_batch(futures)
+        except Exception as error:
+            if not self.transfer_manager.failed:
+                self.transfer_manager.record_failure("P2P transfer preparation or submission failed", error)
+        finally:
+            converted_named_tensors.clear()
 
     def connect(
         self,
@@ -139,6 +183,12 @@ class UpdateWeightP2P(WeightTransferProtocol):
           replica that mirrors the target's sharding layout, enabling correct
           weight format conversion before transfer.
         """
+        if self.transfer_manager.failed:
+            failure_cause = self.transfer_manager.failure_cause
+            if failure_cause is not None:
+                raise RuntimeError(P2P_TRAINER_RECREATE_MESSAGE) from failure_cause
+            raise RuntimeError(P2P_TRAINER_RECREATE_MESSAGE)
+
         self.rollout_engines = rollout_engines
 
         self.is_sender = self.transfer_plan._gathered_dp_rank < self.transfer_plan._rollout_num_gpus

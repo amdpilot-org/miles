@@ -1,0 +1,117 @@
+{
+  "ranks": [
+    {
+      "device": "AMD Instinct MI355X",
+      "device_capability": [
+        9,
+        5
+      ],
+      "failed_consumer_claim": false,
+      "failed_consumer_state": {
+        "finalized": false,
+        "paused": true,
+        "ready_version": null,
+        "resumed": false,
+        "session_open": true
+      },
+      "failed_lifecycle_events": [
+        "pause",
+        "begin"
+      ],
+      "failed_updater_reuse_refusal": "P2P weight transfer state cannot be reused after a failure; the trainer actor must be recreated.",
+      "failed_updater_weight_version": 1,
+      "failure": "P2P weight transfer failed on at least one trainer rank; rollout engines were not finalized or resumed.",
+      "local_rank": 0,
+      "module_paths": {
+        "aiter": "/sgl-workspace/aiter/aiter/__init__.py",
+        "megatron.core": "/root/Megatron-LM/megatron/core/__init__.py",
+        "miles": "/job/miles/miles/__init__.py",
+        "mooncake": "/opt/venv/lib/python3.10/site-packages/mooncake/__init__.py",
+        "sglang": "/sgl-workspace/sglang/python/sglang/__init__.py",
+        "torch": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py"
+      },
+      "rank": 0,
+      "recovered_consumer_claim": true,
+      "recovered_consumer_state": {
+        "finalized": true,
+        "paused": true,
+        "ready_version": 1,
+        "resumed": true,
+        "session_open": true
+      },
+      "recovered_lifecycle_events": [
+        "pause",
+        "begin",
+        "end",
+        "set_version",
+        "resume"
+      ],
+      "recovered_updater_weight_version": 1,
+      "recovery_successful": true,
+      "source_value": [
+        7.0,
+        7.0,
+        7.0,
+        7.0
+      ],
+      "target_value": [
+        7.0,
+        7.0,
+        7.0,
+        7.0
+      ]
+    },
+    {
+      "device": "AMD Instinct MI355X",
+      "device_capability": [
+        9,
+        5
+      ],
+      "failed_consumer_claim": null,
+      "failed_consumer_state": {
+        "finalized": false,
+        "paused": false,
+        "ready_version": null,
+        "resumed": false,
+        "session_open": false
+      },
+      "failed_lifecycle_events": [],
+      "failed_updater_reuse_refusal": "P2P weight transfer state cannot be reused after a failure; the trainer actor must be recreated.",
+      "failed_updater_weight_version": 1,
+      "failure": "P2P weight transfer failed on at least one trainer rank; rollout engines were not finalized or resumed.",
+      "local_rank": 1,
+      "module_paths": {
+        "aiter": "/sgl-workspace/aiter/aiter/__init__.py",
+        "megatron.core": "/root/Megatron-LM/megatron/core/__init__.py",
+        "miles": "/job/miles/miles/__init__.py",
+        "mooncake": "/opt/venv/lib/python3.10/site-packages/mooncake/__init__.py",
+        "sglang": "/sgl-workspace/sglang/python/sglang/__init__.py",
+        "torch": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py"
+      },
+      "rank": 1,
+      "recovered_consumer_claim": null,
+      "recovered_consumer_state": {
+        "finalized": false,
+        "paused": false,
+        "ready_version": null,
+        "resumed": false,
+        "session_open": false
+      },
+      "recovered_lifecycle_events": [],
+      "recovered_updater_weight_version": 1,
+      "recovery_successful": true,
+      "source_value": [
+        7.0,
+        7.0,
+        7.0,
+        7.0
+      ],
+      "target_value": [
+        7.0,
+        7.0,
+        7.0,
+        7.0
+      ]
+    }
+  ]
+}
