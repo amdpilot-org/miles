@@ -18,10 +18,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 from miles.backends.fsdp_utils.checkpoint import ModelState, OptimizerState
 from miles.backends.training_utils.loss_hub.advantages import normalize_advantages
-from miles.backends.training_utils.loss_hub.math_utils import (
-    compute_policy_loss,
-    get_advantages_and_returns_batch,
-)
+from miles.backends.training_utils.loss_hub.math_utils import compute_policy_loss, get_advantages_and_returns_batch
 from miles.backends.training_utils.parallel import GroupInfo, ParallelState, set_parallel_state
 
 
@@ -73,7 +70,6 @@ class ResumeResult:
     actor_resume_difference: dict[str, float]
     critic_resume_difference: dict[str, float]
     checks: dict[str, Any]
-
 
 
 class TinyActor(nn.Module):
@@ -190,7 +186,9 @@ def make_rollout(
         "terminal_rewards": terminal_rewards,
         "response_lengths": response_lengths,
         "prompt_lengths": prompt_lengths,
-        "total_lengths": [prompt + response for prompt, response in zip(prompt_lengths, response_lengths)],
+        "total_lengths": [
+            prompt + response for prompt, response in zip(prompt_lengths, response_lengths, strict=True)
+        ],
     }
 
 
@@ -246,7 +244,7 @@ def assert_gae_reference(
     config: TrainingConfig,
 ) -> None:
     token_rewards = [
-        rollout["token_rewards"][sample_index, : response_length]
+        rollout["token_rewards"][sample_index, :response_length]
         for sample_index, response_length in enumerate(rollout["response_lengths"])
     ]
     reference_advantages, reference_returns = reference_gae(
@@ -281,7 +279,7 @@ def current_log_probs(actor: DDP, rollout: dict[str, Any]) -> list[torch.Tensor]
     log_probs = torch.log_softmax(logits, dim=-1)
     gathered = log_probs.gather(-1, rollout["actions"].unsqueeze(-1)).squeeze(-1)
     return [
-        gathered[sample_index, : response_length]
+        gathered[sample_index, :response_length]
         for sample_index, response_length in enumerate(rollout["response_lengths"])
     ]
 
@@ -386,11 +384,11 @@ def prepare_gae(
     phase_started = time.perf_counter()
     torch.cuda.synchronize()
     values = [
-        value[: response_length]
+        value[:response_length]
         for value, response_length in zip(critic(rollout["features"]), rollout["response_lengths"], strict=True)
     ]
     token_rewards = [
-        rollout["token_rewards"][sample_index, : response_length]
+        rollout["token_rewards"][sample_index, :response_length]
         for sample_index, response_length in enumerate(rollout["response_lengths"])
     ]
     miles_advantages, miles_returns = get_advantages_and_returns_batch(
@@ -662,7 +660,9 @@ def run_checkpoint_resume(
     split_actor_optimizer_state = split_actor_optimizer.state_dict()["state"]
     split_critic_optimizer_state = split_critic_optimizer.state_dict()["state"]
 
-    resumed_actor, resumed_critic, resumed_actor_optimizer, resumed_critic_optimizer = create_training_pair(config, 1234)
+    resumed_actor, resumed_critic, resumed_actor_optimizer, resumed_critic_optimizer = create_training_pair(
+        config, 1234
+    )
     timings.checkpoint_load = load_checkpoint(
         resumed_actor,
         resumed_critic,
