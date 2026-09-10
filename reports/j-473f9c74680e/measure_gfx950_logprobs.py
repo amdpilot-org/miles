@@ -358,6 +358,8 @@ def main():
             "rollout_deterministic": True,
             "rollout_cuda_graph": False,
             "rollout_radix_cache": False,
+            "sglang_use_aiter": os.environ.get("SGLANG_USE_AITER"),
+            "use_rocm_aiter_rope_backend": os.environ.get("USE_ROCM_AITER_ROPE_BACKEND"),
             "training_logprob_path": "miles.backends.training_utils.loss_hub.math_utils.calculate_log_probs_and_entropy",
             "timeout_seconds": args.timeout_seconds,
         },
