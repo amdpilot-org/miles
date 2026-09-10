@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from unittest.mock import MagicMock
 
 import pytest
@@ -80,6 +81,25 @@ class TestConvertSamplesToTrainData:
             custom_reward_post_process_func=None,
         )
         assert out["loss_masks"][0] == [0, 0, 0, 0]
+
+    def test_topk_opd_targets_are_converted_to_train_data(self):
+        args = make_args(rewards_normalization=False)
+        sample = make_sample(response_length=2)
+        sample.opd_topk_token_ids = [[1, 2], [1, 3]]
+        sample.opd_topk_teacher_log_probs = [[math.log(0.8), math.log(0.2)]] * 2
+        sample.opd_topk_weights = [[0.8, 0.2]] * 2
+
+        out = convert_samples_to_train_data(
+            args,
+            [sample],
+            metadata={},
+            custom_convert_samples_to_train_data_func=None,
+            custom_reward_post_process_func=None,
+        )
+
+        assert out["opd_topk_token_ids"] == [[[1, 2], [1, 3]]]
+        assert out["opd_topk_teacher_log_probs"] == [[[math.log(0.8), math.log(0.2)]] * 2]
+        assert out["opd_topk_weights"] == [[[0.8, 0.2]] * 2]
 
     def test_loss_mask_length_mismatch_asserts(self):
         args = make_args(rewards_normalization=False)
@@ -801,13 +821,16 @@ class TestSplitTrainDataRaw:
         assert len(result[1]["seq_witness_ids"]) == 2
 
     def test_indexer_topk_and_opd_reverse_kl_split_across_dp(self) -> None:
-        """Keys from the rollout-side split (rollout_indexer_topk, opd_reverse_kl) partition per sample."""
+        """Rollout-side OPD fields partition per sample across DP."""
         data = {
             "tokens": [[1, 2], [3, 4], [5, 6], [7, 8]],
             "response_lengths": [1, 1, 1, 1],
             "loss_masks": [[0, 1], [0, 1], [0, 1], [0, 1]],
             "rollout_indexer_topk": [torch.tensor([i]) for i in range(4)],
             "opd_reverse_kl": [[float(i)] for i in range(4)],
+            "opd_topk_token_ids": [[[i, i + 4]] for i in range(4)],
+            "opd_topk_teacher_log_probs": [[[math.log(0.5), math.log(0.5)]] for i in range(4)],
+            "opd_topk_weights": [[[0.5, 0.5]] for i in range(4)],
         }
 
         args = MagicMock()
@@ -819,6 +842,9 @@ class TestSplitTrainDataRaw:
         for part in result:
             assert len(part["rollout_indexer_topk"]) == 2
             assert len(part["opd_reverse_kl"]) == 2
+            assert len(part["opd_topk_token_ids"]) == 2
+            assert len(part["opd_topk_teacher_log_probs"]) == 2
+            assert len(part["opd_topk_weights"]) == 2
 
     def test_no_witness_ids_when_absent(self) -> None:
         tokens = [[1, 2], [3, 4]]

@@ -2,7 +2,7 @@
 title: On-Policy Distillation
 description: Train a student on its own rollouts with a teacher's token-level probabilities as a reverse-KL signal, composable with GRPO, PPO, and other estimators.
 ---
-On-policy distillation (OPD) trains a student model on its own rollouts while using a teacher model's token-level probabilities as the distillation signal. In Miles, the teacher signal is converted into a per-token reverse-KL penalty and applied after the selected RL advantage estimator has produced token advantages. This lets the same OPD recipe compose with GRPO, PPO, REINFORCE++, GSPO, and other estimators.
+On-policy distillation (OPD) trains a student model on its own rollouts while using a teacher model's token-level probabilities as the distillation signal. Sampled-token OPD adds a per-token reverse-KL penalty to the selected RL estimator's advantages. Top-k OPD instead adds a differentiable subset-KL loss during training, so the teacher signal is not an action-independent reward. Both paths compose with GRPO, PPO, REINFORCE++, GSPO, and other estimators.
 
 ## Key Arguments
 
@@ -11,9 +11,9 @@ On-policy distillation (OPD) trains a student model on its own rollouts while us
 | `--use-opd` | Enable on-policy distillation. Required flag to use OPD. |
 | `--opd-type` | Type of OPD: `sglang` or `megatron`. Required when `--use-opd` is set. |
 | `--opd-kl-coef` | OPD KL penalty coefficient (default: 1.0). Controls the weight of the distillation signal relative to the RL advantage. |
-| `--opd-log-prob-top-k` | Number of top-k tokens retained for the Rethinking OPD token reward. `0` uses sampled-token OPD; `16` matches the paper recipe default. |
+| `--opd-log-prob-top-k` | Number of top-k tokens retained for the Rethinking OPD subset loss. `0` uses sampled-token OPD; `16` matches the paper recipe default. |
 | `--opd-top-k-strategy` | Top-k token set strategy: `only-student`, `only-teacher`, `intersection`, `union`, or `xor`. |
-| `--opd-reward-weight-mode` | Weighting scheme for top-k rewards: `student_p`, `teacher_p`, or `none`. |
+| `--opd-reward-weight-mode` | Weighting scheme for the rollout-side top-k diagnostic estimate: `student_p`, `teacher_p`, or `none`. The training loss renormalizes current student and teacher probabilities over the selected set. |
 | `--opd-teacher-urls` | Optional multi-teacher routing map (`NAME=URL` pairs, SGLang mode only). Routes each sample to a teacher by `sample.metadata[--opd-teacher-key]`; reserved name `default` is the fallback. Unset = single teacher at `--rm-url`. |
 | `--opd-teacher-key` | Metadata key holding the teacher name for routing (default: `opd_teacher`). |
 | `--opd-teacher-load` | Path to teacher Megatron checkpoint. **Required** when `--opd-type=megatron`, **must not be set** when `--opd-type=sglang`. |
@@ -21,7 +21,7 @@ On-policy distillation (OPD) trains a student model on its own rollouts while us
 
 ## How It Works
 
-OPD modifies the advantage computation by subtracting a KL penalty term that encourages the student to match the teacher's output distribution:
+Sampled-token OPD modifies the advantage computation by subtracting a KL penalty term that encourages the student to match the teacher's output distribution:
 
 $$
 \hat{A}_t = A_t - \lambda_{\text{opd}} \cdot D_{\text{KL}}(P_{\text{student}} \| P_{\text{teacher}})_t
@@ -29,11 +29,11 @@ $$
 
 Where $A_t$ is the original advantage from the base estimator (e.g., GRPO), $\lambda_{\text{opd}}$ is `--opd-kl-coef`, and $D_{\text{KL}}$ is the token-level reverse KL divergence.
 
-The implementation follows the additive OPD training recipe described in the [Thinking Machines OPD blog](https://thinkingmachines.ai/blog/on-policy-distillation/), with an additional SGLang top-k reward mode from [Rethinking On-Policy Distillation](https://arxiv.org/abs/2604.13016).
+The implementation follows the additive OPD training recipe described in the [Thinking Machines OPD blog](https://thinkingmachines.ai/blog/on-policy-distillation/), with an additional SGLang top-k mode from [Rethinking On-Policy Distillation](https://arxiv.org/abs/2604.13016).
 
-## Rethinking OPD Top-K Reward
+## Rethinking OPD Top-K Loss
 
-SGLang OPD supports the top-k token reward recipe from [Rethinking On-Policy Distillation](https://arxiv.org/abs/2604.13016). Set `--opd-log-prob-top-k` above zero to request student rollout top-logprobs, score the same sequence with the teacher, and aggregate a weighted reverse-KL estimate over a selected token set at each response position.
+SGLang OPD supports the top-k subset-KL recipe from [Rethinking On-Policy Distillation](https://arxiv.org/abs/2604.13016). Set `--opd-log-prob-top-k` above zero to request student rollout top-logprobs, score the same sequence with the teacher, and carry the selected token IDs and teacher log-probs into training.
 
 The token set is controlled by `--opd-top-k-strategy`:
 
@@ -45,7 +45,7 @@ The token set is controlled by `--opd-top-k-strategy`:
 | `union` | Tokens appearing in either top-k set, with duplicates removed. |
 | `xor` | Tokens appearing in exactly one top-k set. |
 
-`--opd-reward-weight-mode` controls whether each selected token is weighted by student probability, teacher probability, or uniformly. For compatibility, `--opd-log-prob-top-k=0` keeps the original sampled-token OPD path.
+During training, Miles gathers current student log-probs at the selected IDs, renormalizes the current student and teacher distributions over that set, and adds the differentiable subset reverse KL to the policy loss. Mass outside the selected set is discarded, matching the paper's top-k approximation. `--opd-reward-weight-mode` controls the rollout-side diagnostic estimate stored as `opd_reverse_kl`; it does not freeze rollout weights into the training objective. For compatibility, `--opd-log-prob-top-k=0` keeps the original sampled-token OPD path.
 
 ## Two Teacher Modes
 
@@ -59,8 +59,8 @@ The teacher runs on an external SGLang server. Teacher log-probs are obtained du
 1. An external SGLang server runs the teacher model.
 2. During rollout, the custom reward function (`miles.rollout.on_policy_distillation.reward_func`) sends each sample to the teacher server to obtain token-level log-probs.
 3. With `--opd-log-prob-top-k=0`, the custom post-processing function trims sampled-token teacher log-probs to the response span and stores them in `sample.teacher_log_probs`.
-4. With `--opd-log-prob-top-k>0`, it computes the Rethinking OPD weighted top-k reverse-KL estimate and stores it in `sample.opd_reverse_kl`.
-5. During training, the stored OPD penalty is subtracted from the selected estimator's advantages.
+4. With `--opd-log-prob-top-k>0`, it stores the selected token IDs, teacher log-probs, validity weights, and a rollout-side reverse-KL diagnostic.
+5. During training, the current student logits and stored teacher targets form a differentiable top-k subset-KL loss. The diagnostic scalar is logged but is not subtracted from advantages.
 
 **Configuration**:
 ```bash

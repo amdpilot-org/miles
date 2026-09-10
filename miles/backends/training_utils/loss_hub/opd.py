@@ -2,6 +2,7 @@ from argparse import Namespace
 
 import torch
 
+from miles.backends.training_utils.loss_hub.logit_processors import get_opd_topk_log_probs
 from miles.utils.types import RolloutBatch
 
 
@@ -26,6 +27,9 @@ def apply_opd_kl_to_advantages(
     References:
         https://github.com/thinking-machines-lab/tinker-cookbook/blob/main/tinker_cookbook/distillation/train_on_policy.py
     """
+
+    if getattr(args, "opd_log_prob_top_k", 0) > 0:
+        return
 
     if student_log_probs is None:
         return
@@ -92,3 +96,68 @@ def apply_opd_kl_to_advantages(
 
     # Store reverse KL for logging.
     rollout_data["opd_reverse_kl"] = reverse_kls
+
+
+def compute_opd_topk_reverse_kl(
+    args: Namespace,
+    batch: RolloutBatch,
+    logits: torch.Tensor,
+) -> torch.Tensor:
+    """Compute differentiable subset reverse KL from current training logits.
+
+    Both distributions are renormalized over the selected top-k token set, as in
+    the Rethinking OPD subset approximation. The stored rollout weights are
+    used only as a padding/validity mask; freezing them into training would
+    create a snapshot-alignment objective rather than teacher distillation.
+    """
+    required_fields = (
+        "opd_topk_token_ids",
+        "opd_topk_teacher_log_probs",
+        "opd_topk_weights",
+    )
+    missing_fields = [field for field in required_fields if batch.get(field) is None]
+    if missing_fields:
+        raise ValueError(f"Top-k OPD requires {', '.join(missing_fields)} for a differentiable loss.")
+
+    token_ids = batch["opd_topk_token_ids"]
+    current_log_probs = get_opd_topk_log_probs(
+        logits,
+        args=args,
+        unconcat_tokens=batch["unconcat_tokens"],
+        total_lengths=batch["total_lengths"],
+        response_lengths=batch["response_lengths"],
+        token_ids=token_ids,
+        max_seq_lens=batch.get("max_seq_lens"),
+    )
+    teacher_log_probs = batch["opd_topk_teacher_log_probs"]
+    weights = batch["opd_topk_weights"]
+    reverse_kls = []
+
+    for sample_index, current in enumerate(current_log_probs):
+        sample_token_ids = token_ids[sample_index].to(device=current.device, dtype=torch.long)
+        sample_teacher = teacher_log_probs[sample_index].detach().to(device=current.device, dtype=torch.float32)
+        sample_weights = weights[sample_index].detach().to(device=current.device, dtype=torch.float32)
+        if current.shape != sample_teacher.shape or current.shape != sample_weights.shape:
+            raise ValueError(
+                f"Top-k OPD shape mismatch at sample {sample_index}: "
+                f"current={tuple(current.shape)}, teacher={tuple(sample_teacher.shape)}, "
+                f"weights={tuple(sample_weights.shape)}."
+            )
+        if sample_token_ids.shape != current.shape:
+            raise ValueError(
+                f"Top-k OPD token-id shape mismatch at sample {sample_index}: "
+                f"token_ids={tuple(sample_token_ids.shape)}, current={tuple(current.shape)}."
+            )
+        valid = sample_weights > 0
+        if not valid.any():
+            reverse_kls.append(current.new_zeros(current.size(0)))
+            continue
+        current_selected = torch.where(valid, current, current.new_full((), -float("inf")))
+        teacher_selected = torch.where(valid, sample_teacher, sample_teacher.new_full((), -float("inf")))
+        current_log_probs = torch.log_softmax(current_selected, dim=1)
+        teacher_log_probs = torch.log_softmax(teacher_selected, dim=1)
+        reverse_kls.append(
+            (current_log_probs.exp() * (current_log_probs - teacher_log_probs)).sum(dim=1)
+        )
+
+    return torch.cat(reverse_kls, dim=0)

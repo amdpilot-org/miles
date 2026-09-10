@@ -1,6 +1,7 @@
 import math
 from argparse import Namespace
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import Any
 
 import aiohttp
@@ -10,6 +11,14 @@ from miles.utils.types import Sample
 
 TopLogprobs = list[list[Any]]
 LogprobMaps = list[dict[int, float]]
+
+
+@dataclass(frozen=True)
+class TopKDistillationTargets:
+    reverse_kl: torch.Tensor
+    token_ids: list[list[int]]
+    teacher_log_probs: list[list[float]]
+    weights: list[list[float]]
 
 TOP_K_STRATEGIES = {"only-student", "only-teacher", "intersection", "union", "xor"}
 REWARD_WEIGHT_MODES = {"student_p", "teacher_p", "none"}
@@ -278,14 +287,23 @@ def _reward_weights(
     return [v / denom for v in exp_vals]
 
 
-def _compute_topk_reverse_kl(
+def _pad_topk_rows(values: list[list[Any]], width: int, fill_value: Any) -> list[list[Any]]:
+    return [row + [fill_value] * (width - len(row)) for row in values]
+
+
+def _compute_topk_distillation(
     args: Namespace,
     sample: Sample,
     reward_payload: dict[str, Any],
-) -> torch.Tensor:
+) -> TopKDistillationTargets:
     response_length = sample.response_length
     if response_length == 0:
-        return torch.zeros((0,), dtype=torch.float32)
+        return TopKDistillationTargets(
+            reverse_kl=torch.zeros((0,), dtype=torch.float32),
+            token_ids=[],
+            teacher_log_probs=[],
+            weights=[],
+        )
 
     strategy = _get_top_k_strategy(args)
     weight_mode = _get_reward_weight_mode(args)
@@ -314,6 +332,9 @@ def _compute_topk_reverse_kl(
     )
 
     reverse_kls = []
+    selected_token_ids = []
+    selected_teacher_log_probs = []
+    selected_weights = []
     normalize_weights = strategy != "xor"
     for i in range(response_length):
         student_ids = list(student_top_maps[i].keys())
@@ -345,8 +366,29 @@ def _compute_topk_reverse_kl(
             w * (s_logp - t_logp) for w, s_logp, t_logp in zip(weights, student_logps, teacher_logps, strict=True)
         )
         reverse_kls.append(reverse_kl)
+        selected_token_ids.append(selected_ids)
+        selected_teacher_log_probs.append(teacher_logps)
+        selected_weights.append(weights)
 
-    return torch.tensor(reverse_kls, dtype=torch.float32)
+    width = max((len(row) for row in selected_token_ids), default=0)
+    token_ids = _pad_topk_rows(selected_token_ids, width, 0)
+    teacher_log_probs = _pad_topk_rows(selected_teacher_log_probs, width, 0.0)
+    weights = _pad_topk_rows(selected_weights, width, 0.0)
+
+    return TopKDistillationTargets(
+        reverse_kl=torch.tensor(reverse_kls, dtype=torch.float32),
+        token_ids=token_ids,
+        teacher_log_probs=teacher_log_probs,
+        weights=weights,
+    )
+
+
+def _compute_topk_reverse_kl(
+    args: Namespace,
+    sample: Sample,
+    reward_payload: dict[str, Any],
+) -> torch.Tensor:
+    return _compute_topk_distillation(args, sample, reward_payload).reverse_kl
 
 
 async def reward_func(args: Namespace, sample: Sample, **kwargs: Any) -> dict[str, Any]:
@@ -415,7 +457,11 @@ def post_process_rewards(args: Namespace, samples: list[Sample], **kwargs: Any) 
 
     if _get_opd_top_k(args) > 0:
         for sample, reward in zip(samples, raw_rewards, strict=True):
-            sample.opd_reverse_kl = _compute_topk_reverse_kl(args, sample, reward)
+            targets = _compute_topk_distillation(args, sample, reward)
+            sample.opd_reverse_kl = targets.reverse_kl
+            sample.opd_topk_token_ids = targets.token_ids
+            sample.opd_topk_teacher_log_probs = targets.teacher_log_probs
+            sample.opd_topk_weights = targets.weights
         scalar_rewards = [0.0] * len(samples)
         return scalar_rewards, scalar_rewards
 
