@@ -1,0 +1,19 @@
+{
+  "backed_up_teacher_preserved": true,
+  "cycles": 3,
+  "device_capability": [
+    9,
+    5
+  ],
+  "device_name": "AMD Instinct MI355X",
+  "failed_load_blocked": true,
+  "hip_version": "7.2.26015-fc0010cf6a",
+  "memory_saver_module": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver/__init__.py",
+  "memory_saver_preload": "/opt/venv/lib/python3.10/site-packages/torch_memory_saver_hook_mode_preload.abi3.so",
+  "no_backup_teacher_zeroed": true,
+  "student_update_applied": true,
+  "teacher_unchanged_after_student_update": true,
+  "torch_module": "/opt/venv/lib/python3.10/site-packages/torch/__init__.py",
+  "torch_version": "2.9.1+rocm7.2.0.git7e1940d4",
+  "valid_reload_restored": true
+}

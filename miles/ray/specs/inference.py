@@ -245,6 +245,9 @@ def _compute_spec_inference_engine(
             sglang_api_key=server_group_config.overrides.get("api_key", args.sglang_api_key),
             needs_offload=server_group_config.needs_offload,
             update_weights=model_cfg.update_weights,
+            model_path=server_group_config.model_path,
+            load_format=server_group_config.load_format,
+            weights_backup_mode=server_group_config.weights_backup_mode,
         ),
     )
 

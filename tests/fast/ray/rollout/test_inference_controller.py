@@ -10,6 +10,7 @@ from tests.fast.ray.rollout.conftest import make_args
 
 from miles.dashboard import hooks as dashboard_hooks
 from miles.ray.rollout import inference_controller as inference_controller_module
+from miles.ray.rollout.cell_state import CellAddrInfo, StateServing
 from miles.ray.rollout.inference_controller import (
     InferenceController,
     UpdatableEngines,
@@ -47,6 +48,9 @@ def _make_cell_info(
             sglang_api_key=None,
             needs_offload=False,
             update_weights=True,
+            model_path="/fake/model",
+            load_format=None,
+            weights_backup_mode="none",
         ),
     )
 
@@ -120,6 +124,9 @@ class _RecordingServer:
         if self._cells_gate is not None:
             await self._cells_gate.wait()
         self.waited_expected_num_cells += 1
+
+    def _addressable_cells(self) -> list:
+        return []
 
 
 class _FakeUpdatableCell:
@@ -499,6 +506,9 @@ class TestEngineMetaContract:
             worker_name="inference-engine-0-0-1-0",
             needs_offload=False,
             update_weights=True,
+            model_path="/fake/model",
+            load_format=None,
+            weights_backup_mode="none",
             workers_hash="pseudo-hash-0",
         )
 
@@ -648,6 +658,132 @@ class TestMemoryLifecycleFanOut:
                 [GPU_MEMORY_TYPE_WEIGHTS],
                 [GPU_MEMORY_TYPE_KV_CACHE, GPU_MEMORY_TYPE_CUDA_GRAPH],
             ]
+
+
+class _FakeRestoreClient:
+    def __init__(self) -> None:
+        self.resume_tags: list[list[str] | None] = []
+        self.release_tags: list[list[str] | None] = []
+        self.reloads: list[tuple[str, str | None]] = []
+        self.fail_reload = False
+
+    async def release_memory_occupation(self, tags=None):
+        self.release_tags.append(tags)
+
+    async def resume_memory_occupation(self, tags=None):
+        self.resume_tags.append(tags)
+
+    async def update_weights_from_disk(self, model_path: str, load_format: str | None = None):
+        if self.fail_reload:
+            raise RuntimeError("injected reload failure")
+        self.reloads.append((model_path, load_format))
+
+
+class _SingleCellServer:
+    def __init__(self, cell) -> None:
+        self.server_cells = {cell.meta.cell_id: cell}
+        self.model_name = "teacher"
+        self.update_weights = False
+
+    def _addressable_cells(self) -> list:
+        return list(self.server_cells.values())
+
+
+def _make_restorable_cell(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    update_weights: bool = False,
+    weights_backup_mode: str = "reload",
+) -> tuple[ServerCell, _FakeRestoreClient]:
+    client = _FakeRestoreClient()
+    cell = object.__new__(ServerCell)
+    cell.args = SimpleNamespace()
+    cell.meta = ServerCellMetadata(
+        model_id="teacher",
+        worker_type="regular",
+        cell_id="teacher-engine-0-0-0",
+        num_gpus_per_engine=1,
+        gpu_offset=0,
+        sglang_api_key=None,
+        worker_name="teacher-engine-0-0-0-0",
+        needs_offload=True,
+        update_weights=update_weights,
+        model_path="/teacher/checkpoint",
+        load_format=None,
+        weights_backup_mode=weights_backup_mode,
+        workers_hash="teacher-hash",
+    )
+    cell._state = StateServing(
+        addr_info=CellAddrInfo(server_url="http://teacher", bootstrap_port=None, gate_url="http://teacher-gate")
+    )
+    cell._weights_ready = True
+    monkeypatch.setattr(ServerCell, "api_client", property(lambda _self: client))
+    monkeypatch.setattr(ServerCell, "__del__", lambda _self: None)
+    return cell, client
+
+
+class TestFrozenWeightRestoration:
+    @pytest.mark.asyncio
+    async def test_repeated_weight_cycles_reload_the_frozen_teacher_every_time(self, monkeypatch):
+        cell, client = _make_restorable_cell(monkeypatch)
+
+        for _ in range(3):
+            await cell.offload(tags=[GPU_MEMORY_TYPE_WEIGHTS])
+            assert cell.weights_ready is False
+            await cell.onload(tags=[GPU_MEMORY_TYPE_WEIGHTS])
+            assert cell.weights_ready is True
+
+        assert client.release_tags == [[GPU_MEMORY_TYPE_WEIGHTS]] * 3
+        assert client.resume_tags == [[GPU_MEMORY_TYPE_WEIGHTS]] * 3
+        assert client.reloads == [("/teacher/checkpoint", None)] * 3
+
+    @pytest.mark.asyncio
+    async def test_a_failed_reload_blocks_admission_until_a_valid_reload(self, monkeypatch):
+        cell, client = _make_restorable_cell(monkeypatch)
+        client.fail_reload = True
+        controller = _make_controller({"teacher": _SingleCellServer(cell)})
+
+        await cell.offload(tags=[GPU_MEMORY_TYPE_WEIGHTS])
+        with pytest.raises(RuntimeError, match="injected reload failure"):
+            await cell.onload(tags=[GPU_MEMORY_TYPE_WEIGHTS])
+        assert cell.weights_ready is False
+        with pytest.raises(RuntimeError, match="Refusing to admit rollout requests"):
+            await controller.prepare_rollout(rollout_id=0)
+
+        client.fail_reload = False
+        await cell.onload(tags=[GPU_MEMORY_TYPE_WEIGHTS])
+        assert cell.weights_ready is True
+        await controller.prepare_rollout(rollout_id=0)
+
+    @pytest.mark.asyncio
+    async def test_cpu_backup_mode_preserves_weights_without_a_disk_reload(self, monkeypatch):
+        cell, client = _make_restorable_cell(monkeypatch, weights_backup_mode="cpu")
+
+        await cell.offload(tags=[GPU_MEMORY_TYPE_WEIGHTS])
+        await cell.onload(tags=[GPU_MEMORY_TYPE_WEIGHTS])
+
+        assert cell.weights_ready is True
+        assert client.reloads == []
+
+    @pytest.mark.asyncio
+    async def test_none_mode_fails_closed_for_a_frozen_model(self, monkeypatch):
+        cell, _client = _make_restorable_cell(monkeypatch, weights_backup_mode="none")
+
+        await cell.offload(tags=[GPU_MEMORY_TYPE_WEIGHTS])
+        with pytest.raises(RuntimeError, match="no frozen-weight restoration policy"):
+            await cell.onload(tags=[GPU_MEMORY_TYPE_WEIGHTS])
+
+        assert cell.weights_ready is False
+
+    @pytest.mark.asyncio
+    async def test_an_updatable_cell_waits_for_actor_weight_sync(self, monkeypatch):
+        cell, client = _make_restorable_cell(monkeypatch, update_weights=True, weights_backup_mode="none")
+
+        await cell.offload(tags=[GPU_MEMORY_TYPE_WEIGHTS])
+        await cell.onload(tags=[GPU_MEMORY_TYPE_WEIGHTS])
+
+        assert cell.weights_ready is False
+        assert client.reloads == []
 
 
 class TestUpdatableEnginesPayload:

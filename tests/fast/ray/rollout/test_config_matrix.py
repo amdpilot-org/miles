@@ -115,6 +115,73 @@ class TestResolveDefaults:
         )
         assert cfg.models[0].update_weights is False
 
+
+class TestWeightsBackupMode:
+    def test_a_frozen_model_defaults_to_disk_reload(self, tmp_path):
+        cfg = _resolve_yaml(
+            tmp_path,
+            "sglang:\n"
+            "  - name: teacher\n"
+            "    model_path: /teacher/model\n"
+            "    update_weights: false\n"
+            "    server_groups:\n"
+            "      - worker_type: regular\n"
+            "        num_gpus: 8\n",
+            rollout_num_gpus=8,
+        )
+
+        assert cfg.models[0].server_groups[0].weights_backup_mode == "reload"
+
+    def test_cpu_mode_requires_the_real_sglang_cpu_backup_flag(self, tmp_path):
+        with pytest.raises(AssertionError, match="enable_weights_cpu_backup=true"):
+            _resolve_yaml(
+                tmp_path,
+                "sglang:\n"
+                "  - name: teacher\n"
+                "    model_path: /teacher/model\n"
+                "    update_weights: false\n"
+                "    weights_backup_mode: cpu\n"
+                "    server_groups:\n"
+                "      - worker_type: regular\n"
+                "        num_gpus: 8\n",
+                rollout_num_gpus=8,
+            )
+
+    def test_cpu_mode_passes_when_sglang_keeps_a_host_backup(self, tmp_path):
+        cfg = _resolve_yaml(
+            tmp_path,
+            "sglang:\n"
+            "  - name: teacher\n"
+            "    model_path: /teacher/model\n"
+            "    update_weights: false\n"
+            "    weights_backup_mode: cpu\n"
+            "    server_groups:\n"
+            "      - worker_type: regular\n"
+            "        num_gpus: 8\n"
+            "        overrides:\n"
+            "          enable_weights_cpu_backup: true\n",
+            rollout_num_gpus=8,
+        )
+
+        group = cfg.models[0].server_groups[0]
+        assert group.weights_backup_mode == "cpu"
+        assert group.overrides["enable_weights_cpu_backup"] is True
+
+    def test_an_updatable_model_is_restored_by_actor_sync(self, tmp_path):
+        cfg = _resolve_yaml(
+            tmp_path,
+            "sglang:\n"
+            "  - name: actor\n"
+            "    model_path: /actor/model\n"
+            "    update_weights: true\n"
+            "    server_groups:\n"
+            "      - worker_type: regular\n"
+            "        num_gpus: 8\n",
+            rollout_num_gpus=8,
+        )
+
+        assert cfg.models[0].server_groups[0].weights_backup_mode == "none"
+
     def test_a_model_serving_the_trained_checkpoint_receives_weight_updates(self, tmp_path):
         """Left unset this is inferred from the paths, and inferring False for the actor trains
         against a frozen policy behind nothing louder than a warning."""

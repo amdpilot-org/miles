@@ -40,6 +40,39 @@ time the optimizer step runs. If the binding constraint is instead that the opti
 state does not fit the GPU *during* the step, actor offload cannot help; that case is what
 `--stream-optimizer-state-to-disk` addresses, and the two compose.
 
+## Frozen rollout engines
+
+An updatable rollout engine is restored by actor weight synchronization. A frozen engine,
+such as an OPD teacher, has no such synchronization target. If its weights are released by
+the colocated memory saver and merely resumed, the process and endpoint stay healthy but
+the model tensors can come back empty. Miles therefore refuses to admit rollout requests
+until every frozen engine has restored its weights.
+
+Set `weights_backup_mode` on a frozen model in the SGLang YAML:
+
+```yaml
+sglang:
+  - name: teacher
+    model_path: /checkpoints/teacher
+    update_weights: false
+    weights_backup_mode: reload
+    server_groups:
+      - worker_type: regular
+        num_gpus: 8
+```
+
+`reload` is the frozen-model default and reloads `model_path` after each weight resume.
+`cpu` keeps a host backup, but every group must also set the real SGLang
+`enable_weights_cpu_backup: true` override; Miles does not infer a backup that was not
+armed. `none` is only valid for an updatable model and fails closed for a frozen model.
+The current SGLang adapter exposes CPU backup but not `torch_memory_saver` disk backup, so
+there is intentionally no `disk` mode here.
+
+The reduced GPU probe in `tools/opd_teacher_memory_saver_probe.py` checks the underlying
+behavior directly: a CPU-backed teacher survives repeated pause/resume cycles, a
+no-backup teacher comes back zeroed, a missing checkpoint fails, and a valid checkpoint
+restores the teacher before a student update.
+
 ## Streaming the optimizer state
 
 ```bash
