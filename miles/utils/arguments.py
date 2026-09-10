@@ -69,6 +69,7 @@ def _resolve_rollout_functions(args) -> None:
         assert (
             args.rollout_all_samples_process_path is None
         ), "--fully-async does not support --rollout-all-samples-process-path"
+        validate_fully_async_batch_semantics(args)
 
     user_eval_path = args.eval_function_path
     args.rollout_function_path, args.eval_function_path = resolve_rollout_function_paths(args)
@@ -80,6 +81,25 @@ def _resolve_rollout_functions(args) -> None:
         "backend; the fleet would boot and then hand the work to the other one."
     )
     args.eval_uses_snapshots = args.eval_num_gpus > 0 or checkpoint_backend
+
+
+def validate_fully_async_batch_semantics(args) -> None:
+    """Clarify fully-async batch-size behavior that can otherwise look inert."""
+    if not getattr(args, "fully_async", False):
+        return
+    num_steps_per_rollout = getattr(args, "num_steps_per_rollout", None)
+    max_weight_staleness = getattr(args, "max_weight_staleness", None)
+    if num_steps_per_rollout not in (None, 1) and max_weight_staleness is not None:
+        logger.warning(
+            "--num-steps-per-rollout > 1 with --max-weight-staleness compounds off-policyness in "
+            "fully-async training: after the first optimizer step, the remaining samples were generated "
+            "by older weights in addition to the inter-batch staleness already filtered."
+        )
+    if getattr(args, "use_dynamic_global_batch_size", False):
+        logger.info(
+            "--use-dynamic-global-batch-size recomputes global batch size from the actual drained "
+            "sample count; with the default fixed fully-async drain it forces one optimizer step."
+        )
 
 
 def reset_arg(parser, name, **kwargs):

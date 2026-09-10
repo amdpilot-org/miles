@@ -108,6 +108,22 @@ Three flags control how much generation stays in flight:
 | `--async-max-concurrent-samples` | In-flight cap in trajectories rather than groups, floored to `value // n_samples_per_prompt` groups. Use it to decouple generation concurrency from batch size |
 | `--rollout-submission-granularity` | Sets when a finished unit frees a submission slot. Under `--fully-async` the default is `sample`, which frees each slot as its own sample completes; `group` holds the slot until the whole group returns |
 
+### Batch-size semantics
+
+`--num-steps-per-rollout` derives `global_batch_size` as
+`rollout_batch_size * n_samples_per_prompt // num_steps_per_rollout`. A value greater than one
+splits one drained rollout into that many sequential optimizer steps. In fully async training,
+the second and later steps therefore train samples generated before the first update, which
+adds per-batch off-policyness on top of the inter-batch staleness controlled by
+`--max-weight-staleness`. Miles warns when both options are set.
+
+`--use-dynamic-global-batch-size` recomputes `global_batch_size` from the actual sample count
+after arrival, rounded down to a multiple of data-parallel size, and records the result in rollout
+metadata. That metadata overrides the derived fixed size and forces one optimizer step per drain.
+With the default fixed fully-async drain of `rollout_batch_size` groups, the option is therefore
+redundant but harmless: it is equivalent to setting the global batch size to the drained sample
+count. It remains useful when a filter changes the physical sample count.
+
 ## Data path
 
 ### The data buffer
