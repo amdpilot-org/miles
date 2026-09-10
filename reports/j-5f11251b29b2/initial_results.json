@@ -1,0 +1,68 @@
+{
+  "aggregate": {
+    "case_count": 1,
+    "elapsed_ms_max": 430.8266589650884,
+    "elapsed_ms_mean": 430.8266589650884,
+    "elapsed_ms_min": 430.8266589650884,
+    "exact_case_count": 1,
+    "failed_case_count": 0,
+    "max_abs_error": 0.0,
+    "total_mismatch_count": 0
+  },
+  "all_exact": true,
+  "case": {
+    "block_size": 1024,
+    "elapsed_ms": 430.8266589650884,
+    "exact_match": true,
+    "length": 1048583,
+    "max_abs_error": 0.0,
+    "mismatch_count": 0,
+    "samples": [
+      {
+        "expected": 14.190000534057617,
+        "index": 0,
+        "observed": 14.190000534057617,
+        "x": 10.630000114440918,
+        "y": 3.559999942779541
+      },
+      {
+        "expected": 98318.75,
+        "index": 524291,
+        "observed": 98318.75,
+        "x": 65547.0078125,
+        "y": 32771.74609375
+      },
+      {
+        "expected": 196623.3125,
+        "index": 1048582,
+        "observed": 196623.3125,
+        "x": 131083.375,
+        "y": 65539.9375
+      }
+    ],
+    "seed": 51125129
+  },
+  "device": {
+    "gcn_arch_name": "gfx950:sramecc+:xnack-",
+    "multi_processor_count": 256,
+    "name": "AMD Instinct MI355X",
+    "total_memory_bytes": 309220868096,
+    "uuid": "38396538-6335-6364-3337-363738313161",
+    "visible_device_count": 1
+  },
+  "elapsed_seconds": 0.47917705099098384,
+  "mode": "initial",
+  "parameters": {
+    "block_size": 1024,
+    "length": 1048583,
+    "seed": 51125129
+  },
+  "validation_end_utc": "2026-09-10T05:22:19.328861+00:00",
+  "validation_start_utc": "2026-09-10T05:22:18.849664+00:00",
+  "versions": {
+    "torch": "2.9.1+rocm7.2.0.git7e1940d4",
+    "torch_cuda": null,
+    "torch_hip": "7.2.26015-fc0010cf6a",
+    "triton": "3.6.0"
+  }
+}

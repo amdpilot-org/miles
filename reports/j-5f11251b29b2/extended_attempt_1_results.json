@@ -1,0 +1,268 @@
+{
+  "aggregate": {
+    "case_count": 100000,
+    "elapsed_ms_max": 424.8060369864106,
+    "elapsed_ms_mean": 0.04939599120873026,
+    "elapsed_ms_min": 0.036319950595498085,
+    "exact_case_count": 100000,
+    "failed_case_count": 0,
+    "max_abs_error": 0.0,
+    "total_mismatch_count": 0
+  },
+  "all_exact": true,
+  "all_iterations_performed_and_verified": true,
+  "device": {
+    "gcn_arch_name": "gfx950:sramecc+:xnack-",
+    "multi_processor_count": 256,
+    "name": "AMD Instinct MI355X",
+    "total_memory_bytes": 309220868096,
+    "uuid": "38396538-6335-6364-3337-363738313161",
+    "visible_device_count": 1
+  },
+  "elapsed_seconds": 16.812424905016087,
+  "failure_samples": [],
+  "mode": "extended",
+  "parameters": {
+    "base_length": 4096,
+    "block_size": 1024,
+    "max_iterations": 100000,
+    "seed_start": 51125129,
+    "tail_lengths": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31
+    ]
+  },
+  "sample_cases": [
+    {
+      "block_size": 1024,
+      "elapsed_ms": 424.8060369864106,
+      "exact_match": true,
+      "length": 4096,
+      "max_abs_error": 0.0,
+      "mismatch_count": 0,
+      "samples": [
+        {
+          "expected": 14.190000534057617,
+          "index": 0,
+          "observed": 14.190000534057617,
+          "x": 10.630000114440918,
+          "y": 3.559999942779541
+        },
+        {
+          "expected": 398.19000244140625,
+          "index": 2048,
+          "observed": 398.19000244140625,
+          "x": 266.6300048828125,
+          "y": 131.55999755859375
+        },
+        {
+          "expected": 782.0025024414062,
+          "index": 4095,
+          "observed": 782.0025024414062,
+          "x": 522.5050048828125,
+          "y": 259.49749755859375
+        }
+      ],
+      "seed": 51125129
+    },
+    {
+      "block_size": 1024,
+      "elapsed_ms": 1.4210720546543598,
+      "exact_match": true,
+      "length": 4097,
+      "max_abs_error": 0.0,
+      "mismatch_count": 0,
+      "samples": [
+        {
+          "expected": 14.204999923706055,
+          "index": 0,
+          "observed": 14.204999923706055,
+          "x": 10.640000343322754,
+          "y": 3.565000057220459
+        },
+        {
+          "expected": 398.20501708984375,
+          "index": 2048,
+          "observed": 398.20501708984375,
+          "x": 266.6400146484375,
+          "y": 131.56500244140625
+        },
+        {
+          "expected": 782.2050170898438,
+          "index": 4096,
+          "observed": 782.2050170898438,
+          "x": 522.6400146484375,
+          "y": 259.56500244140625
+        }
+      ],
+      "seed": 51125130
+    },
+    {
+      "block_size": 1024,
+      "elapsed_ms": 0.09328906890004873,
+      "exact_match": true,
+      "length": 4098,
+      "max_abs_error": 0.0,
+      "mismatch_count": 0,
+      "samples": [
+        {
+          "expected": 14.219999313354492,
+          "index": 0,
+          "observed": 14.219999313354492,
+          "x": 10.649999618530273,
+          "y": 3.569999933242798
+        },
+        {
+          "expected": 398.4075012207031,
+          "index": 2049,
+          "observed": 398.4075012207031,
+          "x": 266.7749938964844,
+          "y": 131.63250732421875
+        },
+        {
+          "expected": 782.4075317382812,
+          "index": 4097,
+          "observed": 782.4075317382812,
+          "x": 522.7750244140625,
+          "y": 259.63250732421875
+        }
+      ],
+      "seed": 51125131
+    },
+    {
+      "block_size": 1024,
+      "elapsed_ms": 0.04076992627233267,
+      "exact_match": true,
+      "length": 4125,
+      "max_abs_error": 0.0,
+      "mismatch_count": 0,
+      "samples": [
+        {
+          "expected": 8.280000686645508,
+          "index": 0,
+          "observed": 8.280000686645508,
+          "x": 3.630000114440918,
+          "y": 4.650000095367432
+        },
+        {
+          "expected": 394.9049987792969,
+          "index": 2062,
+          "observed": 394.9049987792969,
+          "x": 261.3800048828125,
+          "y": 133.52499389648438
+        },
+        {
+          "expected": 781.530029296875,
+          "index": 4124,
+          "observed": 781.530029296875,
+          "x": 519.1300048828125,
+          "y": 262.3999938964844
+        }
+      ],
+      "seed": 51225126
+    },
+    {
+      "block_size": 1024,
+      "elapsed_ms": 0.03915000706911087,
+      "exact_match": true,
+      "length": 4126,
+      "max_abs_error": 0.0,
+      "mismatch_count": 0,
+      "samples": [
+        {
+          "expected": 8.295000076293945,
+          "index": 0,
+          "observed": 8.295000076293945,
+          "x": 3.640000104904175,
+          "y": 4.65500020980835
+        },
+        {
+          "expected": 395.1075134277344,
+          "index": 2063,
+          "observed": 395.1075134277344,
+          "x": 261.5150146484375,
+          "y": 133.59249877929688
+        },
+        {
+          "expected": 781.7325439453125,
+          "index": 4125,
+          "observed": 781.7325439453125,
+          "x": 519.2650146484375,
+          "y": 262.4674987792969
+        }
+      ],
+      "seed": 51225127
+    },
+    {
+      "block_size": 1024,
+      "elapsed_ms": 0.039569917134940624,
+      "exact_match": true,
+      "length": 4127,
+      "max_abs_error": 0.0,
+      "mismatch_count": 0,
+      "samples": [
+        {
+          "expected": 8.309999465942383,
+          "index": 0,
+          "observed": 8.309999465942383,
+          "x": 3.6500000953674316,
+          "y": 4.659999847412109
+        },
+        {
+          "expected": 395.12249755859375,
+          "index": 2063,
+          "observed": 395.12249755859375,
+          "x": 261.5249938964844,
+          "y": 133.59750366210938
+        },
+        {
+          "expected": 781.93505859375,
+          "index": 4126,
+          "observed": 781.93505859375,
+          "x": 519.4000244140625,
+          "y": 262.5350036621094
+        }
+      ],
+      "seed": 51225128
+    }
+  ],
+  "target_min_seconds": 60.0,
+  "validation_end_utc": "2026-09-10T05:22:38.297736+00:00",
+  "validation_start_utc": "2026-09-10T05:22:21.432713+00:00",
+  "versions": {
+    "torch": "2.9.1+rocm7.2.0.git7e1940d4",
+    "torch_cuda": null,
+    "torch_hip": "7.2.26015-fc0010cf6a",
+    "triton": "3.6.0"
+  }
+}
