@@ -403,6 +403,7 @@ def main() -> None:
                 "rendezvous_timeout_seconds": args.timeout_seconds,
                 "downloaded_bytes": 0,
                 "model": "local synthetic Qwen3_5Config (1 target layer, 1 MTP layer)",
+                "optimizer": "SGD(lr=0.01, weight_decay=1e-4)",
                 "mapping_validation": mapping_report,
                 "cycles": cycles,
                 "summary": {
