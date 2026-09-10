@@ -1,0 +1,70 @@
+{
+  "backend": "nccl",
+  "world_size": 1,
+  "rendezvous": "tcp://127.0.0.1:31114",
+  "timeout_seconds": 300.0,
+  "device": "AMD Instinct MI350X",
+  "dtype": "float32",
+  "initial_loss": 1.329919695854187,
+  "final_loss": 1.3269267082214355,
+  "loss_decreased": true,
+  "all_gradients_finite": true,
+  "cycles": [
+    {
+      "cycle": 0,
+      "loss": 1.329919695854187,
+      "gradient_norm": 0.20679721236228943,
+      "weight_checksum": 19.325218200683594,
+      "gradient_finite": true
+    },
+    {
+      "cycle": 1,
+      "loss": 1.3294918537139893,
+      "gradient_norm": 0.206759974360466,
+      "weight_checksum": 19.324308395385742,
+      "gradient_finite": true
+    },
+    {
+      "cycle": 2,
+      "loss": 1.3290637731552124,
+      "gradient_norm": 0.20672275125980377,
+      "weight_checksum": 19.323394775390625,
+      "gradient_finite": true
+    },
+    {
+      "cycle": 3,
+      "loss": 1.3286360502243042,
+      "gradient_norm": 0.20668552815914154,
+      "weight_checksum": 19.322486877441406,
+      "gradient_finite": true
+    },
+    {
+      "cycle": 4,
+      "loss": 1.328208565711975,
+      "gradient_norm": 0.2066483348608017,
+      "weight_checksum": 19.32158088684082,
+      "gradient_finite": true
+    },
+    {
+      "cycle": 5,
+      "loss": 1.327781081199646,
+      "gradient_norm": 0.20661112666130066,
+      "weight_checksum": 19.320663452148438,
+      "gradient_finite": true
+    },
+    {
+      "cycle": 6,
+      "loss": 1.327353835105896,
+      "gradient_norm": 0.20657391846179962,
+      "weight_checksum": 19.319761276245117,
+      "gradient_finite": true
+    },
+    {
+      "cycle": 7,
+      "loss": 1.3269267082214355,
+      "gradient_norm": 0.20653674006462097,
+      "weight_checksum": 19.318851470947266,
+      "gradient_finite": true
+    }
+  ]
+}
