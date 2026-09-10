@@ -11,23 +11,22 @@ from miles.ray.rollout.rollout_data_conversion import (
 
 
 class TestComputeDynamicGlobalBatchSize:
-    def test_rounds_down_to_multiple_of_dp_size(self):
+    def test_returns_unaligned_num_samples(self):
         args = make_args(global_batch_size=64)
-        # 13 samples, dp_size=4 → floor(13/4)*4 = 12
+        # Every valid sample must be consumed by the single training step.
         gbs = _compute_dynamic_global_batch_size(args, train_parallel_config={"dp_size": 4}, num_samples=13)
-        assert gbs == 12
+        assert gbs == 13
 
     def test_returns_num_samples_when_already_aligned(self):
         args = make_args(global_batch_size=64)
         gbs = _compute_dynamic_global_batch_size(args, train_parallel_config={"dp_size": 4}, num_samples=16)
         assert gbs == 16
 
-    def test_falls_back_to_dp_size_when_below_dp_size(self):
-        """When num_samples < dp_size, the rounded result is 0, which would
-        produce a divide-by-zero downstream — fallback to dp_size."""
+    def test_rejects_fewer_samples_than_dp_size(self):
+        """Fewer valid samples than DP ranks cannot be split without an empty rank."""
         args = make_args(global_batch_size=64)
-        gbs = _compute_dynamic_global_batch_size(args, train_parallel_config={"dp_size": 4}, num_samples=2)
-        assert gbs == 4
+        with pytest.raises(ValueError, match="num_samples=2 < dp_size=4"):
+            _compute_dynamic_global_batch_size(args, train_parallel_config={"dp_size": 4}, num_samples=2)
 
 
 class TestPostprocessRolloutData:
@@ -69,6 +68,14 @@ class TestPostprocessRolloutData:
         # Dynamic gbs = floor(10/2)*2 = 10
         assert meta["dynamic_global_batch_size"] == 10
         assert len(out) == 10
+
+    def test_dynamic_batch_size_preserves_non_divisible_sample_count(self):
+        """Dynamic GBS must not round down and discard the non-divisible tail."""
+        args = make_args(global_batch_size=64, disable_rollout_trim_samples=False, use_dynamic_global_batch_size=True)
+        data = [make_sample(index=i) for i in range(11)]
+        out, meta = postprocess_rollout_data(args, data, train_parallel_config={"dp_size": 2})
+        assert meta["dynamic_global_batch_size"] == 11
+        assert len(out) == 11
 
     def test_flattens_nested_list_of_lists(self):
         """The function supports list[list[Sample]] input by flattening."""
