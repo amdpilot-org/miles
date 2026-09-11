@@ -1,0 +1,95 @@
+{
+  "gpu": {
+    "count": 1,
+    "name": "AMD Instinct MI350X",
+    "gcn_arch_name": "gfx950:sramecc+:xnack-",
+    "capability": "sm_95"
+  },
+  "runtime": {
+    "torch": "2.9.1+rocm7.2.0.git7e1940d4",
+    "device": "cuda"
+  },
+  "fixture": {
+    "steps": 30,
+    "learning_rate": 0.05,
+    "student_initial": [
+      0.2,
+      0.79,
+      0.009999,
+      1e-06
+    ],
+    "teacher": [
+      0.8,
+      0.1,
+      0.099999,
+      1e-06
+    ],
+    "topk_strategy": "union",
+    "selected_token_ids": [
+      [
+        0,
+        1,
+        2
+      ],
+      [
+        0,
+        1,
+        2
+      ]
+    ],
+    "selected_teacher_log_probs": [
+      [
+        -0.2231435513142097,
+        -2.3025850929940455,
+        -2.302595093044046
+      ],
+      [
+        -0.2231435513142097,
+        -2.3025850929940455,
+        -2.302595093044046
+      ]
+    ],
+    "selected_weights": [
+      [
+        0.2000002000002,
+        0.7900007900007899,
+        0.00999900999900999
+      ],
+      [
+        0.2000002000002,
+        0.7900007900007899,
+        0.00999900999900999
+      ]
+    ],
+    "rollout_reverse_kl": [
+      1.3325395584106445,
+      1.3325395584106445
+    ]
+  },
+  "gradient_checks": {
+    "miles_max_abs": 0.580115795135498,
+    "reference_loss": 2.665079355239868,
+    "miles_vs_reference_max_abs": 3.725290298461914e-09,
+    "miles_vs_analytic_max_abs": 1.1920928955078125e-07,
+    "old_action_independent_expected_max_abs": 1.1796373655670322e-08
+  },
+  "optimizer_trajectories": {
+    "opd_final_distribution": [
+      0.7598142623901367,
+      0.19565238058567047,
+      0.04453236609697342,
+      9.771953273229883e-07
+    ],
+    "opd_final_loss": 0.12958458065986633,
+    "opd_final_kl_to_teacher": 0.055006884038448334,
+    "entropy_only_final_distribution": [
+      0.5048220753669739,
+      0.42267656326293945,
+      0.07249385863542557,
+      7.498609193135053e-06
+    ],
+    "entropy_only_final_loss": -1.7768340110778809,
+    "entropy_only_final_kl_to_teacher": 0.25634437799453735,
+    "initial_kl_to_teacher": 1.1326144933700562
+  }
+}

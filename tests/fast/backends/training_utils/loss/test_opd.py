@@ -8,13 +8,20 @@ snapshot artifacts.
 
 from argparse import Namespace
 
+import math
+
 import pytest
 import torch
 
+from miles.backends.training_utils.cp_utils import get_sum_of_sample_mean
 from miles.backends.training_utils import loss as loss_utils
-from miles.backends.training_utils.loss_hub.opd import apply_opd_kl_to_advantages
+from miles.backends.training_utils.loss_hub.losses import policy_loss_function
+from miles.backends.training_utils.loss_hub.opd import (
+    apply_opd_kl_to_advantages,
+    compute_opd_topk_reverse_kl,
+)
 
-from .loss_test_utils import make_parallel_state
+from .loss_test_utils import make_args, make_parallel_state
 
 # This module intentionally has no explicit CI registration call: modules under
 # tests/fast are implicitly assigned to the stage-a-cpu suite by the CI collector
@@ -63,6 +70,91 @@ def test_precomputed_reverse_kl_is_detached_before_weighting_advantages():
     (advantages[0] * current_student_log_probs).sum().backward()
     torch.testing.assert_close(current_student_log_probs.grad, advantages[0])
     assert precomputed.grad is None
+
+
+def test_topk_reverse_kl_is_not_applied_to_advantages():
+    args = _args()
+    args.opd_log_prob_top_k = 2
+    advantages = [torch.tensor([1.0, 2.0])]
+    rollout_data = {"opd_reverse_kl": [torch.tensor([0.5, -0.5])]}
+
+    apply_opd_kl_to_advantages(args, rollout_data, advantages, [torch.zeros(2)])
+
+    torch.testing.assert_close(advantages[0], torch.tensor([1.0, 2.0]))
+
+
+def test_topk_policy_loss_matches_subset_kl_reference_gradient():
+    make_parallel_state()
+    args = make_args(
+        use_opd=True,
+        opd_log_prob_top_k=2,
+        opd_kl_coef=1.0,
+        entropy_coef=0.0,
+        observe_training_entropy=False,
+        true_on_policy_mode=True,
+        vocab_size=4,
+    )
+    logits = torch.tensor(
+        [[
+            [0.0, 0.0, 0.0, 0.0],
+            [0.0, math.log(4.0), 0.0, 0.0],
+            [0.0, math.log(4.0), 0.0, 0.0],
+        ]],
+        requires_grad=True,
+    )
+    batch = {
+        "unconcat_tokens": [torch.tensor([0, 1, 2])],
+        "response_lengths": [2],
+        "total_lengths": [3],
+        "loss_masks": [torch.ones(2)],
+        "advantages": [torch.zeros(2)],
+        "log_probs": [torch.zeros(2)],
+        "opd_topk_token_ids": [torch.tensor([[1, 2], [1, 2]])],
+        "opd_topk_teacher_log_probs": [torch.log(torch.tensor([[0.8, 0.2], [0.8, 0.2]]))],
+        "opd_topk_weights": [torch.tensor([[0.8, 0.2], [0.8, 0.2]])],
+    }
+    sum_of_sample_mean = get_sum_of_sample_mean(
+        batch["total_lengths"],
+        batch["response_lengths"],
+        batch["loss_masks"],
+        qkv_format=args.qkv_format,
+        max_seq_lens=None,
+        calculate_per_token_loss=args.calculate_per_token_loss,
+    )
+
+    loss, metrics = policy_loss_function(args, batch, logits, sum_of_sample_mean)
+    loss.backward()
+
+    reference_logits = logits.detach().clone().detach().requires_grad_(True)
+    reference_log_probs = torch.log_softmax(reference_logits, dim=-1)
+    selected = reference_log_probs[:, :2, :].gather(
+        dim=-1,
+        index=batch["opd_topk_token_ids"][0].unsqueeze(0).expand(1, 2, 2),
+    ).squeeze(0)
+    current_subset = torch.log_softmax(selected, dim=-1)
+    teacher_subset = torch.log_softmax(batch["opd_topk_teacher_log_probs"][0], dim=-1)
+    reference_loss = (
+        current_subset.exp() * (current_subset - teacher_subset)
+    ).sum() / batch["loss_masks"][0].sum()
+    reference_loss.backward()
+
+    torch.testing.assert_close(loss.detach(), reference_loss.detach())
+    torch.testing.assert_close(metrics["opd_kl_loss"], reference_loss.detach())
+    torch.testing.assert_close(logits.grad[:, :2, :], reference_logits.grad[:, :2, :])
+    assert torch.count_nonzero(logits.grad[:, 2:, :]).item() == 0
+
+
+def test_topk_policy_loss_requires_target_fields():
+    make_parallel_state()
+    args = make_args(use_opd=True, opd_log_prob_top_k=2)
+    batch = {
+        "unconcat_tokens": [torch.tensor([0, 1])],
+        "response_lengths": [1],
+        "total_lengths": [2],
+    }
+
+    with pytest.raises(ValueError, match="Top-k OPD requires"):
+        compute_opd_topk_reverse_kl(args, batch, torch.zeros(1, 2, 2))
 
 
 def test_fixed_opd_inputs_are_detached_in_persistent_rollout_data(monkeypatch):

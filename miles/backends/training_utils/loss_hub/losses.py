@@ -18,6 +18,7 @@ from miles.backends.training_utils.loss_hub.math_utils import (
     compute_opsm_mask,
     compute_policy_loss,
 )
+from miles.backends.training_utils.loss_hub.opd import compute_opd_topk_reverse_kl
 from miles.backends.training_utils.parallel import get_parallel_state
 from miles.utils.function_registry import load_function
 from miles.utils.types import RolloutBatch
@@ -302,6 +303,7 @@ def policy_loss_function(
 
     entropy_loss = pg_loss.new_zeros(())
     loss = pg_loss
+    opd_kl_loss = None
     if calculate_entropy:
         entropy = log_probs_and_entropy["entropy"]
         entropy = torch.cat(entropy, dim=0)
@@ -310,6 +312,11 @@ def policy_loss_function(
             loss = pg_loss - args.entropy_coef * entropy_loss
         else:
             entropy_loss = entropy_loss.detach()
+
+    if getattr(args, "use_opd", False) and getattr(args, "opd_log_prob_top_k", 0) > 0:
+        opd_reverse_kl = compute_opd_topk_reverse_kl(args, batch, logits)
+        opd_kl_loss = sum_of_sample_mean(opd_reverse_kl)
+        loss = loss + args.opd_kl_coef * opd_kl_loss
 
     if args.use_kl_loss:
         assert reference_log_probs is not None, "ref_log_probs must be provided when --use-kl-loss is set"
@@ -375,6 +382,9 @@ def policy_loss_function(
 
     if args.use_kl_loss:
         reported_loss["kl_loss"] = kl_loss.clone().detach()
+
+    if opd_kl_loss is not None:
+        reported_loss["opd_kl_loss"] = opd_kl_loss.clone().detach()
 
     if args.get_mismatch_metrics or args.use_tis:
         # Aggregate mismatch/TIS/RS related metrics with the *pre-RS* masks.

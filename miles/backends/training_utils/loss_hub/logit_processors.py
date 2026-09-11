@@ -287,6 +287,53 @@ def get_log_probs_and_entropy(
     return res
 
 
+def get_opd_topk_log_probs(
+    logits: torch.Tensor,
+    *,
+    args: Namespace,
+    unconcat_tokens: list[torch.Tensor],
+    total_lengths: list[int],
+    response_lengths: list[int],
+    token_ids: list[torch.Tensor],
+    max_seq_lens: list[int] | None = None,
+) -> list[torch.Tensor]:
+    """Compute current-policy log-probs for every top-k OPD candidate.
+
+    The candidate matrix is padded; callers must supply a zero weight for padded
+    columns. Computing one candidate column at a time reuses the tensor-parallel
+    cross-entropy path without materializing an expanded logits tensor.
+    """
+    parallel_state = get_parallel_state()
+    result = []
+    response_chunks = _iter_response_chunks(
+        logits,
+        args=args,
+        unconcat_tokens=unconcat_tokens,
+        total_lengths=total_lengths,
+        response_lengths=response_lengths,
+        max_seq_lens=max_seq_lens,
+        include_response_indices=False,
+    )
+
+    for logits_chunk, _tokens_chunk, _response_indices in response_chunks:
+        sample_index = len(result)
+        width = token_ids[sample_index].size(1) if token_ids[sample_index].dim() > 1 else 0
+        columns = []
+        for column_index in range(width):
+            column_log_prob, _ = calculate_log_probs_and_entropy(
+                logits_chunk,
+                token_ids[sample_index][:, column_index],
+                parallel_state.tp.group,
+                true_on_policy=args.true_on_policy_mode,
+                vocab_size=getattr(args, "vocab_size", None),
+                temperature=1.0 if args.true_on_policy_mode else args.rollout_temperature,
+            )
+            columns.append(column_log_prob.float())
+        result.append(torch.stack(columns, dim=1) if columns else logits_chunk.new_zeros((logits_chunk.size(0), 0)))
+
+    return result
+
+
 def get_values(
     logits: torch.Tensor,
     *,

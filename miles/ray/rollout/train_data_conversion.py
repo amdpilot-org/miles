@@ -21,6 +21,9 @@ ROLLOUT_DATA_TENSOR_DTYPES = {
     "rollout_sampling_mask_offsets": "int64",
     "teacher_log_probs": "float32",
     "opd_reverse_kl": "float32",
+    "opd_topk_token_ids": "int64",
+    "opd_topk_teacher_log_probs": "float32",
+    "opd_topk_weights": "float32",
     "rollout_routed_experts": "int32",
     "rollout_indexer_topk": "int32",
 }
@@ -171,6 +174,10 @@ def convert_samples_to_train_data(
 
     if samples[0].opd_reverse_kl is not None:
         train_data["opd_reverse_kl"] = [sample.opd_reverse_kl for sample in samples]
+
+    for field_name in ("opd_topk_token_ids", "opd_topk_teacher_log_probs", "opd_topk_weights"):
+        if getattr(samples[0], field_name) is not None:
+            train_data[field_name] = [getattr(sample, field_name) for sample in samples]
 
     x = metadata.get("dynamic_global_batch_size")
     assert args.use_dynamic_global_batch_size == (x is not None)
@@ -394,6 +401,9 @@ def _package_shards(args, data: dict[str, Any], partitions) -> list[dict[str, An
             "prompt",
             "teacher_log_probs",
             "opd_reverse_kl",
+            "opd_topk_token_ids",
+            "opd_topk_teacher_log_probs",
+            "opd_topk_weights",
             "seq_witness_ids",
             "weight_versions",
             "adapter_slots",

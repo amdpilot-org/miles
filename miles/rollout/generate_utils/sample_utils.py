@@ -60,6 +60,26 @@ def _merge_sample_pair(a: Sample, b: Sample, tokenizer) -> Sample:
         bv = bv if bv is not None else [0.0] * b.response_length
         return av + [0.0] * obs_len + bv
 
+    def _merge_optional_topk(field, fill_value):
+        av, bv = getattr(a, field), getattr(b, field)
+        if av is None and bv is None:
+            return None
+        width = max(
+            (len(row) for value in (av, bv) if value is not None for row in value),
+            default=1,
+        )
+
+        def normalize(value, response_length):
+            if value is None:
+                return [[fill_value] * width for _ in range(response_length)]
+            return [row + [fill_value] * (width - len(row)) for row in value]
+
+        return (
+            normalize(av, a.response_length)
+            + [[fill_value] * width for _ in range(obs_len)]
+            + normalize(bv, b.response_length)
+        )
+
     def _pop_opd_student_top_logprobs(metadata):
         if metadata is None:
             return None, None
@@ -165,6 +185,9 @@ def _merge_sample_pair(a: Sample, b: Sample, tokenizer) -> Sample:
             rollout_sampling_mask=sampling_mask,
             teacher_log_probs=_merge_optional_per_token("teacher_log_probs"),
             opd_reverse_kl=_merge_optional_per_token("opd_reverse_kl"),
+            opd_topk_token_ids=_merge_optional_topk("opd_topk_token_ids", 0),
+            opd_topk_teacher_log_probs=_merge_optional_topk("opd_topk_teacher_log_probs", 0.0),
+            opd_topk_weights=_merge_optional_topk("opd_topk_weights", 0.0),
             rollout_routed_experts=b.rollout_routed_experts,
             rollout_indexer_topk=b.rollout_indexer_topk,
             remove_sample=_merge_equal_value("remove_sample"),

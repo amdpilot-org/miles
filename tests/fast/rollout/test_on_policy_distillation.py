@@ -5,6 +5,7 @@ import pytest
 from tests.ci.ci_register import register_cpu_ci
 
 from miles.rollout.on_policy_distillation import (
+    _compute_topk_distillation,
     _compute_topk_reverse_kl,
     _per_position_ids,
     _score_payload,
@@ -75,6 +76,17 @@ def test_topk_only_student_uses_student_probability_weights():
     expected_1 = 0.7 * math.log(0.7 / 0.4) + 0.3 * math.log(0.3 / 0.6)
 
     assert reverse_kl.tolist() == pytest.approx([expected_0, expected_1])
+
+
+def test_topk_distillation_preserves_candidate_targets_and_weights():
+    targets = _compute_topk_distillation(_args("only-student"), _sample(), _teacher_payload())
+
+    assert targets.token_ids == [[1, 2], [4, 5]]
+    assert targets.teacher_log_probs == [
+        [math.log(0.3), math.log(0.7)],
+        [math.log(0.4), math.log(0.6)],
+    ]
+    assert targets.weights == [[0.6, 0.4], [0.7, 0.3]]
 
 
 def test_topk_intersection_uses_overlap_only():
